@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife V43: A Voz da Comunidade</title>
+    <title>Recife V44: Lei Seca & Metrô</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Permanent+Marker&family=Poppins:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -12,59 +12,67 @@
             --frevo-blue: #0277bd; --frevo-red: #c62828; --frevo-green: #2e7d32;
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Poppins', sans-serif; background: radial-gradient(circle at center, #263238, #000); height: 100vh; overflow: hidden; display: flex; }
+        body { 
+            margin: 0; font-family: 'Poppins', sans-serif; 
+            background: radial-gradient(circle at center, #1565c0, #0d47a1);
+            height: 100vh; overflow: hidden; display: flex;
+        }
 
-        /* MENU */
+        /* --- MENUS --- */
         #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .card-menu { background: var(--paper); border: 10px solid #000; border-radius: 20px; padding: 30px; text-align: center; width: 90%; max-width: 500px; box-shadow: 0 0 50px var(--frevo-blue); }
-        .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: 4px solid #000; border-radius: 10px; font-size: 1.5rem; font-family: 'Permanent Marker'; background: var(--frevo-green); color: #000; cursor: pointer; transition: 0.1s; }
-        .btn-main:active { transform: scale(0.95); }
+        .card-menu { background: var(--paper); border: 8px solid #000; border-radius: 20px; padding: 30px; text-align: center; width: 95%; max-width: 500px; box-shadow: 0 0 50px #000; }
+        .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: 3px solid #000; border-radius: 10px; font-size: 1.5rem; font-family: 'Permanent Marker'; background: var(--frevo-green); color: #000; cursor: pointer; transition: 0.1s; box-shadow: 5px 5px 0 #000; }
+        .btn-main:active { transform: translate(3px, 3px); box-shadow: 0 0 0; }
         .sel-box { margin: 15px 0; text-align: left; font-weight: bold; }
-        select { width: 100%; padding: 10px; border: 3px solid #000; font-family: 'Permanent Marker'; font-size: 1rem; }
-        
-        /* CHAR GRID */
+        select { width: 100%; padding: 10px; font-family: 'Permanent Marker'; border: 3px solid #000; font-size: 1rem; }
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
-        .char-opt { border: 3px solid #000; padding: 5px; border-radius: 10px; cursor: pointer; background: #fff; transition: 0.2s; }
-        .char-opt:hover { background: var(--frevo-blue); transform: scale(1.1); }
+        .char-opt { border: 3px solid #000; padding: 5px; border-radius: 10px; cursor: pointer; background: #fff; transition: 0.2s; box-shadow: 3px 3px 0 #000; }
+        .char-opt:hover { transform: scale(1.1); background: var(--frevo-blue); }
 
-        /* GAME */
+        /* --- JOGO --- */
         #game-layout { display: none; width: 100%; height: 100%; }
         #game-layout.active { display: flex; }
 
-        #board-area { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1500px; overflow: hidden; position: relative; }
+        #board-area { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1600px; overflow: hidden; position: relative; }
+        
         #board {
             width: 950px; height: 950px; 
             display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
-            background: #f5f5f5; border: 25px solid var(--wood-dark); border-radius: 20px;
-            box-shadow: 0 50px 100px #000; position: relative;
+            background: #f5f5f5; border: 25px solid var(--wood-dark); border-radius: 15px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8); position: relative;
             background-image: url('https://www.transparenttextures.com/patterns/cardboard.png');
-            transform: rotateX(25deg) scale(0.9); transform-style: preserve-3d; transition: transform 1s;
+            transform: rotateX(25deg) scale(0.9); 
+            transform-style: preserve-3d; transition: transform 1s;
         }
 
-        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.7rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 900; }
+        .space { 
+            border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.65rem; 
+            text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 900;
+            font-family: 'Poppins'; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
         .color-strip { height: 20%; border-bottom: 2px solid #000; }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-family: 'Poppins'; }
-        .sp-price { font-size: 0.7rem; color: #fff; background: #000; font-family: 'Rye'; }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1.1; }
+        .sp-price { font-size: 0.7rem; color: #fff; background: #000; font-family: 'Rye'; padding: 2px 0; }
         .sp-icon { font-size: 2rem; display: flex; align-items: center; justify-content: center; height: 100%; }
 
-        /* CENTRO: CONDE BOA VISTA */
+        /* CENTRO */
         .center-hub { 
-            grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; 
+            grid-column: 2/11; grid-row: 2/11; position: relative; background: #455a64; 
             border: 5px solid #000; overflow: hidden;
         }
-        .road-mark { position: absolute; width: 100%; height: 4px; background: #fff; top: 50%; border-top: 4px dashed #37474f; }
-        .bus { position: absolute; width: 100px; height: 40px; background: #0288d1; border: 2px solid #000; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 5px; animation: busRun 6s linear infinite; top: 20%; z-index: 1; font-family: 'Permanent Marker'; box-shadow: 5px 5px 0 rgba(0,0,0,0.3); }
-        .bus.brt { background: #fff; color: #0288d1; top: auto; bottom: 20%; animation-direction: reverse; animation-duration: 5s; }
+        .road-mark { position: absolute; width: 100%; height: 4px; background: #fff; top: 50%; border-top: 4px dashed #455a64; }
+        .bus { position: absolute; width: 100px; height: 35px; background: #0277bd; border: 2px solid #000; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 5px; animation: busRun 8s linear infinite; top: 25%; z-index: 1; font-family: 'Permanent Marker'; box-shadow: 4px 4px 0 rgba(0,0,0,0.3); font-size: 0.7rem; }
+        .bus.brt { background: #fff; color: #0277bd; top: auto; bottom: 25%; animation-direction: reverse; animation-duration: 6s; }
         @keyframes busRun { from {left: -150px;} to {left: 100%;} }
 
         /* DECKS */
         .deck { position: absolute; width: 80px; height: 110px; background: #fff; border: 3px solid #000; border-radius: 5px; cursor: pointer; transition: 0.2s; transform: translateZ(5px); box-shadow: 5px 5px 0 #000; z-index: 20; }
-        .deck.chance { top: 10%; left: 10%; background-image: repeating-linear-gradient(45deg, #4caf50 0, #4caf50 10px, #fff 10px, #fff 15px); transform: rotate(-15deg); }
-        .deck.reves { bottom: 10%; right: 10%; background-image: repeating-linear-gradient(45deg, #f44336 0, #f44336 10px, #fff 10px, #fff 15px); transform: rotate(15deg); }
-        .deck.active { border-color: #ffd700; box-shadow: 0 0 30px #ffd700; animation: pulse 0.5s infinite alternate; }
+        .deck.chance { top: 10%; left: 10%; background-image: repeating-linear-gradient(45deg, var(--frevo-green) 0, var(--frevo-green) 10px, #fff 10px, #fff 15px); transform: rotate(-15deg); }
+        .deck.reves { bottom: 10%; right: 10%; background-image: repeating-linear-gradient(45deg, var(--frevo-red) 0, var(--frevo-red) 10px, #fff 10px, #fff 15px); transform: rotate(15deg); }
+        .deck.active { border-color: var(--gold); box-shadow: 0 0 30px var(--gold); animation: pulse 0.5s infinite alternate; }
         @keyframes pulse { to { transform: scale(1.1) translateZ(10px); } }
 
-        /* TOKENS & HOUSES */
+        /* ELEMENTOS 3D */
         .token { width: 50px; height: 50px; position: absolute; z-index: 100; font-size: 3.5rem; text-align: center; line-height: 50px; transition: all 0.3s ease-out; transform-origin: bottom center; filter: drop-shadow(5px 5px 0 rgba(0,0,0,0.5)); pointer-events: none; }
         .build-area { position: absolute; top: -15px; width: 100%; display: flex; justify-content: center; gap: 2px; transform-style: preserve-3d; }
         .house-3d { width: 15px; height: 15px; background: var(--frevo-green); border: 1px solid #000; transform: translateZ(10px); box-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
@@ -73,49 +81,48 @@
         /* SIDEBAR */
         #sidebar { width: 360px; background: #ffca28; border-left: 8px solid #000; display: flex; flex-direction: column; padding: 15px; z-index: 200; box-shadow: -10px 0 50px #000; font-family: 'Permanent Marker'; }
         .hud-header { text-align: center; border-bottom: 4px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+        
         .p-stat { display: flex; justify-content: space-between; padding: 10px; background: #fff; border: 3px solid #000; margin-bottom: 5px; border-radius: 5px; align-items: center; font-family: 'Poppins'; font-weight: bold; }
         .p-stat.active { background: #00e5ff; transform: scale(1.05); }
-        
-        .btn-game { width: 100%; padding: 15px; margin-bottom: 8px; border: 3px solid #000; border-radius: 10px; font-family: 'Permanent Marker'; font-size: 1.2rem; cursor: pointer; transition: 0.1s; box-shadow: 4px 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; color: #000; }
+
+        .btn-game { width: 100%; padding: 15px; margin-bottom: 8px; border: 3px solid #000; border-radius: 10px; font-family: 'Permanent Marker'; font-size: 1.1rem; cursor: pointer; transition: 0.1s; box-shadow: 4px 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; color: #000; }
         .btn-game:disabled { background: #777 !important; color: #ccc !important; cursor: not-allowed; box-shadow: none; transform: translate(3px, 3px); }
         .btn-game:active { transform: translate(3px, 3px); box-shadow: 0 0 0; }
 
         /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
         
-        /* DADOS 3D */
+        /* CARD EVENTO */
+        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; }
+        .card-flip { width: 300px; height: 450px; position: relative; transform-style: preserve-3d; transition: transform 0.8s; }
+        .card-flip.flipped { transform: rotateY(180deg); }
+        .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #000; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 15px 15px 0 rgba(0,0,0,0.5); }
+        .cf-back { font-size: 4rem; transform: rotateY(0deg); }
+        .cf-front { transform: rotateY(180deg); background: var(--paper); }
+
+        /* PROP CARD */
+        .prop-card { width: 340px; background: #fff; border: 6px solid #000; padding: 0; text-align: center; pointer-events: auto; display: none; box-shadow: 10px 10px 0 #000; border-radius: 10px; overflow: hidden; animation: bounceIn 0.3s; font-family: 'Poppins'; }
+        .rent-table { width: 100%; font-size: 0.9rem; margin: 10px 0; border-collapse: collapse; text-align: left; }
+        .rent-table td { border-bottom: 2px dashed #ccc; padding: 4px 0; font-weight: bold; }
+
+        /* DADOS */
         .dice-stage { position: absolute; display: flex; gap: 50px; pointer-events: none; opacity: 0; top: 40%; transition: 0.2s; z-index: 7000; }
         .dice-stage.active { opacity: 1; }
         .cube { width: 100px; height: 100px; position: relative; transform-style: preserve-3d; transition: transform 0.5s ease-out; }
         .cube.shake { animation: shake 0.1s infinite; }
-        @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(10deg)} 75%{transform:rotate(-10deg)} }
+        @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(5deg)} 75%{transform:rotate(-5deg)} }
         .face { position: absolute; inset: 0; background: #fff; border: 5px solid #000; border-radius: 20px; display: grid; place-items: center; }
         .dot { width: 22px; height: 22px; background: #000; border-radius: 50%; }
-        /* Dots Positioning */
+        /* Grid Logic */
         .face { grid-template: repeat(3, 1fr)/repeat(3, 1fr); padding: 10px; }
         .face[d="1"] .dot:nth-child(1){grid-area:2/2}.face[d="2"] .dot:nth-child(1){grid-area:1/1}.face[d="2"] .dot:nth-child(2){grid-area:3/3}.face[d="3"] .dot:nth-child(1){grid-area:1/1}.face[d="3"] .dot:nth-child(2){grid-area:2/2}.face[d="3"] .dot:nth-child(3){grid-area:3/3}.face[d="4"] .dot:nth-child(1){grid-area:1/1}.face[d="4"] .dot:nth-child(2){grid-area:1/3}.face[d="4"] .dot:nth-child(3){grid-area:3/1}.face[d="4"] .dot:nth-child(4){grid-area:3/3}.face[d="5"] .dot:nth-child(1){grid-area:1/1}.face[d="5"] .dot:nth-child(2){grid-area:1/3}.face[d="5"] .dot:nth-child(3){grid-area:2/2}.face[d="5"] .dot:nth-child(4){grid-area:3/1}.face[d="5"] .dot:nth-child(5){grid-area:3/3}.face[d="6"] .dot:nth-child(1){grid-area:1/1}.face[d="6"] .dot:nth-child(2){grid-area:1/3}.face[d="6"] .dot:nth-child(3){grid-area:2/1}.face[d="6"] .dot:nth-child(4){grid-area:2/3}.face[d="6"] .dot:nth-child(5){grid-area:3/1}.face[d="6"] .dot:nth-child(6){grid-area:3/3}
-        /* Rotations */
         .f1{transform:translateZ(50px)} .f6{transform:rotateX(180deg) translateZ(50px)} .f2{transform:rotateY(-90deg) translateZ(50px)} .f5{transform:rotateY(90deg) translateZ(50px)} .f3{transform:rotateX(-90deg) translateZ(50px)} .f4{transform:rotateX(90deg) translateZ(50px)}
+        .r1{transform:rotateX(0) rotateY(0)} .r6{transform:rotateX(180deg)} .r2{transform:rotateY(90deg)} .r5{transform:rotateY(-90deg)} .r3{transform:rotateX(-90deg)} .r4{transform:rotateX(90deg)}
 
-        /* CARD FLIP */
-        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; }
-        .card-flip { width: 300px; height: 450px; position: relative; transform-style: preserve-3d; transition: transform 0.8s; }
-        .card-flip.flipped { transform: rotateY(180deg); }
-        .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #000; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 20px 20px 0 rgba(0,0,0,0.5); }
-        .cf-back { font-size: 5rem; transform: rotateY(0deg); background-image: repeating-linear-gradient(45deg, #eee 0, #eee 10px, #fff 10px, #fff 15px); }
-        .cf-front { transform: rotateY(180deg); background: #fff8e1; }
-
-        /* PROP CARD */
-        .prop-card { width: 320px; background: #fff; border: 6px solid #000; padding: 0; text-align: center; pointer-events: auto; display: none; box-shadow: 10px 10px 0 #000; border-radius: 10px; overflow: hidden; animation: bounceIn 0.3s; font-family: 'Poppins'; }
-        .rent-table { width: 100%; font-size: 0.9rem; margin: 10px 0; border-collapse: collapse; text-align: left; }
-        .rent-table td { border-bottom: 2px dashed #ccc; padding: 4px 0; }
-
-        /* NOTIFICATIONS */
-        .toast-box { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #000; color: #fff; padding: 15px 30px; border: 4px solid #fff; font-family: 'Permanent Marker'; font-size: 1.5rem; z-index: 9999; animation: slideDown 3s forwards; text-align: center; white-space: nowrap; box-shadow: 0 10px 30px #000; }
-        @keyframes slideDown { 0%{transform:translate(-50%, -100px); opacity:0;} 10%{transform:translate(-50%, 0); opacity:1;} 90%{opacity:1;} 100%{transform:translate(-50%, -50px); opacity:0;} }
+        .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #000; color: #fff; padding: 15px 40px; border: 4px solid var(--frevo-green); z-index: 9999; animation: popUp 3s forwards; font-family: 'Permanent Marker'; font-size: 1.5rem; text-align: center; box-shadow: 10px 10px 0 #fff; }
+        @keyframes popUp { 0%{opacity:0;transform:translate(-50%,20px)} 10%{opacity:1} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-100px)} }
         @keyframes bounceIn { 0%{transform:scale(0)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
 
-        /* ELEMENTS FX */
         .shark-visual { position: fixed; bottom: -300px; right: 20%; font-size: 15rem; z-index: 8000; transition: 1s; display: none; }
         .shark-visual.attack { bottom: 0; animation: wobble 0.5s infinite; }
         @keyframes wobble { 0%{transform:rotate(0)} 25%{transform:rotate(5deg)} 75%{transform:rotate(-5deg)} }
@@ -132,8 +139,8 @@
 
 <div id="screen-start">
     <div class="card-menu">
-        <h1 style="color:var(--frevo-blue); font-size:4rem; margin:0; text-shadow: 4px 4px 0 #000;">RECIFE V43</h1>
-        <h2 style="background:#000; color:#fff; display:inline-block; padding:0 10px; transform:rotate(-2deg);">A VOZ DA COMUNIDADE</h2>
+        <h1 style="color:var(--frevo-blue); font-size:4rem; margin:0; text-shadow:4px 4px 0 #000;">RECIFE V44</h1>
+        <h2 style="background:#000; color:#fff; display:inline-block; padding:0 10px; transform:rotate(-2deg);">CONDE DA BOA VISTA</h2>
         
         <div class="sel-box">
             <label>MODO:</label>
@@ -180,7 +187,7 @@
         </div>
 
         <div id="jail-ui" style="display:none; background:#ffcdd2; padding:10px; border:3px dashed red; margin-bottom:10px; text-align:center;">
-            <b>TÁ PRESO!</b>
+            <b>PRESO NA LEI SECA!</b>
             <button class="btn-main" style="background:#4caf50; font-size:1rem; padding:10px;" onclick="game.payJail()">PAGAR $50</button>
             <button class="btn-main" style="background:#ff9800; font-size:1rem; padding:10px;" onclick="game.roll()">TENTAR A SORTE</button>
         </div>
@@ -222,7 +229,7 @@
             </div>
             
             <table class="rent-table">
-                <tr><td>Aluguel Base</td><td id="r-0">-</td></tr>
+                <tr><td>Aluguel Seco</td><td id="r-0">-</td></tr>
                 <tr><td>1 Barraco</td><td id="r-1">-</td></tr>
                 <tr><td>2 Barracos</td><td id="r-2">-</td></tr>
                 <tr><td>3 Barracos</td><td id="r-3">-</td></tr>
@@ -237,8 +244,8 @@
 
             <div id="act-manage" style="display:none; border-top:3px dashed #ccc; padding-top:10px;">
                 <div style="display:flex; gap:5px;">
-                    <button class="btn-main" style="background:orange; font-size:0.8rem; padding:5px;" onclick="game.mortgage()">HIPOTECAR</button>
-                    <button class="btn-main" style="background:green; font-size:0.8rem; padding:5px;" onclick="game.build()">CONSTRUIR</button>
+                    <button id="btn-mtg" class="btn-main" style="background:orange; font-size:0.8rem; padding:5px;" onclick="game.mortgage()">HIPOTECAR</button>
+                    <button id="btn-bld" class="btn-main" style="background:green; font-size:0.8rem; padding:5px;" onclick="game.build()">CONSTRUIR</button>
                 </div>
                 <div style="background:#eee; padding:5px; border-radius:5px; margin-top:5px; border:1px solid #000;">
                     <small>PASSAR O PONTO PRA:</small>
@@ -268,37 +275,37 @@ const BD=[
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#795548',n:'Ibura',p:60,h:50,m:30,r:[4,20,60,180,320,450]}, 
     {t:'tx',n:'IPTU',p:200,i:'💸'}, 
-    {t:'rr',n:'Metrô Central',p:200,m:100,i:'🚆',r:[25,50,100,200,0,0]},
+    {t:'rr',n:'Est. Joana Bezerra',p:200,m:100,i:'🚆',r:[25,50,100,200,0,0]},
     {t:'pr',g:'#03a9f4',n:'Sto Amaro',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
     {t:'ch',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
     {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,m:60,r:[8,40,100,300,450,600]},
-    {t:'jl',n:'Cadeia',i:'👮'}, 
+    {t:'jl',n:'LEI SECA',i:'👮'}, 
     {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
     {t:'ut',n:'Celpe',p:150,m:75,i:'💡'}, 
     {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
     {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,m:80,r:[12,60,180,500,700,900]}, 
-    {t:'rr',n:'Metrô Oeste',p:200,m:100,i:'🚆',r:[25,50,100,200,0,0]}, 
+    {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200,0,0]}, 
     {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
     {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,m:100,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Estac. Livre',i:'🅿️'}, 
+    {t:'pk',n:'Shop. Boa Vista',i:'🛍️'}, 
     {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
     {t:'ch',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
     {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,m:120,r:[20,100,300,750,925,1100]}, 
-    {t:'rr',n:'Via Mangue',p:200,m:100,i:'🛣️',r:[25,50,100,200,0,0]}, 
+    {t:'rr',n:'Est. Barro',p:200,m:100,i:'🚆',r:[25,50,100,200,0,0]}, 
     {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
     {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
     {t:'ut',n:'Compesa',p:150,m:75,i:'💧'}, 
     {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,m:140,r:[24,120,360,850,1025,1200]},
-    {t:'gj',n:'BLITZ!',i:'🚓'}, 
+    {t:'gj',n:'LEI SECA! (Preso)',i:'🚓'}, 
     {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
     {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,m:160,r:[28,150,450,1000,1200,1400]}, 
-    {t:'rr',n:'Aeroporto',p:200,m:100,i:'✈️',r:[25,50,100,200,0,0]}, 
+    {t:'rr',n:'Est. Afogados',p:200,m:100,i:'🚆',r:[25,50,100,200,0,0]}, 
     {t:'ch',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,m:175,r:[35,175,500,1100,1300,1500]}, 
     {t:'tx',n:'Taxa',p:100,i:'🧾'}, 
@@ -335,7 +342,7 @@ const ui = {
         document.getElementById('screen-char').style.display='flex';
         const g=document.getElementById('char-grid');
         CHARS.forEach(c=>{
-            g.innerHTML += `<div class="char-opt" onclick="ui.start('${c.i}')"><div style="font-size:3rem">${c.i}</div><b>${c.n}</b></div>`;
+            g.innerHTML += `<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div><b>${c.n}</b></div>`;
         });
     },
     start: (icon) => {
@@ -347,6 +354,7 @@ const ui = {
         document.getElementById('screen-char').style.display='none';
         document.getElementById('game-layout').classList.add('active');
         ui.buildBoard(); ui.hud();
+        setInterval(game.randomEvent, 60000); 
     },
     buildBoard: () => {
         const b = document.getElementById('board');
@@ -409,7 +417,7 @@ const ui = {
             let canBuy = hum && rolled && BD[p.pos].t==='pr' && !props[p.pos] && !pendingCardType;
             if(gameMode === 'hardcore' && p.boughtRound) canBuy = false;
             document.getElementById('b-buy').disabled = !canBuy;
-            const dEqual = players[turn].doubles > 0;
+            const dEqual = players[turn].lastD1 === players[turn].lastD2;
             document.getElementById('b-pass').disabled = !(hum && rolled && !dEqual && !pendingCardType);
         }
 
@@ -426,21 +434,41 @@ const ui = {
         document.getElementById('pc-name').innerText = s.n;
         document.getElementById('pc-name').style.background = s.g || '#333';
         document.getElementById('pc-price').innerText = `$${s.p}`;
+        
         if(s.r) {
             document.getElementById('r-0').innerText = `$${s.r[0]}`;
             document.getElementById('r-1').innerText = `$${s.r[1]}`;
+            document.getElementById('r-2').innerText = `$${s.r[2]}`;
+            document.getElementById('r-3').innerText = `$${s.r[3]}`;
+            document.getElementById('r-4').innerText = `$${s.r[4]}`;
             document.getElementById('r-5').innerText = `$${s.r[5]}`;
+            document.getElementById('r-c').innerText = `$${s.h||'-'}`;
         }
 
         document.getElementById('act-buy').style.display = forBuy ? 'block' : 'none';
         document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===0) ? 'block' : 'none';
         
         if(!forBuy && pr){
-            // Config Manage Logic (Omitted for brevity)
+            const btnMtg = document.getElementById('btn-mtg');
+            if(pr.mtg){
+                btnMtg.innerText = `PAGAR AGIOTA ($${pr.loan})`;
+                btnMtg.style.background = "#2e7d32";
+                btnMtg.onclick = () => game.toggleMortgage(true);
+            } else {
+                const loanVal = Math.floor(s.p * 0.8);
+                btnMtg.innerText = `PEGAR EMPRÉSTIMO (+$${loanVal})`;
+                btnMtg.style.background = "orange";
+                btnMtg.onclick = () => game.toggleMortgage(false);
+            }
+            
+            const sel = document.getElementById('trade-who');
+            sel.innerHTML = '';
+            players.forEach((p,i)=>{ if(i!==0) sel.innerHTML+=`<option value="${i}">${p.name}</option>`; });
         }
         el.style.display = 'block';
     },
     closeCard: () => document.getElementById('prop-card').style.display='none',
+    
     showEvent: (type, text) => {
         const c = document.getElementById('card-event');
         const flip = document.getElementById('card-flipper');
@@ -459,6 +487,7 @@ const ui = {
         document.getElementById('card-flipper').classList.remove('flipped');
         game.applyCard();
     },
+    
     dice: (d1,d2) => {
         const ds = document.getElementById('dice-visual');
         ds.classList.add('active');
@@ -483,7 +512,21 @@ const ui = {
 
 /* LOGIC */
 const game = {
-    narrate: (msg) => { ui.toast(msg); },
+    randomEvent: () => {
+        if(Math.random() < 0.2) {
+            ui.toast("O GALO DA MADRUGADA PASSOU! +$200 PRA GERAL E TELEPORTE PRO MARCO ZERO!");
+            players.forEach(p => { p.money += 200; p.pos = 0; ui.place(p.id, 0); });
+            confetti();
+            ui.hud();
+        } else if(Math.random() < 0.3 && !rain) {
+            ui.toast("ALAGOU A AGAMENON! TUDO PARADO!");
+            document.getElementById('rain-layer').style.display = 'block';
+            rain = true; 
+        } else if(rain) {
+            document.getElementById('rain-layer').style.display = 'none';
+            rain = false; 
+        }
+    },
     clickDeck: (type) => {
         if(pendingCardType && turn===0 && type === (pendingCardType==='ch'?'ch':'rev')){
             const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
@@ -506,10 +549,10 @@ const game = {
         if(players[turn].jailed) {
             if(d1===d2) {
                 players[turn].jailed = false;
-                game.narrate("Aí sim mermão! DADOS IGUAIS! TÁ LIVRE!");
+                ui.toast("SOLTOU! DADOS IGUAIS!");
                 await game.move(turn, d1+d2);
             } else {
-                game.narrate("VIXE! Não deu. Continua preso, boy.");
+                ui.toast("NÃO DEU! CONTINUA PRESO.");
                 rolled = true;
                 setTimeout(game.pass, 1500); 
                 animating=false;
@@ -518,9 +561,9 @@ const game = {
         } else {
             if(d1===d2){
                 players[turn].doubles++;
-                game.narrate("DADOS IGUAIS! Joga de novo!");
+                ui.toast("DADOS IGUAIS!");
                 if(players[turn].doubles===3){
-                    game.narrate("3x IGUAIS? TÁ PRESO, TABACUDO!");
+                    ui.toast("3x IGUAIS! VAI PRESO!");
                     game.jail(turn); animating=false; rolled=true; ui.hud(); return;
                 }
             } else {
@@ -545,7 +588,7 @@ const game = {
         
         for(let i=0; i<moves; i++){
             p.pos++; if(p.pos>=40){ 
-                p.pos=0; p.money+=200; game.narrate("Passou no INÍCIO! Toma 200 conto."); 
+                p.pos=0; p.money+=200; ui.toast("Início +$200"); 
                 p.boughtRound = false; 
             }
             ui.place(pid, p.pos); play('step');
@@ -565,20 +608,20 @@ const game = {
                 setTimeout(()=>document.getElementById('shark-fx').classList.remove('attack'), 3000);
                 
                 if(p.shield){
-                    game.narrate("TUBARÃO ATACOU! Mas tu é Tubarão Ratão (Escudo usado)");
+                    ui.toast("TUBARÃO ATACOU! Mas tu é Tubarão Ratão (Escudo usado)");
                     p.shield=false;
                 } else {
-                    game.narrate("AÍ DENTO! O Tubarão te pegou! (-$100)");
+                    ui.toast("AÍ DENTO! O Tubarão te pegou! (-$100)");
                     p.money -= 100;
                 }
                 return;
             } else {
-                game.narrate("Virasse Tubarão Ratão! (Ganhou Escudo)");
+                ui.toast("Virasse Tubarão Ratão! (Ganhou Escudo)");
                 p.shield = true;
             }
         }
 
-        if(p.pos===30){ game.narrate("BLITZ! PERDEU, BOY!"); game.jail(pid); return; }
+        if(p.pos===30){ ui.toast("LEI SECA! PERDEU, BOY!"); game.jail(pid); return; }
         
         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
             if(!pr){
@@ -586,11 +629,21 @@ const game = {
                 else if(pid!==0 && p.money >= s.p) game.aiBuy(p.pos);
             } else if(pr.owner !== pid && !pr.mtg){
                 if(!rain){
-                    let rent = s.r[pr.level]; 
+                    let rent = 0;
+                    if(s.t==='pr') rent = s.r[pr.level];
+                    else if(s.t==='rr') {
+                        let count = BD.filter((b,i)=>b.t==='rr' && props[i] && props[i].owner===pr.owner).length;
+                        rent = 25 * Math.pow(2, count-1);
+                    } else if(s.t==='ut') {
+                        let roll = players[pid].lastD1 + players[pid].lastD2;
+                        let count = BD.filter((b,i)=>b.t==='ut' && props[i] && props[i].owner===pr.owner).length;
+                        rent = roll * (count===2 ? 10 : 4);
+                    }
+                    
                     p.money -= rent; players[pr.owner].money += rent;
-                    game.narrate(`Pagou aluguel de $${rent}`); play('cash');
+                    ui.toast(`Pagou aluguel de $${rent}`); play('cash');
                 } else {
-                    game.narrate("Alagou tudo! Ninguém paga aluguel.");
+                    ui.toast("Alagamento: Sem Aluguel!");
                 }
             }
         } else if(s.t==='ch' || s.t==='ch'){
@@ -601,7 +654,7 @@ const game = {
                 game.applyCard();
             }
         } else if(s.t==='tx'){
-            p.money-=200; game.narrate("Pagou Imposto, Liso!");
+            p.money-=200; ui.toast("Pagou Imposto, Liso!");
         }
     },
     applyCard: () => {
@@ -617,7 +670,7 @@ const game = {
     },
     payJail: () => {
         if(players[0].money>=50){
-            players[0].money-=50; players[0].jailed=false; game.narrate("Fiança Paga! Tá solto."); ui.hud();
+            players[0].money-=50; players[0].jailed=false; ui.toast("Fiança Paga! Tá solto."); ui.hud();
         }
     },
     confirmBuy: () => {
@@ -632,19 +685,11 @@ const game = {
         if(gameMode==='hardcore' && p.boughtRound) return;
         p.money-=s.p; props[idx]={owner:turn,level:0,mtg:false,loan:0};
         p.boughtRound=true;
-        game.narrate(`${p.name} comprou ${s.n}`); ui.hud();
+        ui.toast(`${p.name} comprou ${s.n}`); ui.hud();
     },
     pass: () => {
         if(pendingCardType) { alert("Puxe a carta primeiro, doido!"); return; }
         
-        // Galo Check
-        totalTurns++;
-        if(totalTurns % 20 === 0) {
-            game.narrate("O GALO DA MADRUGADA CHEGOU! +$200 e todo mundo pro Marco Zero!");
-            players[turn].pos = 0; players[turn].money += 200;
-            ui.place(turn, 0); confetti();
-        }
-
         turn = (turn+1)%players.length;
         rolled=false;
         
@@ -653,6 +698,35 @@ const game = {
         }
         ui.hud();
         if(turn!==0) setTimeout(game.roll, 1000);
+    },
+    toggleMortgage: (isPaying) => {
+        const p=players[0], s=BD[activeIdx], pr=props[activeIdx];
+        if(isPaying){
+            if(p.money >= pr.loan){ p.money-=pr.loan; pr.mtg=false; pr.loan=0; ui.toast("Tá limpo!"); }
+            else ui.toast("Sem grana pra pagar!");
+        } else {
+            const loan = Math.floor(s.p*0.8);
+            p.money+=loan; pr.mtg=true; pr.loan=loan; ui.toast(`Pegou $${loan} emprestado!`);
+        }
+        ui.closeCard(); ui.hud();
+    },
+    build: () => {
+        const p=players[0], s=BD[activeIdx], pr=props[activeIdx];
+        // Uniform Rule
+        const grp = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1);
+        const ownAll = grp.every(i=>props[i] && props[i].owner===0);
+        if(!ownAll) { alert("Precisa do grupo completo!"); return; }
+        const min = Math.min(...grp.map(i=>props[i].level));
+        if(pr.level > min) { alert("Constrói igual nos outros!"); return; }
+        if(p.money >= s.h && pr.level<5){ p.money-=s.h; pr.level++; ui.hud(); }
+    },
+    offerTrade: () => {
+        const tid = parseInt(document.getElementById('trade-who').value);
+        const val = parseInt(document.getElementById('trade-val').value);
+        if(players[tid].money >= val){
+            players[tid].money -= val; players[0].money += val; props[activeIdx].owner = tid;
+            ui.toast("Vendido pro Zé!"); ui.closeCard(); ui.hud();
+        } else ui.toast("O Zé tá liso!");
     }
 };
 </script>
