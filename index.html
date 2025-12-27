@@ -3,361 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário: Platinum Edition</title>
+    <title>Recife Imobiliário: Abre Alas</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --wood: #4e342e; --paper: #f4e4bc; --gold: #ffd700;
-            --p-red: #d32f2f; --p-green: #388e3c; --p-blue: #1976d2; --p-yellow: #fbc02d;
-            --mortgaged: #9e9e9e;
+            --carnaval-bg: linear-gradient(135deg, #ff9800 0%, #f44336 50%, #9c27b0 100%);
+            --wood: #3e2723;
+            --paper: #fff8e1;
+            --glass: rgba(255, 255, 255, 0.95);
+            --gold: #ffca28;
+            --frevo-blue: #0277bd;
         }
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Poppins', sans-serif; background: radial-gradient(circle, #81d4fa, #01579b); height: 100vh; overflow: hidden; display: flex; transition: 1s; }
-        h1,h2,button,.brand { font-family: 'Rye', serif; }
 
-        /* --- CENA 3D --- */
-        #game-stage { flex: 1; perspective: 1200px; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: 1s; }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; font-family: 'Poppins', sans-serif; 
+            background: var(--carnaval-bg);
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* TIPOGRAFIA CULTURAL */
+        h1, h2, h3, .brand { font-family: 'Rye', serif; letter-spacing: 1px; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
+
+        /* --- TELA 1: LOBBY (CONCENTRAÇÃO) --- */
+        #screen-lobby {
+            position: fixed; inset: 0; z-index: 9999;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png'), var(--carnaval-bg);
+            animation: bgMove 20s linear infinite;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        @keyframes bgMove { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
+
+        .estandarte-card {
+            background: var(--paper);
+            width: 90%; max-width: 450px;
+            padding: 30px;
+            border: 8px solid var(--wood);
+            border-radius: 10px 10px 50px 50px; /* Formato de Estandarte */
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .estandarte-card::after {
+            content: ''; position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 20px; background: var(--wood); border-radius: 50%;
+            box-shadow: 0 0 0 5px var(--gold);
+        }
+
+        .input-recife {
+            width: 100%; padding: 15px; margin: 10px 0;
+            border: 3px solid var(--wood); background: #fff;
+            font-family: 'Rye'; font-size: 1.1rem; text-align: center;
+            border-radius: 8px; color: var(--wood);
+        }
+
+        .btn-frevo {
+            width: 100%; padding: 15px; margin-top: 10px;
+            border: none; border-radius: 50px;
+            font-size: 1.2rem; font-weight: 900; text-transform: uppercase;
+            cursor: pointer; transition: 0.2s;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            color: white; font-family: 'Rye';
+        }
+        .btn-frevo:active { transform: translateY(4px); box-shadow: 0 0 0; }
+        .bg-blue { background: #0288d1; }
+        .bg-green { background: #43a047; }
+        .bg-red { background: #d32f2f; }
+
+        .player-tag {
+            display: inline-block; padding: 5px 15px; margin: 5px;
+            background: #fff; border: 2px solid var(--wood); border-radius: 20px;
+            font-weight: bold; animation: popIn 0.3s;
+        }
+
+        /* --- TELA 2: SELEÇÃO DE PERSONAGEM (CAMARIM) --- */
+        #screen-char {
+            position: fixed; inset: 0; z-index: 8000;
+            background: rgba(0,0,0,0.95);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            color: white;
+        }
+        .char-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+            max-width: 600px; margin: 30px 0;
+        }
+        .char-option {
+            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px; padding: 15px; text-align: center; cursor: pointer;
+            transition: 0.3s; position: relative;
+        }
+        .char-option:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+        .char-option.selected { border-color: var(--gold); background: rgba(255,215,0,0.2); box-shadow: 0 0 20px var(--gold); transform: scale(1.1); }
+        .char-option.taken { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+        .char-emoji { font-size: 3rem; display: block; margin-bottom: 5px; }
+        .char-name { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .char-owner { position: absolute; bottom: -10px; left: 0; width: 100%; font-size: 0.7rem; background: var(--frevo-blue); padding: 2px; border-radius: 5px; }
+
+        /* --- TELA 3: O JOGO (V11 Base) --- */
+        #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; transition: 1s; pointer-events: none; }
+        #game-layout.active { opacity: 1; pointer-events: all; }
+
+        /* ... [CSS do Tabuleiro V11 mantido e otimizado] ... */
+        #board-viewport { flex: 1; perspective: 1200px; display: flex; align-items: center; justify-content: center; background: radial-gradient(#81d4fa, #01579b); overflow: hidden; }
         #board {
             display: grid; grid-template-columns: repeat(11, 80px); grid-template-rows: repeat(11, 80px);
             background: #fff; border: 15px solid var(--wood); border-radius: 8px; position: relative;
-            transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            box-shadow: 0 50px 100px rgba(0,0,0,0.6);
+            transform-style: preserve-3d; transition: transform 1s; box-shadow: 0 50px 100px #000;
         }
+        .space { border: 1px solid #ccc; background: #fff8e1; font-size: 0.65rem; text-align: center; position: relative; font-weight: bold; display: flex; flex-direction: column; }
+        .color-bar { height: 25%; border-bottom: 2px solid #000; }
+        .token { width: 45px; height: 45px; position: absolute; z-index: 50; font-size: 2.2rem; text-align: center; transition: all 0.5s ease; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); }
         
-        /* Células */
-        .space { border: 1px solid #ccc; background: #fff8e1; font-size: 0.65rem; text-align: center; position: relative; font-weight: bold; display: flex; flex-direction: column; transition: 0.3s; backface-visibility: hidden; }
-        .color-bar { height: 25%; border-bottom: 2px solid #000; transition: 0.3s; }
-        .mortgaged { filter: grayscale(1); opacity: 0.7; background: #e0e0e0; }
-        .mortgaged .color-bar { background: #555 !important; }
-        .mortgaged::after { content: 'HIPOTECADO'; position: absolute; top:50%; left:50%; transform: translate(-50%,-50%) rotate(-45deg); color: red; font-size: 0.7rem; border: 2px solid red; padding: 2px; opacity: 0.8; }
+        #sidebar { width: 350px; background: rgba(255,255,255,0.95); padding: 15px; display: flex; flex-direction: column; z-index: 100; border-left: 8px solid var(--wood); }
+        .btn-game { padding: 10px; border: 3px solid #000; border-radius: 5px; font-weight: bold; cursor: pointer; opacity: 0.5; pointer-events: none; }
+        .btn-game.on { opacity: 1; pointer-events: all; transform: translateY(-2px); }
 
-        /* Centro */
-        .center { grid-column: 2/11; grid-row: 2/11; background: #e1f5fe; border: 5px solid var(--wood); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .bg-anim { position: absolute; width: 200%; height: 200%; opacity: 0.1; background: conic-gradient(red 0deg 45deg, yellow 90deg 135deg, green 180deg 225deg, blue 270deg 315deg); animation: spin 30s linear infinite; }
-        
-        /* Tokens */
-        .token { width: 45px; height: 45px; position: absolute; z-index: 50; font-size: 2.2rem; text-align: center; line-height: 45px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); transition: all 0.5s ease; transform-origin: bottom center; }
-        .jump { animation: jump 0.4s; } @keyframes jump { 50% { transform: translateY(-40px) scale(1.1); } }
+        /* Responsive */
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            #game-layout { flex-direction: column; }
+            #sidebar { width: 100%; order: 2; height: auto; border-top: 8px solid var(--wood); border-left: none; }
+            #board { transform: scale(0.65); margin-bottom: 20px; }
+            .char-grid { grid-template-columns: repeat(2, 1fr); }
+        }
 
-        /* HUD */
-        #sidebar { width: 350px; background: rgba(255,255,255,0.95); padding: 15px; display: flex; flex-direction: column; z-index: 100; box-shadow: -5px 0 20px rgba(0,0,0,0.3); border-left: 8px solid var(--wood); backdrop-filter: blur(5px); }
-        .hud-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px dashed #888; padding-bottom: 10px; }
-        .cash-box { font-size: 1.5rem; color: var(--p-green); font-weight: 800; text-shadow: 1px 1px 0 #fff; }
-        
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        .btn { padding: 12px; border: 3px solid #000; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.2s; color: #000; font-size: 0.85rem; box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-        .btn.on { opacity: 1; pointer-events: all; transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(0,0,0,0.3); }
-        .btn.on:active { transform: translateY(0); box-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
-
-        /* LOBBY */
-        #lobby { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
-        .lobby-box { background: #fff; padding: 30px; border: 8px solid var(--wood); border-radius: 10px; text-align: center; width: 400px; max-width: 90%; position: relative; }
-        .av-row { display: flex; gap: 10px; justify-content: center; font-size: 2.5rem; margin: 15px 0; }
-        .av { cursor: pointer; opacity: 0.5; transition: 0.3s; filter: grayscale(1); }
-        .av.sel { opacity: 1; transform: scale(1.2); filter: grayscale(0); }
-
-        /* OVERLAYS */
-        #dice-ov { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
-        .die { width: 80px; height: 80px; position: relative; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.1,0.9,0.3,1.2); margin: 20px; }
-        .face { position: absolute; inset: 0; background: #fff; border: 4px solid #000; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: bold; backface-visibility: hidden; }
-        .face:nth-child(1) { transform: translateZ(40px); } .face:nth-child(6) { transform: rotateX(180deg) translateZ(40px); }
-        .face:nth-child(2) { transform: rotateY(90deg) translateZ(40px); } .face:nth-child(5) { transform: rotateY(-90deg) translateZ(40px); }
-        .face:nth-child(3) { transform: rotateX(90deg) translateZ(40px); } .face:nth-child(4) { transform: rotateX(-90deg) translateZ(40px); }
-        /* Rotations */
-        .r1{transform:rotateX(0) rotateY(0)} .r6{transform:rotateX(180deg)} .r2{transform:rotateY(-90deg)} .r5{transform:rotateY(90deg)} .r3{transform:rotateX(-90deg)} .r4{transform:rotateX(90deg)}
-
-        /* Card Zoom & Mortgage */
-        #card-ov { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 6000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .big-card { width: 300px; background: #fff; border-radius: 10px; overflow: hidden; animation: pop 0.4s; border: 4px solid #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .bc-head { padding: 20px; text-align: center; color: #fff; font-family: 'Rye'; font-size: 1.5rem; text-shadow: 1px 1px 0 #000; }
-        .bc-body { padding: 15px; font-size: 0.9rem; }
-        .bc-act { display: flex; gap: 10px; padding: 10px; border-top: 1px solid #ccc; justify-content: center; background: #eee; }
-
-        /* Victory */
-        #win-ov { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; color: #fff; text-align: center; }
-        .trophy { font-size: 8rem; animation: bounce 1s infinite; }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes pop { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
-        @keyframes bounce { 50% { transform: translateY(-20px); } }
-
-        @media (max-width: 900px) { body { flex-direction: column; } #sidebar { width: 100%; height: auto; order: 2; border-top: 8px solid var(--wood); border-left: none; } #game-stage { order: 1; } #board { transform: scale(0.65); } }
+        /* Animations */
+        @keyframes popIn { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
     </style>
 </head>
 <body>
 
-<div id="lobby">
-    <div class="lobby-box">
-        <h1 style="color:var(--p-red); font-size:2.5rem; margin:0; text-shadow:1px 1px #000;">RECIFE PLATINUM</h1>
-        <p>V11 - Edição Definitiva</p>
-        <input id="nick" placeholder="Seu Apelido" style="width:100%; padding:10px; border:2px solid #000; text-align:center; font-size:1.1rem;">
-        <div class="av-row">
-            <div class="av sel" onclick="selAv(this,'🦀')">🦀</div>
-            <div class="av" onclick="selAv(this,'🦈')">🦈</div>
-            <div class="av" onclick="selAv(this,'☂️')">☂️</div>
-            <div class="av" onclick="selAv(this,'☀️')">☀️</div>
-        </div>
-        <button class="btn on" style="width:100%; background:var(--p-yellow);" onclick="net.host()">CRIAR SALA</button>
-        <div style="margin:10px; font-weight:bold; color:#fff;">- OU -</div>
-        <input id="hid" placeholder="Código da Sala" style="width:100%; padding:10px; border:2px solid #000; text-align:center;">
-        <button class="btn on" style="width:100%; background:var(--p-green); color:#fff; margin-top:5px;" onclick="net.join()">ENTRAR</button>
+<div id="screen-lobby">
+    <h1 style="color:#fff; font-size:3rem; margin-bottom:20px; text-shadow: 4px 4px 0 #000;">RECIFE DE OURO</h1>
+    
+    <div class="estandarte-card">
+        <h2 style="color:var(--wood); margin:0;">CONCENTRAÇÃO</h2>
+        <p style="color:#666; font-size:0.9rem;">Insira seu nome para entrar no bloco</p>
         
-        <div id="wait" style="display:none; margin-top:20px; border-top:1px dashed #000; padding-top:10px;">
-            <h3>Sala: <span id="did" onclick="util.copy()" style="background:#fff; padding:5px; border:1px dashed #000; cursor:pointer;">...</span></h3>
-            <ul id="plist" style="list-style:none; padding:0; font-weight:bold;"></ul>
-            <button class="btn on" style="width:100%; background:var(--p-red); color:#fff;" onclick="net.start()">INICIAR JOGO</button>
+        <input id="p-name" class="input-recife" placeholder="Apelido do Folião" maxlength="12">
+        
+        <div id="lobby-controls">
+            <button class="btn-frevo bg-blue" onclick="net.host()">CRIAR NOVO BLOCO</button>
+            <p style="margin:10px; font-weight:bold; color:#aaa;">- OU -</p>
+            <input id="host-id" class="input-recife" placeholder="Código da Sala" style="font-size:0.9rem;">
+            <button class="btn-frevo bg-green" onclick="net.join()">ENTRAR NA FOLIA</button>
+        </div>
+
+        <div id="lobby-status" style="display:none; margin-top:20px; border-top: 2px dashed #ccc; padding-top:10px;">
+            <p style="font-weight:bold; color:var(--frevo-blue);">Sala: <span id="disp-id" onclick="util.copy()" style="background:#eee; padding:5px; cursor:pointer;">...</span></p>
+            <div id="player-list-area" style="min-height:50px;"></div>
+            <p id="host-msg" style="font-size:0.8rem; color:#d32f2f; display:none;">Aguardando o Dono da Sala iniciar...</p>
+            <button id="btn-start-phase" class="btn-frevo bg-red" style="display:none;" onclick="net.goToChars()">ABRIR ALAS (Escolher Peões)</button>
         </div>
     </div>
 </div>
 
-<div id="game-layout" style="display:flex; width:100%; height:100%; opacity:0; transition:1s;">
-    <div id="game-stage">
+<div id="screen-char">
+    <h1 style="color:var(--gold);">ESCOLHA SUA FANTASIA</h1>
+    <p>Quem será você no tabuleiro?</p>
+    
+    <div class="char-grid" id="char-grid">
+        </div>
+
+    <h2 id="status-char" style="color:#aaa;">Aguardando todos escolherem...</h2>
+    <button id="btn-start-game" class="btn-frevo bg-green" style="width:300px; display:none;" onclick="net.startGame()">TOCAR O FREVO! (Iniciar)</button>
+</div>
+
+<div id="game-layout">
+    <div id="board-viewport">
         <div id="board">
-            <div class="center">
-                <div class="bg-anim"></div>
-                <h1 style="z-index:2; color:var(--p-blue); text-shadow:2px 2px #fff; font-size:2.5rem; margin:0;">RECIFE</h1>
-                <div style="z-index:2; font-weight:bold; background:#fff; padding:2px 10px; border-radius:10px; border:2px solid #000; margin-top:5px;" id="weather">☀️ Sol</div>
+            <div style="grid-column:2/11; grid-row:2/11; background:#e1f5fe; border:5px solid var(--wood); display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                <h1 style="color:#0277bd; font-size:3rem; margin:0;">RECIFE</h1>
+                <div id="weather-badge" style="background:#fff; padding:5px; border:2px solid #000; border-radius:10px; font-weight:bold;">☀️ Sol</div>
             </div>
             </div>
     </div>
     
     <div id="sidebar">
-        <div class="hud-top">
-            <h2 style="margin:0; color:var(--p-red);">Pernambuco</h2>
-            <div class="cash-box" id="money">$1500</div>
+        <div style="display:flex; justify-content:space-between; border-bottom:2px dashed #000; padding-bottom:10px; margin-bottom:10px;">
+            <h2 style="margin:0; color:#d32f2f;">Pernambuco</h2>
+            <div id="my-cash" style="font-size:1.5rem; font-weight:900; color:#388e3c;">$1500</div>
         </div>
-        <div id="msg" style="background:#333; color:var(--p-yellow); padding:5px; text-align:center; border-radius:4px; font-weight:bold; margin-bottom:10px;">Aguardando...</div>
+        <div id="turn-msg" style="background:#333; color:#ffd700; text-align:center; padding:5px; border-radius:5px; font-weight:bold; margin-bottom:10px;">...</div>
         
-        <div class="btn-grid">
-            <button id="b-roll" class="btn" style="background:var(--p-yellow); grid-column:span 2;">🎲 ROLAR DADOS</button>
-            <button id="b-buy" class="btn" style="background:var(--p-green); color:#fff;">💰 COMPRAR</button>
-            <button id="b-auc" class="btn" style="background:var(--p-blue); color:#fff;">🔨 LEILOAR</button>
-            <button id="b-bail" class="btn" style="background:#78909c; color:#fff;">💸 SUBORNO</button>
-            <button id="b-end" class="btn" style="background:var(--p-red); color:#fff;">🛑 PASSAR</button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button id="b-roll" class="btn-game" style="background:#ffd700; color:#000;">🎲 ROLAR</button>
+            <button id="b-buy" class="btn-game" style="background:#43a047; color:#fff;">💰 COMPRAR</button>
+            <button id="b-end" class="btn-game" style="background:#d32f2f; color:#fff;">🛑 PASSAR</button>
         </div>
-
-        <div style="font-weight:bold; font-size:0.8rem;">Jogadores:</div>
-        <div id="phud" style="margin-bottom:10px;"></div>
-        
-        <div style="font-weight:bold; font-size:0.8rem;">Meus Imóveis (Clique p/ Hipotecar):</div>
-        <div id="deeds" style="flex:1; overflow-y:auto; background:#fff8e1; border:2px solid #ccc; padding:5px; font-size:0.8rem;"></div>
+        <div style="margin-top:20px; font-weight:bold;">Jogadores:</div>
+        <div id="hud-list"></div>
     </div>
-</div>
-
-<div id="dice-ov">
-    <div class="die" id="d1"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div>
-    <div class="die" id="d2"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div>
-</div>
-
-<div id="card-ov">
-    <div class="big-card" id="bc-wrap">
-        <div class="bc-head" id="bc-h">Nome</div>
-        <div class="bc-body" id="bc-b">Info</div>
-        <div class="bc-act" id="bc-a">
-            <button class="btn on" onclick="document.getElementById('card-ov').style.display='none'">FECHAR</button>
-        </div>
-    </div>
-</div>
-
-<div id="win-ov">
-    <div class="trophy">🏆</div>
-    <h1 style="font-size:3rem; color:var(--p-yellow);">REI DO RECIFE!</h1>
-    <h2 id="win-name">JOGADOR</h2>
-    <p>O dono da cidade toda.</p>
-    <button class="btn on" style="background:#fff; width:200px;" onclick="location.reload()">NOVO JOGO</button>
 </div>
 
 <script>
-/* DATA */
-const COLS={br:'#795548',lb:'#03a9f4',pk:'#e91e63',or:'#ff5722',rd:'#d32f2f',yl:'#fbc02d',gr:'#388e3c',bl:'#1565c0'};
-const BD=[
-    {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'br',n:'Aurora',p:60,r:[2,10,30]},{t:'ch',n:'Sorte'},{t:'pr',g:'br',n:'Imperador',p:60,r:[4,20,60]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô'},{t:'pr',g:'lb',n:'Varadouro',p:100,r:[6,30,90]},{t:'ch',n:'Revés'},{t:'pr',g:'lb',n:'Carmo',p:100,r:[6,30,90]},{t:'pr',g:'lb',n:'Alto da Sé',p:120,r:[8,40,100]},
-    {t:'jl',n:'Trânsito'}, {t:'pr',g:'pk',n:'Cordeiro',p:140,r:[10,50,150]},{t:'ut',n:'Neoenergia',p:150},{t:'pr',g:'pk',n:'Várzea',p:140,r:[10,50,150]},{t:'pr',g:'pk',n:'Iputinga',p:160,r:[12,60,180]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'or',n:'Torre',p:180,r:[14,70,200]},{t:'ch',n:'Sorte'},{t:'pr',g:'or',n:'Madalena',p:180,r:[14,70,200]},{t:'pr',g:'or',n:'Graças',p:200,r:[16,80,220]},
-    {t:'pk',n:'Jaqueira'}, {t:'pr',g:'rd',n:'Espinheiro',p:220,r:[18,90,250]},{t:'ch',n:'Revés'},{t:'pr',g:'rd',n:'Aflitos',p:220,r:[18,90,250]},{t:'pr',g:'rd',n:'Casa Forte',p:240,r:[20,100,300]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'yl',n:'Poço Panela',p:260,r:[22,110,330]},{t:'pr',g:'yl',n:'Apipucos',p:260,r:[22,110,330]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'yl',n:'Parnamirim',p:280,r:[24,120,360]},
-    {t:'gj',n:'Blitz!'}, {t:'pr',g:'gr',n:'Imbiribeira',p:300,r:[26,130,390]},{t:'pr',g:'gr',n:'Pina',p:300,r:[26,130,390]},{t:'ch',n:'Sorte'},{t:'pr',g:'gr',n:'Paiva',p:320,r:[28,150,450]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés'},{t:'pr',g:'bl',n:'Setúbal',p:350,r:[35,175,500]},{t:'tx',n:'Taxa Luxo',p:100},{t:'pr',g:'bl',n:'Boa Viagem',p:400,r:[50,200,600]}
+/* --- DADOS --- */
+const CHARACTERS = [
+    {id:'crab', icon:'🦀', name:'Caranguejo'},
+    {id:'shark', icon:'🦈', name:'Tubarão'},
+    {id:'umb', icon:'☂️', name:'Sombrinha'},
+    {id:'sun', icon:'☀️', name:'Sol'},
+    {id:'rooster', icon:'🐓', name:'Galo'},
+    {id:'drum', icon:'🥁', name:'Tambor'},
+    {id:'coco', icon:'🥥', name:'Coco'},
+    {id:'ursa', icon:'🐻', name:'La Ursa'}
 ];
-const SFX = { dice:new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'), cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'), victory:new Audio('https://upload.wikimedia.org/wikipedia/commons/6/6e/Frevo_-_Vassourinhas.ogg') };
-const play = (k) => { try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{});}catch(e){} };
-const speak = (t) => { if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';speechSynthesis.speak(u);} };
 
-/* STATE */
-let myId=null, hostConn=null, conns=[], isHost=false, me={n:'Folião',av:'🦀'};
-let state={pls:[], props:BD.map(()=>({o:null, mtg:false})), turn:0, rolled:false, doubles:0};
+const BOARD_DATA = [
+    {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'#795548',n:'Aurora',p:60}, {t:'ch',n:'Sorte'}, {t:'pr',g:'#795548',n:'Imperador',p:60}, {t:'tx',n:'IPTU',p:200}, {t:'rr',n:'Metrô'}, {t:'pr',g:'#03a9f4',n:'Varadouro',p:100}, {t:'ch',n:'Revés'}, {t:'pr',g:'#03a9f4',n:'Carmo',p:100}, {t:'pr',g:'#03a9f4',n:'Alto da Sé',p:120},
+    {t:'jl',n:'Trânsito'}, {t:'pr',g:'#e91e63',n:'Cordeiro',p:140}, {t:'ut',n:'Neoenergia',p:150}, {t:'pr',g:'#e91e63',n:'Várzea',p:140}, {t:'pr',g:'#e91e63',n:'Iputinga',p:160}, {t:'rr',n:'Metrô Oeste'}, {t:'pr',g:'#ff5722',n:'Torre',p:180}, {t:'ch',n:'Sorte'}, {t:'pr',g:'#ff5722',n:'Madalena',p:180}, {t:'pr',g:'#ff5722',n:'Graças',p:200},
+    {t:'pk',n:'Jaqueira'}, {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220}, {t:'ch',n:'Revés'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220}, {t:'pr',g:'#d32f2f',n:'Casa Forte',p:240}, {t:'rr',n:'Via Mangue'}, {t:'pr',g:'#fbc02d',n:'Poço',p:260}, {t:'pr',g:'#fbc02d',n:'Apipucos',p:260}, {t:'ut',n:'Compesa',p:150}, {t:'pr',g:'#fbc02d',n:'Parnamirim',p:280},
+    {t:'gj',n:'Blitz!'}, {t:'pr',g:'#388e3c',n:'Imbiribeira',p:300}, {t:'pr',g:'#388e3c',n:'Pina',p:300}, {t:'ch',n:'Sorte'}, {t:'pr',g:'#388e3c',n:'Paiva',p:320}, {t:'rr',n:'Aeroporto'}, {t:'ch',n:'Revés'}, {t:'pr',g:'#1565c0',n:'Setúbal',p:350}, {t:'tx',n:'Taxa',p:100}, {t:'pr',g:'#1565c0',n:'Boa Viagem',p:400}
+];
 
-/* NET */
-const net = {
-    peer: new Peer(null,{debug:1}),
-    init:()=>{ net.peer.on('open',id=>myId=id); net.peer.on('connection',c=>{ if(isHost){c.on('data',d=>net.hostH(d,c)); conns.push(c);} }); },
-    host:()=>{ me.n=document.getElementById('nick').value||"Mestre"; isHost=true; state.pls.push({id:myId,...me,m:1500,p:0,j:false,tj:0,out:false,c:'#d32f2f'}); ui.wait(); },
-    join:()=>{ me.n=document.getElementById('nick').value||"Guest"; const id=document.getElementById('hid').value; if(!id)return; hostConn=net.peer.connect(id); hostConn.on('open',()=>{hostConn.send({t:'J',...me}); document.querySelector('.lobby-box').innerHTML="<h3>Conectado! Aguardando...</h3>";}); hostConn.on('data',d=>net.cliH(d)); },
-    start:()=>{ if(state.pls.length<2)return alert("Mínimo 2!"); net.bc({t:'ST',s:state}); game.init(state); },
-    hostH:(d,c)=>{
-        if(d.t==='J'){ if(!state.pls.find(p=>p.id===c.peer)){ const cl=['#1976d2','#388e3c','#fbc02d','#7b1fa2']; state.pls.push({id:c.peer,n:d.n,av:d.av,m:1500,p:0,j:false,tj:0,out:false,c:cl[state.pls.length%4]}); ui.updL(state.pls); net.bc({t:'L',l:state.pls}); speak(`${d.n} entrou!`); } }
-        else if(d.t==='A') game.proc(d);
-        else if(d.t==='MTG') game.mortgage(d.idx);
-    },
-    cliH:(d)=>{
-        if(d.t==='L') ui.updL(d.l);
-        else if(d.t==='ST') game.init(d.s);
-        else if(d.t==='S') { state=d.s; ui.render(); }
-        else if(d.t==='AN') ui.anim(d);
-        else if(d.t==='WIN') ui.win(d.w);
-        else if(d.t==='SC') ui.card(d.i);
-    },
-    bc:(m)=>{ if(isHost){conns.forEach(c=>c.send(m)); net.cliH(m);} else hostConn.send(m); }
+/* --- ESTADO --- */
+let myId = null, hostConn = null, conns = [], isHost = false;
+let me = { name: "Folião", char: null };
+let state = {
+    phase: 'LOBBY', // LOBBY, CHARS, GAME
+    players: [], // {id, name, char, ready, money, pos...}
+    turn: 0,
+    rolled: false
 };
 
-/* GAME ENGINE */
-const game = {
-    init:(s)=>{ state=s; document.getElementById('lobby').style.display='none'; document.getElementById('game-layout').style.opacity=1; ui.board(); ui.binds(); ui.render(); speak("Bem vindos ao Recife!"); },
-    act:(a)=>{ const d={t:'A',a,pid:myId}; if(isHost)game.proc(d); else hostConn.send(d); },
-    proc:(d)=>{
-        const idx = state.pls.findIndex(p=>p.id===d.pid), p=state.pls[idx];
-        if(state.turn!==idx || p.out) return;
-
-        if(d.a==='roll'){
-            if(state.rolled)return;
-            const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
-            net.bc({t:'AN',k:'dice',d1,d2});
-            setTimeout(()=>{
-                let mv=d1+d2;
-                if(p.j){ if(d1===d2){p.j=false;game.move(p,mv);state.rolled=true;} else{p.tj++; if(p.tj>=3){p.m-=50;p.j=false;game.move(p,mv);} state.rolled=true;} }
-                else { if(d1===d2)state.doubles++; else state.doubles=0; if(state.doubles>=3){p.j=true;p.p=10;} else {game.move(p,mv); if(d1!==d2)state.rolled=true;} }
-                net.bc({t:'S',s:state});
-            },2500);
-        }
-        else if(d.a==='buy'){ const s=BD[p.p]; if(p.m>=s.p && state.props[p.p].o===null){p.m-=s.p; state.props[p.p].o=idx; play('cash'); net.bc({t:'S',s:state});} }
-        else if(d.a==='end'){
-            // Check Bankruptcies
-            state.pls.forEach((pl,i)=>{ if(pl.m<0 && !pl.out){ pl.out=true; state.props.forEach(pr=>{if(pr.o===i){pr.o=null;pr.mtg=false;}}); speak(`${pl.n} faliu!`); } });
-            // Check Win
-            const active = state.pls.filter(pl=>!pl.out);
-            if(active.length===1){ net.bc({t:'WIN',w:active[0]}); return; }
-            // Next
-            state.turn=(state.turn+1)%state.pls.length; while(state.pls[state.turn].out)state.turn=(state.turn+1)%state.pls.length;
-            state.rolled=false; state.doubles=0;
-            net.bc({t:'S',s:state});
+/* --- REDE --- */
+const net = {
+    peer: new Peer(null, {debug:1}),
+    init: () => {
+        net.peer.on('open', id => myId = id);
+        net.peer.on('connection', c => {
+            if(isHost) {
+                c.on('open', () => {
+                    // Send immediate welcome to ensure connection
+                    c.send({type:'WELCOME', list:state.players}); 
+                });
+                c.on('data', d => net.handleHost(d, c));
+                conns.push(c);
+            }
+        });
+        net.peer.on('error', e => alert("Erro Rede: "+e));
+    },
+    host: () => {
+        const n = document.getElementById('p-name').value.trim();
+        if(!n) return alert("Digite seu nome!");
+        if(!myId) return alert("Gerando ID...");
+        isHost = true;
+        me.name = n;
+        state.players.push({id:myId, name:n, char:null, money:1500, pos:0});
+        ui.showLobbyWait();
+    },
+    join: () => {
+        const n = document.getElementById('p-name').value.trim();
+        const id = document.getElementById('host-id').value.trim();
+        if(!n || !id) return alert("Preencha nome e código!");
+        me.name = n;
+        hostConn = net.peer.connect(id);
+        hostConn.on('open', () => {
+            hostConn.send({type:'JOIN', name:n});
+            document.getElementById('lobby-controls').innerHTML = "<h3>Conectando...</h3>";
+        });
+        hostConn.on('data', d => net.handleClient(d));
+    },
+    // Transição LOBBY -> CHARS
+    goToChars: () => {
+        if(state.players.length < 2) return alert("Precisa de pelo menos 2 jogadores!"); // Aumente para 8 se quiser testar full
+        net.bc({type:'PHASE', p:'CHARS'});
+        ui.showChars();
+    },
+    // Transição CHARS -> GAME
+    startGame: () => {
+        if(state.players.some(p => !p.char)) return alert("Todos precisam escolher!");
+        net.bc({type:'PHASE', p:'GAME', state:state}); // Send full state to sync
+        ui.showGame();
+    },
+    // Handlers
+    handleHost: (d, c) => {
+        if(d.type === 'JOIN') {
+            if(!state.players.find(p => p.id === c.peer)) {
+                state.players.push({id:c.peer, name:d.name, char:null, money:1500, pos:0});
+                net.bc({type:'UPDATE_LIST', list:state.players}); // Sync everyone
+                ui.renderLobbyList(state.players);
+            }
+        } else if (d.type === 'PICK_CHAR') {
+            const p = state.players.find(x => x.id === d.pid);
+            // Check if taken
+            if(!state.players.find(x => x.char === d.char)) {
+                p.char = d.char;
+                net.bc({type:'UPDATE_LIST', list:state.players});
+                ui.renderCharGrid();
+            }
         }
     },
-    move:(p,steps)=>{
-        p.p+=steps; if(p.p>=40){p.p-=40;p.m+=200;}
-        // Auto Cam
-        ui.cam(p.p);
-        const s=BD[p.p], pr=state.props[p.p];
-        if(s.t==='pr' || s.t==='rr' || s.t==='ut') net.bc({t:'SC',i:p.p}); // Global Card
-        if(pr.o!==null && pr.o!==state.pls.indexOf(p) && !pr.mtg){ // Rent logic simplified
-            let r=s.r?s.r[0]:50; p.m-=r; state.pls[pr.o].m+=r; play('cash');
+    handleClient: (d) => {
+        if(d.type === 'WELCOME' || d.type === 'UPDATE_LIST') {
+            state.players = d.list;
+            if(state.phase === 'LOBBY') ui.renderLobbyList(d.list);
+            if(state.phase === 'CHARS') ui.renderCharGrid();
+        } else if (d.type === 'PHASE') {
+            state.phase = d.p;
+            if(d.p === 'CHARS') ui.showChars();
+            if(d.p === 'GAME') { state = d.state; ui.showGame(); }
         }
-        if(s.t==='tx') p.m-=s.p;
-        if(['Boa Viagem','Pina'].some(x=>s.n.includes(x))&&Math.random()<0.3){p.m-=100;speak("Tubarão!");}
     },
-    reqMtg:(i)=>{ if(isHost) game.mortgage(i); else hostConn.send({t:'MTG',idx:i}); },
-    mortgage:(i)=>{
-        const pr=state.props[i];
-        if(pr.mtg){ // Unmortgage
-            const cost = Math.round(BD[i].p*0.6); // 10% interest
-            if(state.pls[pr.o].m >= cost){ state.pls[pr.o].m-=cost; pr.mtg=false; }
-        } else { // Mortgage
-            state.pls[pr.o].m += Math.round(BD[i].p*0.5); pr.mtg=true;
+    bc: (msg) => {
+        if(isHost) {
+            conns.forEach(c => c.send(msg));
+            // Host process local
+            if(msg.type === 'UPDATE_LIST') { /* already updated state */ }
+        } else {
+            hostConn.send(msg);
         }
-        net.bc({t:'S',s:state});
     }
 };
 
-/* UI */
+/* --- UI --- */
 const ui = {
-    board:()=>{
-        const b=document.getElementById('board');
-        BD.forEach((s,i)=>{
-            const d=document.createElement('div'); d.className='space'; d.id=`s${i}`;
-            let r,c; if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
-            d.style.gridRow=r; d.style.gridColumn=c;
-            d.innerHTML = s.t==='pr'?`<div class="color-bar" style="background:${COLS[s.g]}"></div><div class="space-name">${s.n}<br>$${s.p}</div>` : `<div class="space-name">${s.n}</div>`;
+    // 1. Lobby UI
+    showLobbyWait: () => {
+        document.getElementById('lobby-controls').style.display = 'none';
+        document.getElementById('lobby-status').style.display = 'block';
+        document.getElementById('disp-id').innerText = myId;
+        document.getElementById('btn-start-phase').style.display = 'block';
+        ui.renderLobbyList(state.players);
+    },
+    renderLobbyList: (list) => {
+        const area = document.getElementById('player-list-area');
+        area.innerHTML = list.map(p => `<span class="player-tag">${p.name}</span>`).join('');
+        // Se for cliente, mostrar waiting msg
+        if(!isHost) {
+            document.getElementById('lobby-controls').style.display = 'none';
+            document.getElementById('lobby-status').style.display = 'block';
+            document.getElementById('host-msg').style.display = 'block';
+            document.getElementById('disp-id').innerText = "Conectado!";
+        }
+    },
+
+    // 2. Char Select UI
+    showChars: () => {
+        document.getElementById('screen-lobby').style.display = 'none';
+        document.getElementById('screen-char').style.display = 'flex';
+        ui.renderCharGrid();
+    },
+    renderCharGrid: () => {
+        const grid = document.getElementById('char-grid');
+        grid.innerHTML = '';
+        CHARACTERS.forEach(c => {
+            const owner = state.players.find(p => p.char === c.id);
+            const isTaken = !!owner;
+            const isMe = owner && owner.id === myId;
+            
+            let html = `
+            <div class="char-option ${isTaken ? 'taken' : ''} ${isMe ? 'selected' : ''}" 
+                 onclick="${!isTaken ? `ui.pick('${c.id}')` : ''}">
+                <span class="char-emoji">${c.icon}</span>
+                <div class="char-name">${c.name}</div>
+                ${isTaken ? `<div class="char-owner">${owner.name}</div>` : ''}
+            </div>`;
+            grid.innerHTML += html;
+        });
+
+        // Check start condition
+        const allReady = state.players.every(p => p.char);
+        document.getElementById('status-char').innerText = allReady ? "Todos prontos!" : `Aguardando escolhas (${state.players.filter(p=>p.char).length}/${state.players.length})`;
+        if(isHost && allReady) document.getElementById('btn-start-game').style.display = 'block';
+    },
+    pick: (charId) => {
+        if(isHost) {
+            // Host logic direct
+            const meP = state.players.find(p => p.id === myId);
+            meP.char = charId;
+            net.bc({type:'UPDATE_LIST', list:state.players});
+            ui.renderCharGrid();
+        } else {
+            hostConn.send({type:'PICK_CHAR', pid:myId, char:charId});
+        }
+    },
+
+    // 3. Game UI
+    showGame: () => {
+        document.getElementById('screen-char').style.display = 'none';
+        document.getElementById('game-layout').classList.add('active');
+        ui.genBoard();
+        ui.updateGame();
+        confetti(); // Celebration start
+    },
+    genBoard: () => {
+        const b = document.getElementById('board');
+        BOARD_DATA.forEach((s, i) => {
+            const d = document.createElement('div');
+            d.className = 'space'; d.id = `s${i}`;
+            // Spiral logic
+            let r, c;
+            if (i<=10) { r=11; c=11-i; }
+            else if (i<=20) { r=11-(i-10); c=1; }
+            else if (i<=30) { r=1; c=1+(i-20); }
+            else { r=1+(i-30); c=11; }
+            d.style.gridRow = r; d.style.gridColumn = c;
+            
+            d.innerHTML = s.t === 'pr' 
+                ? `<div class="color-bar" style="background:${s.g}"></div><div>${s.n}<br>$${s.p}</div>` 
+                : `<div style="margin:auto">${s.n}</div>`;
             b.appendChild(d);
         });
     },
-    render:()=>{
-        const me=state.pls.find(p=>p.id===myId), trn=state.pls[state.turn], isTurn=trn.id===myId;
-        document.getElementById('money').innerText = `$${me.m}`;
-        document.getElementById('msg').innerText = `Vez de: ${trn.n}`;
-        
-        ui.btn('b-roll', isTurn && !state.rolled);
-        const s=BD[me.p];
-        ui.btn('b-buy', isTurn && state.rolled && s.t==='pr' && state.props[me.p].o===null);
-        ui.btn('b-end', isTurn && state.rolled);
+    updateGame: () => {
+        // Render players on list
+        const hud = document.getElementById('hud-list');
+        hud.innerHTML = state.players.map((p, i) => {
+            const charObj = CHARACTERS.find(c => c.id === p.char);
+            return `<div style="padding:5px; background:${state.turn===i?'#fff9c4':'#fff'}; border:1px solid #ccc; margin-bottom:5px;">
+                ${charObj.icon} ${p.name} ($${p.money})
+            </div>`;
+        }).join('');
 
-        // Tokens
-        document.querySelectorAll('.token').forEach(e=>e.remove());
-        state.pls.forEach((p,i)=>{
-            if(p.out)return;
-            const t=document.createElement('div'); t.className=`token ${state.turn===i&&state.rolled?'':'jump'}`; t.innerText=p.av;
-            const sp=document.getElementById(`s${p.p}`), br=document.getElementById('board').getBoundingClientRect(), sr=sp.getBoundingClientRect();
-            t.style.left=(sr.left-br.left+15+(i*5))+'px'; t.style.top=(sr.top-br.top+10+(i*5))+'px';
+        // Render Tokens on Board
+        document.querySelectorAll('.token').forEach(e => e.remove());
+        state.players.forEach((p, i) => {
+            const charObj = CHARACTERS.find(c => c.id === p.char);
+            const t = document.createElement('div');
+            t.className = 'token';
+            t.innerText = charObj.icon;
+            
+            // Positioning (Simple logic)
+            const space = document.getElementById(`s${p.pos}`);
+            const br = document.getElementById('board').getBoundingClientRect();
+            const sr = space.getBoundingClientRect();
+            
+            // Offset to not overlap
+            const offX = (i % 3) * 10;
+            const offY = Math.floor(i / 3) * 10;
+
+            t.style.left = (sr.left - br.left + 10 + offX) + 'px';
+            t.style.top = (sr.top - br.top + 10 + offY) + 'px';
             document.getElementById('board').appendChild(t);
         });
-
-        // Props Styling & Sidebar List
-        const dl=document.getElementById('deeds'); dl.innerHTML='';
-        state.props.forEach((pr,i)=>{
-            const sp=document.getElementById(`s${i}`);
-            if(pr.o!==null) sp.style.border = `4px solid ${state.pls[pr.o].c}`;
-            if(pr.mtg) sp.classList.add('mortgaged'); else sp.classList.remove('mortgaged');
-            // List my props
-            if(state.pls[pr.o]?.id === myId){
-                dl.innerHTML += `<div style="padding:5px; border-bottom:1px solid #ccc; cursor:pointer; background:${pr.mtg?'#ddd':'#fff'}" onclick="game.reqMtg(${i})">
-                    <span style="color:${COLS[BD[i].g]}">■</span> ${BD[i].n} (${pr.mtg?'DESHIPOTECAR':'HIPOTECAR'})
-                </div>`;
-            }
-        });
-        
-        // Players Hud
-        document.getElementById('phud').innerHTML = state.pls.map((p,i)=>`<div style="color:${p.c}; font-weight:${state.turn===i?'bold':'normal'}; text-decoration:${p.out?'line-through':''};">${p.av} ${p.n}: ${p.id===myId?'$'+p.m:'???'}</div>`).join('');
-    },
-    anim:(d)=>{
-        if(d.k==='dice'){
-            const s=document.getElementById('dice-ov'); s.style.display='flex';
-            const c1=document.getElementById('d1'), c2=document.getElementById('d2');
-            play('dice'); c1.className='die'; c2.className='die'; void c1.offsetWidth;
-            const map=['r1','r2','r3','r4','r5','r6'];
-            setTimeout(()=>{ c1.classList.add(map[d.d1-1]); c2.classList.add(map[d.d2-1]); },100);
-            setTimeout(()=>s.style.display='none', 2500);
-        }
-    },
-    card:(i)=>{
-        const s=BD[i], ov=document.getElementById('card-ov');
-        document.getElementById('bc-h').innerText = s.n; document.getElementById('bc-h').style.background = COLS[s.g]||'#333';
-        document.getElementById('bc-b').innerText = `Preço: $${s.p} | Aluguel Base: $${s.r?s.r[0]:50}`;
-        ov.style.display='flex';
-        // Auto hide if not buying context, but button allows manual close
-    },
-    win:(w)=>{
-        document.getElementById('win-ov').style.display='flex';
-        document.getElementById('win-name').innerText = w.n;
-        play('victory');
-        confetti({particleCount:200, spread:70, origin:{y:0.6}});
-        setInterval(()=>confetti({particleCount:100, spread:100, origin:{y:0.6}}), 2000);
-    },
-    cam:(idx)=>{
-        // Smart Cam Logic: Rotate board to face active player pos
-        // Simplified for V11: just ensure board is centered or apply mild rotation based on quadrant
-        const b=document.getElementById('board');
-        let rX=25, rZ=0;
-        if(idx>10 && idx<=20) rZ=90; else if(idx>20 && idx<=30) rZ=180; else if(idx>30) rZ=-90;
-        // b.style.transform = `rotateX(${rX}deg) rotateZ(${rZ}deg) scale(0.85)`; // Optional dynamic cam
-    },
-    btn:(id,on)=>{const b=document.getElementById(id); if(on){b.classList.add('on');b.disabled=false;}else{b.classList.remove('on');b.disabled=true;}},
-    wait:()=>{document.querySelector('.lobby-box').innerHTML=`<h3>ID: <span id="did" onclick="util.copy()">${myId}</span></h3><ul><li id="ls">...</li></ul><button class="btn on" style="background:var(--p-red);color:#fff;" onclick="net.start()">INICIAR</button>`;},
-    updL:(l)=>{if(document.getElementById('ls'))document.getElementById('ls').innerHTML=l.map(p=>p.n).join(', ');},
-    waitCli:()=>{document.querySelector('.lobby-box').innerHTML=`<h3>Conectado!</h3><p>Aguardando Mestre...</p>`;}
+    }
 };
 
-/* UTIL */
-const util={copy:()=>{navigator.clipboard.writeText(myId); alert("Copiado!");}};
-function selAv(e,a){document.querySelectorAll('.av').forEach(x=>x.classList.remove('sel'));e.classList.add('sel');me.av=a;}
+const util = { copy: () => { navigator.clipboard.writeText(myId); alert("Copiado!"); } };
 
+// Initialize
 net.init();
+
 </script>
 </body>
 </html>
