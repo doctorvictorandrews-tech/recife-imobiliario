@@ -3,127 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife V33: Tubarão & Hipoteca</title>
+    <title>Recife V35: O Leão do Norte</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --wood-dark: #3e2723; --paper: #fff8e1; --gold: #ffca28;
             --frevo-blue: #0288d1; --frevo-red: #c62828; --frevo-green: #2e7d32;
+            --tex-wood: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { 
             margin: 0; font-family: 'Poppins', sans-serif; 
-            background: radial-gradient(circle at center, #29b6f6, #01579b);
+            background: radial-gradient(circle at center, #4fc3f7, #0277bd);
             height: 100vh; overflow: hidden; display: flex; flex-direction: column; 
         }
         
         /* TELAS */
-        #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .card-menu { background: var(--paper); width: 90%; max-width: 500px; padding: 40px; border: 10px solid var(--wood-dark); border-radius: 20px; text-align: center; box-shadow: 0 0 50px #000; animation: popIn 0.5s; }
-        .btn-big { width: 100%; padding: 20px; margin-top: 20px; border: 3px solid #000; border-radius: 50px; font-size: 1.5rem; font-weight: 900; background: var(--frevo-blue); color: white; font-family: 'Rye'; cursor: pointer; transition: 0.1s; }
-        .btn-big:active { transform: translateY(4px); }
+        #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .card-menu { 
+            background: var(--paper); width: 90%; max-width: 500px; padding: 40px; 
+            border: 12px solid var(--wood-dark); border-radius: 15px; text-align: center; 
+            box-shadow: 0 0 60px #000; position: relative; 
+            background-image: var(--tex-wood);
+        }
+        
+        .btn-big { 
+            width: 100%; padding: 15px; margin-top: 20px; border: 4px solid #000; border-radius: 50px; 
+            font-size: 1.4rem; font-weight: 900; background: var(--frevo-blue); color: white; 
+            font-family: 'Rye'; cursor: pointer; transition: 0.1s; box-shadow: 0 8px 0 #000;
+        }
+        .btn-big:active { transform: translateY(6px); box-shadow: 0 2px 0 #000; }
+
+        .sel-box label { font-family: 'Rye'; font-size: 1.2rem; }
+        select { padding: 10px; font-size: 1.1rem; border: 2px solid #000; border-radius: 5px; background: #fff; width: 100%; margin-top: 5px; font-family: 'Rye'; }
 
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
-        .char-opt { border: 2px solid #ccc; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; background:rgba(255,255,255,0.1); }
-        .char-opt:hover { background: #fff; transform: scale(1.1); color: #000; }
+        .char-opt { border: 2px solid #aaa; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.5); }
+        .char-opt:hover { background: #fff; transform: scale(1.1); border-color: #000; }
 
         /* JOGO */
         #game-stage { display: none; width: 100%; height: 100%; }
         #game-stage.active { display: flex; }
 
-        #viewport { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1200px; overflow: hidden; }
+        #viewport { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1200px; overflow: hidden; position: relative; }
+        
+        /* AMBIENTE VIVO */
+        .cloud { position: absolute; font-size: 5rem; opacity: 0.8; animation: floatCloud 60s linear infinite; pointer-events: none; }
+        @keyframes floatCloud { from { left: -20%; } to { left: 120%; } }
+
         #board-container { transform-style: preserve-3d; transition: transform 1s; }
         
         #board {
             display: grid; grid-template-columns: repeat(11, 90px); grid-template-rows: repeat(11, 90px);
-            background: #f5f5f5; border: 20px solid var(--wood-dark); border-radius: 15px;
-            transform: rotateX(35deg) scale(0.9); transform-style: preserve-3d;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.6); position: relative;
-            background-image: url('https://www.transparenttextures.com/patterns/white-brick-wall.png');
+            background: #f5f5f5; border: 30px solid var(--wood-dark); border-radius: 20px;
+            transform: rotateX(40deg) scale(0.85); transform-style: preserve-3d;
+            box-shadow: 0 60px 100px rgba(0,0,0,0.8); position: relative;
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
         }
 
         .space { 
-            border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.65rem; text-align: center; 
+            border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.6rem; text-align: center; 
             position: relative; display: flex; flex-direction: column; font-weight: bold; backface-visibility: hidden;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
         }
-        .space.mortgaged { filter: grayscale(1); background: #ddd; }
-        .space.mortgaged::after { content:'🚫'; position:absolute; font-size:2rem; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.5; }
-        
-        .color-strip { height: 15px; border-bottom: 2px solid #333; }
+        .color-strip { height: 20px; border-bottom: 2px solid #333; }
+        .sp-icon { font-size: 1.8rem; margin-top: 2px; text-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
         .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; }
-        .sp-price { font-size: 0.7rem; color: #666; background: #eee; border-top: 1px solid #ccc; }
+        .sp-price { font-size: 0.7rem; color: #333; background: #eee; border-top: 1px solid #ccc; font-family: 'Rye'; padding: 2px 0; }
 
-        /* TOKEN */
-        .token { 
-            width: 40px; height: 40px; position: absolute; z-index: 100; font-size: 2.5rem; 
-            text-align: center; transition: all 0.3s; transform-origin: bottom center; 
-            filter: drop-shadow(0 5px 2px rgba(0,0,0,0.5)); pointer-events: none;
+        /* DECK 3D NO CENTRO */
+        .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; display: flex; justify-content: center; align-items: center; }
+        .deck-pile {
+            position: absolute; width: 70px; height: 100px; background: #fff; 
+            border: 2px solid #333; border-radius: 5px; transform: rotate(-10deg) translateZ(2px);
+            background-image: repeating-linear-gradient(45deg, #c62828 0, #c62828 10px, #fff 10px, #fff 12px);
+            box-shadow: 5px 5px 0 #333, 0 0 20px rgba(0,0,0,0.2); cursor: pointer;
         }
+        .deck-pile:hover { transform: rotate(-10deg) translateZ(10px); }
+
+        /* PEÕES */
+        .token { 
+            width: 40px; height: 40px; position: absolute; z-index: 100; font-size: 3rem; 
+            text-align: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom center; 
+            filter: drop-shadow(0 8px 4px rgba(0,0,0,0.6)); pointer-events: none;
+        }
+
+        /* CONSTRUÇÕES */
+        .build-area { position: absolute; top: -15px; width: 100%; display: flex; justify-content: center; gap: 2px; transform-style: preserve-3d; }
+        .house-3d { width: 12px; height: 12px; background: var(--frevo-green); border: 1px solid #000; transform: translateZ(5px); box-shadow: 2px 2px 4px rgba(0,0,0,0.4); }
+        .hotel-3d { width: 22px; height: 22px; background: var(--frevo-red); border: 1px solid #000; transform: translateZ(12px); box-shadow: 4px 4px 8px rgba(0,0,0,0.5); }
 
         /* SIDEBAR */
         #sidebar { 
-            width: 380px; background: var(--paper); border-left: 10px solid var(--wood-dark); 
-            display: flex; flex-direction: column; padding: 15px; z-index: 200; box-shadow: -10px 0 50px #000; 
+            width: 400px; background: var(--paper); border-left: 12px solid var(--wood-dark); 
+            display: flex; flex-direction: column; padding: 20px; z-index: 200; box-shadow: -15px 0 60px #000; 
+            background-image: var(--tex-wood);
         }
-        .hud-header { text-align: center; border-bottom: 2px dashed #999; padding-bottom: 10px; margin-bottom: 10px; }
-        .turn-badge { background: #333; color: var(--gold); padding: 5px 15px; border-radius: 20px; font-weight: bold; font-family: 'Rye'; }
+        .hud-header { text-align: center; border-bottom: 2px dashed #5d4037; padding-bottom: 15px; margin-bottom: 15px; }
         
-        .p-stat { display: flex; justify-content: space-between; padding: 8px; background: #fff; border: 1px solid #ccc; margin-bottom: 5px; border-radius: 5px; }
-        .p-stat.active { background: #e3f2fd; border-left: 5px solid var(--frevo-blue); transform: scale(1.02); }
+        .p-stat { 
+            display: flex; justify-content: space-between; padding: 10px; background: #fff; 
+            border: 2px solid #8d6e63; margin-bottom: 8px; border-radius: 8px; align-items: center; 
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+        }
+        .p-stat.active { background: #fff9c4; border-color: var(--gold); transform: scale(1.02); }
 
         .btn-game { 
-            padding: 15px; width: 100%; margin-bottom: 8px; border: 3px solid #000; border-radius: 50px; 
-            font-family: 'Rye'; cursor: pointer; color: white; transition: 0.1s; position: relative;
-            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            padding: 15px; width: 100%; margin-bottom: 10px; border: 3px solid #000; border-radius: 50px; 
+            font-family: 'Rye'; cursor: pointer; color: white; transition: 0.1s; position: relative; 
+            font-size: 1rem; box-shadow: 0 6px 0 rgba(0,0,0,0.3); text-transform: uppercase;
         }
-        .btn-game:disabled { background: #ccc !important; cursor: not-allowed; opacity: 0.6; box-shadow: none; transform: none; }
-        .btn-game:active { transform: translateY(4px); box-shadow: none; }
+        .btn-game:disabled { background: #999 !important; cursor: not-allowed; opacity: 0.7; box-shadow: none; transform: translateY(6px); }
+        .btn-game:active { transform: translateY(6px); box-shadow: 0 0 0; }
 
         /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: flex; justify-content: center; align-items: center; }
         
+        /* CARD SORTE/REVES 3D */
+        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; }
+        .card-flip { 
+            width: 280px; height: 400px; position: relative; transform-style: preserve-3d; 
+            transition: transform 0.8s; box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+        }
+        .card-flip.flipped { transform: rotateY(180deg); }
+        .cf-face {
+            position: absolute; inset: 0; backface-visibility: hidden; border-radius: 15px; border: 6px solid #3e2723;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; background: #fff;
+        }
+        .cf-back { 
+            background-image: repeating-linear-gradient(45deg, #b71c1c 0, #b71c1c 10px, #fff 10px, #fff 12px); 
+            transform: rotateY(0deg); font-size: 4rem; color: #3e2723; text-shadow: 2px 2px 0 #fff; 
+        }
+        .cf-front { transform: rotateY(180deg); background: var(--paper); }
+
+        /* PROP CARD */
         .prop-card-3d { 
-            width: 320px; background: #fff; border: 8px solid var(--wood-dark); padding: 0; 
-            text-align: center; pointer-events: auto; display: none; box-shadow: 0 30px 60px #000; 
+            width: 360px; background: #fff; border: 10px solid var(--wood-dark); padding: 0; 
+            text-align: center; pointer-events: auto; display: none; box-shadow: 0 50px 100px #000; 
             animation: popIn 0.3s; border-radius: 15px; overflow: hidden; font-family: 'Poppins';
         }
-        .pc-head { background: #333; color: #fff; padding: 15px; font-family: 'Rye'; font-size: 1.5rem; text-shadow: 2px 2px 0 #000; position: relative; }
-        .pc-head.mortgaged-header { background: #555; text-decoration: line-through; }
+        .pc-head { background: var(--frevo-blue); color: #fff; padding: 15px; font-family: 'Rye'; font-size: 1.4rem; text-shadow: 2px 2px 0 #000; border-bottom: 4px solid #000; }
+        .pc-head.mortgaged { background: #555; text-decoration: line-through; }
         .pc-body { padding: 15px; background: #fafafa; }
         
-        /* SHARK & GALO ANIMATION */
-        .shark-fin {
-            position: fixed; bottom: -100px; right: -100px; font-size: 10rem; z-index: 6000;
-            animation: sharkAttack 3s linear forwards; display: none;
-        }
-        @keyframes sharkAttack {
-            0% { right: -20%; bottom: 10%; transform: rotate(10deg); }
-            50% { right: 50%; bottom: 20%; transform: rotate(0deg); }
-            100% { right: 120%; bottom: 10%; transform: rotate(-10deg); }
-        }
+        .rent-table { width: 100%; font-size: 0.85rem; text-align: left; margin: 15px 0; border-collapse: collapse; }
+        .rent-table td { border-bottom: 1px dashed #ccc; padding: 4px 0; }
+        .rent-table td:last-child { text-align: right; font-weight: bold; }
 
-        .galo-giant {
-            position: fixed; bottom: -300px; left: 50%; transform: translateX(-50%); 
-            font-size: 15rem; z-index: 6000; display: none;
-            animation: galoRise 4s ease-in-out forwards;
-        }
-        @keyframes galoRise {
-            0% { bottom: -300px; } 20% { bottom: 0px; transform: translateX(-50%) rotate(5deg); }
-            80% { bottom: 0px; transform: translateX(-50%) rotate(-5deg); } 100% { bottom: -300px; }
-        }
-
-        /* DADOS */
-        .dice-stage { position: absolute; display: flex; gap: 40px; pointer-events: none; opacity: 0; transition: 0.3s; top: 30%; }
+        /* DADOS 3D */
+        .dice-stage { position: absolute; display: flex; gap: 50px; pointer-events: none; opacity: 0; transition: 0.2s; top: 30%; }
         .dice-stage.active { opacity: 1; }
-        .cube { width: 80px; height: 80px; position: relative; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.1,0.9,0.2,1); }
-        .face { position: absolute; inset: 0; background: #fff; border: 4px solid #000; border-radius: 12px; display: grid; place-items: center; font-size: 2.5rem; font-weight: bold; }
-        .f1{transform:translateZ(40px)} .f6{transform:rotateX(180deg) translateZ(40px)}
-        .f2{transform:rotateY(-90deg) translateZ(40px)} .f5{transform:rotateY(90deg) translateZ(40px)}
-        .f3{transform:rotateX(-90deg) translateZ(40px)} .f4{transform:rotateX(90deg) translateZ(40px)}
-        .r1{transform:rotateX(0) rotateY(0)} .r6{transform:rotateX(180deg)} .r2{transform:rotateY(90deg)} .r5{transform:rotateY(-90deg)} .r3{transform:rotateX(-90deg)} .r4{transform:rotateX(90deg)}
+        .cube { width: 90px; height: 90px; position: relative; transform-style: preserve-3d; }
+        .cube.shaking { animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(5deg) translate(5px); } 75% { transform: rotate(-5deg) translate(-5px); } 100% { transform: rotate(0deg); } }
+        
+        .face { position: absolute; inset: 0; background: #fff; border: 4px solid #000; border-radius: 15px; display: grid; place-items: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.1); }
+        .dot { width: 18px; height: 18px; background: #000; border-radius: 50%; }
+        /* Grid Logic for Dots */
+        .face { grid-template: repeat(3, 1fr)/repeat(3, 1fr); padding: 5px; }
+        .face[d="1"] .dot:nth-child(1) { grid-area: 2/2; }
+        .face[d="2"] .dot:nth-child(1) { grid-area: 1/1; } .face[d="2"] .dot:nth-child(2) { grid-area: 3/3; }
+        .face[d="3"] .dot:nth-child(1) { grid-area: 1/1; } .face[d="3"] .dot:nth-child(2) { grid-area: 2/2; } .face[d="3"] .dot:nth-child(3) { grid-area: 3/3; }
+        .face[d="4"] .dot:nth-child(1) { grid-area: 1/1; } .face[d="4"] .dot:nth-child(2) { grid-area: 1/3; } .face[d="4"] .dot:nth-child(3) { grid-area: 3/1; } .face[d="4"] .dot:nth-child(4) { grid-area: 3/3; }
+        .face[d="5"] .dot:nth-child(1) { grid-area: 1/1; } .face[d="5"] .dot:nth-child(2) { grid-area: 1/3; } .face[d="5"] .dot:nth-child(3) { grid-area: 2/2; } .face[d="5"] .dot:nth-child(4) { grid-area: 3/1; } .face[d="5"] .dot:nth-child(5) { grid-area: 3/3; }
+        .face[d="6"] .dot:nth-child(1) { grid-area: 1/1; } .face[d="6"] .dot:nth-child(2) { grid-area: 1/3; } .face[d="6"] .dot:nth-child(3) { grid-area: 2/1; } .face[d="6"] .dot:nth-child(4) { grid-area: 2/3; } .face[d="6"] .dot:nth-child(5) { grid-area: 3/1; } .face[d="6"] .dot:nth-child(6) { grid-area: 3/3; }
 
-        .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; z-index: 9999; animation: floatUp 3s forwards; font-weight: bold; text-align: center; }
+        .f1{transform:translateZ(45px)} .f6{transform:rotateX(180deg) translateZ(45px)}
+        .f2{transform:rotateY(-90deg) translateZ(45px)} .f5{transform:rotateY(90deg) translateZ(45px)}
+        .f3{transform:rotateX(-90deg) translateZ(45px)} .f4{transform:rotateX(90deg) translateZ(45px)}
+        
+        .r1{transform:rotateX(0) rotateY(0)} .r6{transform:rotateX(180deg)} 
+        .r2{transform:rotateY(90deg)} .r5{transform:rotateY(-90deg)} 
+        .r3{transform:rotateX(90deg)} .r4{transform:rotateX(-90deg)}
+
+        .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 15px 40px; border-radius: 40px; z-index: 9999; animation: floatUp 3s forwards; font-weight: bold; border: 2px solid var(--gold); font-size: 1.2rem; }
         @keyframes popIn { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
         @keyframes floatUp { 0%{opacity:0; transform:translate(-50%,20px)} 10%{opacity:1} 90%{opacity:1} 100%{opacity:0; transform:translate(-50%,-100px)} }
 
@@ -132,15 +186,24 @@
 </head>
 <body>
 
-<div id="shark-visual" class="shark-fin">🦈</div>
-<div id="galo-visual" class="galo-giant">🐓</div>
+<div class="cloud" style="top:10%">☁️</div>
+<div class="cloud" style="top:40%; animation-delay: 20s;">☁️</div>
 
 <div id="screen-start">
     <div class="card-menu">
-        <h1 style="color:var(--frevo-red); font-size:3rem; margin:0;">RECIFE</h1>
-        <h2 style="color:var(--wood-dark);">TUBARÃO & HIPOTECA</h2>
-        <p>Versão V33 (Sobrevivência)</p>
-        <button class="btn-big" onclick="ui.toChar()">JOGAR AGORA</button>
+        <h1 style="color:var(--frevo-red); font-size:4rem; margin:0; text-shadow:2px 2px 0 #fff;">RECIFE</h1>
+        <h2 style="color:var(--wood-dark);">O LEÃO DO NORTE</h2>
+        
+        <div class="sel-box" style="margin:20px 0;">
+            <label>Contra a Máquina:</label><br>
+            <select id="cpu-count">
+                <option value="1">1 Oponente</option>
+                <option value="2">2 Oponentes</option>
+                <option value="3">3 Oponentes</option>
+            </select>
+        </div>
+
+        <button class="btn-big" onclick="ui.toChar()">INICIAR</button>
     </div>
 </div>
 
@@ -155,12 +218,9 @@
     <div id="viewport">
         <div id="board-container">
             <div id="board">
-                <div style="grid-column:2/11; grid-row:2/11; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                    <h1 style="font-family:'Rye'; font-size:4rem; color:var(--frevo-blue); margin:0; text-shadow:2px 2px #fff;">RECIFE</h1>
-                    <div id="dice-visual" class="dice-stage">
-                        <div id="d1" class="cube"><div class="face f1">1</div><div class="face f2">2</div><div class="face f3">3</div><div class="face f4">4</div><div class="face f5">5</div><div class="face f6">6</div></div>
-                        <div id="d2" class="cube"><div class="face f1">1</div><div class="face f2">2</div><div class="face f3">3</div><div class="face f4">4</div><div class="face f5">5</div><div class="face f6">6</div></div>
-                    </div>
+                <div class="center-hub">
+                    <h1 style="font-family:'Rye'; font-size:4rem; color:var(--frevo-blue); margin:0; text-shadow:2px 2px #fff; z-index:2;">RECIFE</h1>
+                    <div class="deck-pile"></div>
                 </div>
             </div>
         </div>
@@ -168,358 +228,500 @@
 
     <div id="sidebar">
         <div class="hud-header">
-            <div class="turn-badge" id="turn-display">VEZ DE: ...</div>
-            <h2 style="color:var(--frevo-green); margin:5px 0;">Saldo: <span id="p-money">$1500</span></h2>
+            <div style="background:#333; color:var(--gold); padding:5px 20px; border-radius:20px; font-weight:bold; display:inline-block;" id="turn-txt">VEZ DE: ...</div>
+            <h2 style="color:var(--frevo-green); margin:10px 0;">SEU CAIXA: <span id="p-money">$1500</span></h2>
         </div>
 
         <div id="players-list"></div>
 
-        <div style="flex:1; background:#fff; border:2px solid #ccc; margin:10px 0; overflow-y:auto; padding:5px;" id="inventory">
-            <div style="text-align:center; color:#999; margin-top:20px;">Suas Escrituras (Clique para gerenciar)</div>
+        <div style="flex:1; background:#fff; border:3px solid #ccc; margin:15px 0; overflow-y:auto; padding:5px; border-radius:5px;" id="inventory">
+            <div style="text-align:center; color:#999; margin-top:20px;">Suas Escrituras</div>
         </div>
 
         <div>
             <button id="b-roll" class="btn-game" style="background:var(--gold); color:#000;" onclick="game.roll()">🎲 ROLAR DADOS</button>
             <button id="b-buy" class="btn-game" style="background:var(--frevo-green);" disabled onclick="game.buy()">💰 COMPRAR</button>
-            <button id="b-pass" class="btn-game" style="background:var(--frevo-red);" disabled onclick="game.pass()">🛑 PASSAR A VEZ</button>
+            <button id="b-pass" class="btn-game" style="background:var(--frevo-red);" disabled onclick="game.pass()">🛑 PASSAR</button>
         </div>
     </div>
 </div>
 
 <div id="overlay-layer">
-    <div id="prop-card" class="prop-card-3d">
-        <div class="pc-head" id="pc-name">NOME DA RUA</div>
-        <div class="pc-body">
-            <div style="font-size:3rem; margin:10px;">🏠</div>
-            <h2 id="pc-price" style="color:green; font-family:'Rye'; margin:0;">$200</h2>
-            
-            <div style="background:#eee; padding:10px; font-size:0.8rem; margin:10px 0; text-align:left; display:none;" id="rent-info">
-                Aluguel Base: <span id="r-base"></span><br>
-                Com 1 Casa: <span id="r-1"></span><br>
-                Com Hotel: <span id="r-h"></span>
+    
+    <div class="card-flip-container" id="card-event">
+        <div class="card-flip" id="card-flipper">
+            <div class="cf-face cf-back">?</div>
+            <div class="cf-face cf-front">
+                <h1 id="ev-title" style="font-family:'Rye'; margin:0; font-size:3rem;">SORTE</h1>
+                <div style="font-size:5rem; margin:20px;" id="ev-icon">🍀</div>
+                <p id="ev-desc" style="font-size:1.4rem; font-weight:bold;">Ganhou 100 conto!</p>
+                <button class="btn-game" style="width:auto; padding:10px 40px; margin-top:30px; background:#333;" onclick="ui.closeEvent()">OK</button>
             </div>
+        </div>
+    </div>
 
-            <div id="action-area">
-                <p id="pc-msg">Deseja comprar?</p>
+    <div id="prop-card" class="prop-card-3d">
+        <div class="pc-head" id="pc-name">NOME</div>
+        <div class="pc-body">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:4rem;" id="pc-icon">🏠</div>
+                <div style="text-align:right;">
+                    <div style="font-size:0.8rem; color:#666; font-weight:bold;">VALOR</div>
+                    <div style="font-size:2rem; color:green; font-weight:bold; font-family:'Rye';" id="pc-price">$200</div>
+                </div>
+            </div>
+            
+            <table class="rent-table">
+                <tr><td>Aluguel Base</td><td id="r-0">-</td></tr>
+                <tr><td>1 Casa</td><td id="r-1">-</td></tr>
+                <tr><td>2 Casas</td><td id="r-2">-</td></tr>
+                <tr><td>3 Casas</td><td id="r-3">-</td></tr>
+                <tr><td>4 Casas</td><td id="r-4">-</td></tr>
+                <tr><td>Hotel</td><td id="r-5">-</td></tr>
+                <tr><td style="color:#666;">Custo Constr.</td><td id="r-c" style="color:#666;">-</td></tr>
+            </table>
+
+            <div id="act-buy" style="display:none;">
                 <button class="btn-game" style="background:green; padding:10px;" onclick="game.confirmBuy()">COMPRAR</button>
                 <button class="btn-game" style="background:#666; padding:10px;" onclick="ui.closeCard()">NÃO</button>
             </div>
 
-            <div id="mortgage-area" style="display:none; border-top:2px dashed #999; padding-top:10px;">
-                <p style="font-size:0.8rem; font-weight:bold;">GERENCIAR PROPRIEDADE</p>
-                <button id="btn-mtg" class="btn-game" style="background:orange; padding:10px; font-size:0.8rem;" onclick="game.toggleMortgage()">HIPOTECAR (Recebe $)</button>
-                <button class="btn-game" style="background:#333; padding:10px; font-size:0.8rem;" onclick="ui.closeCard()">FECHAR</button>
+            <div id="act-manage" style="display:none; border-top:2px dashed #ccc; padding-top:10px;">
+                
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <button id="btn-mtg" class="btn-game" style="background:orange; font-size:0.7rem; padding:10px;" onclick="game.mortgage()">HIPOTECAR</button>
+                    <button id="btn-build" class="btn-game" style="background:green; font-size:0.7rem; padding:10px;" onclick="game.build()">+🏠</button>
+                </div>
+
+                <div style="background:#eee; padding:5px; border-radius:5px;">
+                    <div style="font-size:0.7rem; font-weight:bold; text-align:left;">VENDER PARA:</div>
+                    <div style="display:flex; gap:5px;">
+                        <select id="trade-who" style="width:50%; margin:5px 0; padding:5px; font-size:0.8rem;"></select>
+                        <input id="trade-price" type="number" placeholder="$" style="width:50%; padding:5px; margin:5px 0; border:1px solid #ccc; border-radius:5px;">
+                    </div>
+                    <button class="btn-game" style="background:#7b1fa2; font-size:0.8rem; padding:8px;" onclick="game.offerTrade()">OFERTAR</button>
+                </div>
+
+                <button class="btn-game" style="background:#333; padding:5px; margin-top:5px; font-size:0.8rem;" onclick="ui.closeCard()">FECHAR</button>
             </div>
         </div>
+    </div>
+
+    <div id="dice-visual" class="dice-stage">
+        <div id="d1" class="cube"><div class="face f1" d="1"><div class="dot"></div></div><div class="face f2" d="2"><div class="dot"></div><div class="dot"></div></div><div class="face f3" d="3"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="face f4" d="4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="face f5" d="5"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="face f6" d="6"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        <div id="d2" class="cube"><div class="face f1" d="1"><div class="dot"></div></div><div class="face f2" d="2"><div class="dot"></div><div class="dot"></div></div><div class="face f3" d="3"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="face f4" d="4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="face f5" d="5"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="face f6" d="6"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
     </div>
 </div>
 
 <script>
-/* DADOS */
-const CHARS=[{id:'c',i:'🦀',n:'Caranguejo'},{id:'s',i:'🦈',n:'Tubarão'},{id:'u',i:'☂️',n:'Sombrinha'},{id:'sol',i:'☀️',n:'Sol'}];
-// g:group color, p:price, h:house cost, r:rent array
+/* DADOS OFICIAIS MONOPOLY (ADAPTADOS RECIFE) */
+// r: [base, 1, 2, 3, 4, hotel], h: cost per house
 const BD=[
-    {t:'st',n:'Início',i:'🚩'}, {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô'},{t:'pr',g:'#03a9f4',n:'Sto Amaro',p:100,h:50,r:[6,30,90,270]},{t:'ch',n:'Revés',i:'⚠️'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300]},
-    {t:'jl',n:'Cadeia',i:'👮'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450]},{t:'ut',n:'Luz',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,r:[14,70,200,550]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550]},{t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600]},
-    {t:'pk',n:'Parque',i:'🎡'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700]},{t:'ch',n:'Revés',i:'⚠️'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800]},{t:'pr',g:'#fbc02d',n:'Poço',p:260,h:150,r:[22,110,330,800]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850]},
-    {t:'gj',n:'Blitz',i:'🚓'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés',i:'⚠️'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100]},{t:'tx',n:'Taxa',p:100},{t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,r:[50,200,600,1400]}
+    {t:'st',n:'INÍCIO',i:'🚩'}, 
+    {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]}, 
+    {t:'ch',n:'Sorte',i:'🍀'}, 
+    {t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]}, 
+    {t:'tx',n:'IPTU',p:200,i:'💸'}, 
+    {t:'rr',n:'Metrô',p:200,i:'🚆',r:[25,50,100,200,0,0]}, // Stations logic separate
+    {t:'pr',g:'#03a9f4',n:'Sto Amaro',p:100,h:50,r:[6,30,90,270,400,550]}, 
+    {t:'ch',n:'Revés',i:'⚠️'}, 
+    {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270,400,550]}, 
+    {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300,450,600]},
+    
+    {t:'jl',n:'Cadeia',i:'👮'}, 
+    {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450,750,950]}, 
+    {t:'ut',n:'Celpe',p:150,i:'💡'}, // Utilities
+    {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450,750,950]}, 
+    {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500,700,900]}, 
+    {t:'rr',n:'Metrô Oeste',p:200,i:'🚆',r:[25,50,100,200,0,0]}, 
+    {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,r:[14,70,200,550,750,950]}, 
+    {t:'ch',n:'Sorte',i:'🍀'}, 
+    {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550,750,950]}, 
+    {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600,800,1000]},
+    
+    {t:'pk',n:'Estac. Livre',i:'🅿️'}, 
+    {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]}, 
+    {t:'ch',n:'Revés',i:'⚠️'}, 
+    {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]}, 
+    {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]}, 
+    {t:'rr',n:'Via Mangue',p:200,i:'🛣️',r:[25,50,100,200,0,0]}, 
+    {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]}, 
+    {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,r:[22,110,330,800,975,1150]}, 
+    {t:'ut',n:'Compesa',p:150,i:'💧'}, 
+    {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},
+    
+    {t:'gj',n:'Vá p/ Cadeia',i:'🚓'}, 
+    {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900,1100,1275]}, 
+    {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900,1100,1275]}, 
+    {t:'ch',n:'Sorte',i:'🍀'}, 
+    {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000,1200,1400]}, 
+    {t:'rr',n:'Aeroporto',p:200,i:'✈️',r:[25,50,100,200,0,0]}, 
+    {t:'ch',n:'Revés',i:'⚠️'}, 
+    {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100,1300,1500]}, 
+    {t:'tx',n:'Taxa',p:100,i:'🧾'}, 
+    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,r:[50,200,600,1400,1700,2000]}
 ];
 
-let players=[{name:"Você",icon:"",pos:0,money:1500,jailed:false,doubles:0},{name:"CPU",icon:"🤖",pos:0,money:1500,jailed:false,doubles:0}];
-let props=Array(40).fill(null); // {owner:pid, level:0, mtg:false}
-let turn=0, rolled=false, animating=false;
-let activeCardIdx = -1;
+const CARDS = [
+    {t:'sorte', txt:"O banco errou a seu favor! +$200", val:200},
+    {t:'sorte', txt:"Vendeu seu carro velho. +$50", val:50},
+    {t:'reves', txt:"Pneu furou na Av. Recife. -$50", val:-50},
+    {t:'reves', txt:"Pagou hospital privado. -$100", val:-100}
+];
 
-const SFX={step:new Audio('https://www.soundjay.com/misc/sounds/wood-block-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3')};
+const ICONS = ['🦀','🦈','☂️','☀️','🥁','🥥'];
+let players = [];
+let props = Array(40).fill(null); // {owner:pid, level:0, mtg:false, loan:0}
+let turn = 0, rolled=false, animating=false, activeIdx=-1;
+
+const SFX = {step:new Audio('https://www.soundjay.com/misc/sounds/wood-block-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3')};
 const play=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{})}catch(e){}};
 
 /* UI */
-const ui={
-    toChar:()=>{
+const ui = {
+    toChar: () => {
+        const cpuCount = parseInt(document.getElementById('cpu-count').value);
+        players = [{name:"Você", icon:"", pos:0, money:1500, jailed:false, color:"#d32f2f", id:0}];
+        for(let i=0; i<cpuCount; i++) {
+            players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:1500, jailed:false, color:["#1976d2","#388e3c","#fbc02d"][i], id:i+1});
+        }
+        
         document.getElementById('screen-start').style.display='none';
         document.getElementById('screen-char').style.display='flex';
         const g=document.getElementById('char-grid');
-        CHARS.forEach(c=>{
-            g.innerHTML+=`<div class="char-opt" onclick="ui.startGame('${c.i}')"><div style="font-size:3rem">${c.i}</div><b>${c.n}</b></div>`;
+        ICONS.forEach(i=>{
+            g.innerHTML += `<div class="char-opt" onclick="ui.start('${i}')"><div style="font-size:3rem">${i}</div></div>`;
         });
     },
-    startGame:(icon)=>{
-        players[0].icon=icon;
+    start: (icon) => {
+        players[0].icon = icon;
         document.getElementById('screen-char').style.display='none';
         document.getElementById('game-stage').classList.add('active');
-        ui.buildBoard(); ui.updateHUD();
-        // Init Galo Timer
-        setInterval(game.eventGalo, 45000); // Every 45s chance of Galo
+        ui.board();
+        ui.hud();
     },
-    buildBoard:()=>{
-        const b=document.getElementById('board');
-        BD.forEach((s,i)=>{
+    board: () => {
+        const b = document.getElementById('board');
+        BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
-            let r,c;if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
-            d.style.gridRow=r;d.style.gridColumn=c;
-            d.innerHTML=s.t==='pr'?`<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div>`:`<div class="sp-name" style="font-size:0.5rem">${s.n}</div>`;
+            let r,c; if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
+            d.style.gridRow=r; d.style.gridColumn=c;
+            
+            if(s.t==='pr'){
+                d.innerHTML = `<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div><div class="build-area" id="b${i}"></div>`;
+            } else {
+                d.innerHTML = `<div class="sp-icon" style="margin:auto">${s.i}</div><div class="sp-name" style="font-size:0.5rem">${s.n}</div>`;
+            }
             b.appendChild(d);
         });
         players.forEach((p,i)=>{
             const t=document.createElement('div');t.className='token';t.id=`tok${i}`;t.innerText=p.icon;
-            b.appendChild(t); ui.placeToken(i,0);
+            b.appendChild(t); ui.place(i,0);
         });
     },
-    placeToken:(pid,pos)=>{
-        const t=document.getElementById(`tok${pid}`);
-        const s=document.getElementById(`s${pos}`);
-        t.style.left=(s.offsetLeft+15+(pid*10))+'px';
-        t.style.top=(s.offsetTop+10+(pid*10))+'px';
-        if(pid===0)ui.cam(pos);
+    place: (pid, pos) => {
+        const t = document.getElementById(`tok${pid}`);
+        const s = document.getElementById(`s${pos}`);
+        t.style.left = (s.offsetLeft + 15 + (pid*8)) + 'px';
+        t.style.top = (s.offsetTop + 10 + (pid*8)) + 'px';
+        if(pid===0) ui.cam(pos);
     },
-    cam:(pos)=>{
-        const b=document.getElementById('board-container');
-        let rx=30, ry=0;
+    cam: (pos) => {
+        const b = document.getElementById('board-container');
+        let rx=35, ry=0;
         if(pos>10 && pos<=20) ry=5; if(pos>30) ry=-5;
         b.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg) scale(0.9)`;
     },
-    updateHUD:()=>{
-        const p=players[0];
-        document.getElementById('turn-display').innerText=`VEZ DE: ${players[turn].name}`;
-        document.getElementById('p-money').innerText=`$${p.money}`;
-        document.getElementById('players-list').innerHTML=players.map((pl,i)=>`<div class="p-stat ${turn===i?'active':''}"><span style="font-size:1.2rem">${pl.icon}</span><b>${pl.name}</b><span>$${pl.money}</span></div>`).join('');
+    hud: () => {
+        document.getElementById('turn-txt').innerText = `VEZ DE: ${players[turn].name}`;
+        document.getElementById('p-money').innerText = `$${players[0].money}`;
         
-        const hum=turn===0;
-        document.getElementById('b-roll').disabled = !(hum && !rolled && !animating && !p.jailed);
-        
-        if(p.jailed && hum) {
-            const b=document.getElementById('b-roll'); b.disabled=false; b.innerText="PAGAR FIANÇA ($50)"; b.onclick=game.payJail;
-        } else {
-            const b=document.getElementById('b-roll'); b.innerText="🎲 ROLAR DADOS"; b.onclick=game.roll;
-        }
-        
-        const cur=BD[p.pos];
-        const canBuy = hum && rolled && cur.t==='pr' && !props[p.pos];
-        document.getElementById('b-buy').disabled = !canBuy;
-        const dEqual = players[turn].doubles > 0;
-        document.getElementById('b-pass').disabled = !(hum && rolled && !dEqual);
+        document.getElementById('players-list').innerHTML = players.map((p,i) => `
+            <div class="p-stat ${turn===i?'active':''}">
+                <span>${p.icon} ${p.name}</span>
+                <span>${i===0 ? '$'+p.money : '????'}</span>
+            </div>
+        `).join('');
 
-        // Inventory & Visual Updates
-        const inv=document.getElementById('inventory');
-        inv.innerHTML='';
-        
-        props.forEach((pr,i)=>{
-            const s=BD[i];
+        // Inventory
+        const inv = document.getElementById('inventory');
+        inv.innerHTML = '';
+        props.forEach((pr,i) => {
+            if(pr && pr.owner === 0){
+                const s=BD[i];
+                inv.innerHTML += `<div style="background:#eee; border-left:5px solid ${s.g}; padding:5px; margin-bottom:5px; cursor:pointer;" onclick="ui.openProp(${i})">
+                    <b>${s.n} ${pr.mtg?'(⛔ -$'+pr.loan.toFixed(0)+')':''}</b>
+                </div>`;
+            }
+            // Board border
             const cell = document.getElementById(`s${i}`);
-            
-            // Visual on Board: Mortgage Gray
             if(pr){
                 cell.style.border=`3px solid ${players[pr.owner].color}`;
                 if(pr.mtg) cell.classList.add('mortgaged'); else cell.classList.remove('mortgaged');
             }
-
-            // Inventory List (Only Owned by Player)
-            if(pr && pr.owner===0){
-                inv.innerHTML+=`<div style="background:${pr.mtg?'#ccc':'#eee'};border-left:5px solid ${s.g};padding:5px;margin-bottom:5px;cursor:pointer;display:flex;justify-content:space-between;" onclick="ui.openManager(${i})">
-                    <b>${s.n} ${pr.mtg?'(⛔)':''}</b>
-                    <span style="font-size:0.8rem">🔧</span>
-                </div>`;
-            }
         });
-        if(inv.innerHTML==='') inv.innerHTML='<div style="text-align:center;color:#999;margin-top:10px;">Vazio</div>';
+
+        // Buttons
+        const hum = turn === 0;
+        const cur = BD[players[0].pos];
+        
+        document.getElementById('b-roll').disabled = !(hum && !rolled && !animating);
+        document.getElementById('b-buy').disabled = !(hum && rolled && cur.t==='pr' && !props[players[0].pos]);
+        document.getElementById('b-pass').disabled = !(hum && rolled);
     },
-    // CARDS LOGIC
-    showBuyCard:(idx)=>{
-        activeCardIdx = idx;
-        const s=BD[idx];
-        document.getElementById('rent-info').style.display='block';
-        document.getElementById('action-area').style.display='block';
-        document.getElementById('mortgage-area').style.display='none';
+    openProp: (idx, forBuy=false) => {
+        activeIdx = idx;
+        const s = BD[idx];
+        const pr = props[idx];
+        const el = document.getElementById('prop-card');
         
-        document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g;
-        document.getElementById('pc-price').innerText=`$${s.p}`;
-        document.getElementById('r-base').innerText=`$${s.r[0]}`; document.getElementById('r-1').innerText=`$${s.r[1]}`; document.getElementById('r-h').innerText=`$${s.r[4]}`;
-        document.getElementById('prop-card').style.display='block';
-    },
-    openManager:(idx)=>{
-        activeCardIdx = idx;
-        const s=BD[idx];
-        const pr=props[idx];
+        document.getElementById('pc-name').innerText = s.n;
+        document.getElementById('pc-name').style.background = s.g || '#333';
+        document.getElementById('pc-price').innerText = `$${s.p}`;
+        document.getElementById('pc-icon').innerText = s.i;
         
-        document.getElementById('rent-info').style.display='none';
-        document.getElementById('action-area').style.display='none';
-        document.getElementById('mortgage-area').style.display='block';
-        
-        const head = document.getElementById('pc-name');
-        head.innerText = s.n; 
-        head.style.background = s.g;
-        
-        const valMtg = Math.floor(s.p/2);
-        const valUnMtg = Math.floor(valMtg * 1.1);
-        
-        const btn = document.getElementById('btn-mtg');
-        if(pr.mtg){
-            head.classList.add('mortgaged-header');
-            btn.innerText = `DESHIPOTECAR (Pagar $${valUnMtg})`;
-            btn.style.background = "#2e7d32";
-            btn.onclick = () => game.toggleMortgage(true); // Pay to unmortgage
-        } else {
-            head.classList.remove('mortgaged-header');
-            btn.innerText = `HIPOTECAR (Receber $${valMtg})`;
-            btn.style.background = "orange";
-            btn.onclick = () => game.toggleMortgage(false); // Get money
+        // Populate Table
+        if(s.r){
+            document.getElementById('r-0').innerText = `$${s.r[0]}`;
+            document.getElementById('r-1').innerText = `$${s.r[1]}`;
+            document.getElementById('r-2').innerText = `$${s.r[2]}`;
+            document.getElementById('r-3').innerText = `$${s.r[3]}`;
+            document.getElementById('r-4').innerText = `$${s.r[4]}`;
+            document.getElementById('r-5').innerText = `$${s.r[5]}`;
+            document.getElementById('r-c').innerText = `$${s.h||'-'}`;
         }
+
+        // Show sections
+        document.getElementById('act-buy').style.display = forBuy ? 'block' : 'none';
+        document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===0) ? 'block' : 'none';
         
-        document.getElementById('prop-card').style.display='block';
+        if(!forBuy && pr){
+            // Config Manage Buttons
+            const btnMtg = document.getElementById('btn-mtg');
+            const btnBld = document.getElementById('btn-build');
+            
+            if(pr.mtg){
+                document.getElementById('pc-name').classList.add('mortgaged');
+                btnMtg.innerText = `PAGAR DÍVIDA ($${pr.loan.toFixed(0)})`;
+                btnMtg.style.background = "#2e7d32";
+                btnMtg.onclick = () => game.toggleMortgage(true);
+                btnBld.disabled = true;
+            } else {
+                document.getElementById('pc-name').classList.remove('mortgaged');
+                btnMtg.innerText = `HIPOTECAR (+$${(s.p*0.8).toFixed(0)})`;
+                btnMtg.style.background = "orange";
+                btnMtg.onclick = () => game.toggleMortgage(false);
+                btnBld.disabled = false;
+            }
+            
+            // Fill Trade Select
+            const sel = document.getElementById('trade-who');
+            sel.innerHTML = '';
+            players.forEach((p,i)=>{ if(i!==0) sel.innerHTML+=`<option value="${i}">${p.name}</option>`; });
+        }
+
+        el.style.display = 'block';
     },
-    closeCard:()=>{document.getElementById('prop-card').style.display='none';},
-    toast:(m)=>{
+    closeCard: () => { document.getElementById('prop-card').style.display='none'; },
+    showEvent: (type) => {
+        const c = document.getElementById('card-event');
+        const flip = document.getElementById('card-flipper');
+        const deck = CARDS.filter(x=>x.t===type);
+        const card = deck[Math.floor(Math.random()*deck.length)];
+        
+        document.getElementById('ev-title').innerText = type.toUpperCase();
+        document.getElementById('ev-desc').innerText = card.txt;
+        document.getElementById('ev-icon').innerText = type==='sorte'?'🍀':'⚠️';
+        
+        c.style.display='block';
+        setTimeout(()=>flip.classList.add('flipped'), 100);
+        ui.pendingEffect = card.val;
+    },
+    closeEvent: () => {
+        document.getElementById('card-event').style.display='none';
+        document.getElementById('card-flipper').classList.remove('flipped');
+        const p = players[turn];
+        p.money += ui.pendingEffect;
+        if(ui.pendingEffect > 0) confetti();
+        ui.hud();
+    },
+    dice: (d1,d2) => {
+        const ds = document.getElementById('dice-visual');
+        ds.style.opacity=1;
+        const c1=document.getElementById('d1'), c2=document.getElementById('d2');
+        c1.className='cube shaking'; c2.className='cube shaking';
+        
+        setTimeout(()=>{
+            c1.className='cube'; c2.className='cube';
+            void c1.offsetWidth;
+            c1.style.transform = getRot(d1);
+            c2.style.transform = getRot(d2);
+        }, 800);
+        
+        setTimeout(()=>{ ds.style.opacity=0; }, 2500);
+    },
+    toast: (m) => {
         const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);
-    },
-    animShark:()=>{
-        const sh=document.getElementById('shark-visual');
-        sh.style.display='block';
-        setTimeout(()=>{sh.style.display='none'},3000);
-        play('cash'); // Or scream sound if added
-    },
-    animGalo:()=>{
-        const g=document.getElementById('galo-visual');
-        g.style.display='block';
-        setTimeout(()=>{g.style.display='none'},4000);
-        confetti();
     }
 };
 
-/* GAME LOGIC */
-const game={
-    roll:async()=>{
-        if(animating)return;
-        animating=true; ui.updateHUD();
-        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
+function getRot(n){
+    switch(n){
+        case 1: return 'rotateX(0deg) rotateY(0deg)';
+        case 2: return 'rotateY(-90deg)';
+        case 3: return 'rotateY(180deg)';
+        case 4: return 'rotateY(90deg)';
+        case 5: return 'rotateX(-90deg)';
+        case 6: return 'rotateX(90deg)';
+    }
+}
+
+/* LOGIC */
+const game = {
+    roll: async () => {
+        if(animating) return;
+        animating=true; ui.hud();
         
-        const dv=document.getElementById('dice-visual'); dv.classList.add('active');
-        const c1=document.getElementById('d1'), c2=document.getElementById('d2');
-        c1.className='cube'; c2.className='cube'; void c1.offsetWidth;
-        setTimeout(()=>{c1.classList.add(`r${d1}`); c2.classList.add(`r${d2}`);},50);
+        const d1=Math.ceil(Math.random()*6);
+        const d2=Math.ceil(Math.random()*6);
+        ui.dice(d1,d2);
         
-        await new Promise(r=>setTimeout(r,1500));
-        dv.classList.remove('active');
+        await new Promise(r=>setTimeout(r, 1500));
         
-        if(d1===d2){
-            players[turn].doubles++;
-            ui.toast("DADOS IGUAIS!");
-            if(players[turn].doubles===3){
-                ui.toast("3x IGUAIS! VAI PRESO!");
-                game.jail(turn); animating=false; rolled=true; ui.updateHUD(); return;
+        const p=players[turn];
+        for(let i=0; i<d1+d2; i++){
+            p.pos++; 
+            if(p.pos>=40){ p.pos=0; p.money+=200; ui.toast("Início +$200"); }
+            ui.place(turn, p.pos);
+            play('step');
+            await new Promise(r=>setTimeout(r, 200));
+        }
+        
+        // Land
+        const s=BD[p.pos];
+        const pr=props[p.pos];
+        
+        if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
+            if(!pr){
+                if(turn===0) ui.openProp(p.pos, true);
+                else game.aiBuy(p.pos);
+            } else if(pr.owner !== turn && !pr.mtg){
+                let rent = s.r[pr.level];
+                p.money -= rent;
+                players[pr.owner].money += rent;
+                ui.toast(`Pagou aluguel $${rent}`);
+                play('cash');
             }
-        } else {
-            players[turn].doubles=0;
-        }
+        } else if(s.t==='ch') ui.showEvent('sorte');
+        else if(s.t==='rev') ui.showEvent('reves');
+        else if(s.t==='tx') { p.money-=200; ui.toast("Imposto -$200"); }
+        else if(s.t==='gj') { p.pos=10; p.jailed=true; ui.place(turn,10); ui.toast("PRESO!"); }
         
-        await game.move(turn, d1+d2);
-        rolled=true; animating=false; ui.updateHUD();
-        
-        if(d1===d2 && !players[turn].jailed){
-            rolled=false; 
-            if(turn===1) setTimeout(game.roll, 1500);
-        } else {
-            if(turn===1) setTimeout(game.pass, 1500);
-        }
+        rolled=true; animating=false; ui.hud();
+        if(turn!==0) setTimeout(game.pass, 2000);
     },
-    move:async(pid,steps)=>{
-        const p=players[pid];
-        for(let i=0;i<steps;i++){
-            p.pos++; if(p.pos>=40){p.pos=0;p.money+=200;ui.toast("Início: +$200");play('cash');}
-            ui.placeToken(pid,p.pos); play('step');
-            await new Promise(r=>setTimeout(r,200));
-        }
-        game.land(pid);
+    confirmBuy: () => {
+        const p=players[0];
+        const s=BD[activeIdx];
+        if(p.money >= s.p){
+            p.money -= s.p;
+            props[activeIdx] = {owner:0, level:0, mtg:false, loan:0};
+            play('cash'); confetti(); ui.closeCard(); ui.hud();
+        } else alert("Sem dinheiro!");
     },
-    land:(pid)=>{
-        const p=players[pid], s=BD[p.pos], pr=props[p.pos];
+    aiBuy: (idx) => {
+        const p=players[turn];
+        const s=BD[idx];
+        if(p.money >= s.p){
+            p.money -= s.p;
+            props[idx] = {owner:turn, level:0, mtg:false, loan:0};
+            ui.toast(`${p.name} comprou ${s.n}`);
+        }
+        ui.hud();
+    },
+    pass: () => {
+        turn = (turn+1)%players.length;
+        rolled=false;
         
-        // SHARK EVENT (Beaches: 36, 33, etc. Simplified: Boa Viagem idx 36, Paiva idx 33)
-        if(s.n.includes("Boa Viagem") || s.n.includes("Paiva")){
-            if(Math.random()<0.3){ // 30% chance
-                ui.animShark();
-                ui.toast("TUBARÃO! Correu pro hospital (-$100)");
-                p.money -= 100;
-                return;
-            }
+        // APPLY INTEREST RULES
+        if(turn === 0){ // Player turn start
+            let debtIncreased = false;
+            props.forEach(pr => {
+                if(pr && pr.owner === 0 && pr.mtg) {
+                    pr.loan = Math.floor(pr.loan * 1.10); // +10% interest
+                    debtIncreased = true;
+                }
+            });
+            if(debtIncreased) ui.toast("JUROS BANCÁRIOS APLICADOS!");
         }
 
-        if(p.pos===30){ ui.toast("BLITZ! PRESO!"); game.jail(pid); return; }
-        
-        if(s.t==='pr'){
-            if(!pr){
-                if(pid===0 && p.money>=s.p) ui.showBuyCard(p.pos);
-                else if(pid===1 && p.money>=s.p+200) game.aiBuy();
-            } else if(pr.owner!==pid && !pr.mtg){ // NO RENT IF MORTGAGED
-                const r=s.r[pr.level]; p.money-=r; players[pr.owner].money+=r;
-                ui.toast(`Pagou aluguel $${r}`); play('cash');
-            }
-        } else if(s.t==='tx'){
-            p.money-=s.p; ui.toast(`Taxa: -$${s.p}`);
-        } else if(s.t==='ch'||s.t==='rev'){
-            const gain=Math.random()>0.5;
-            if(gain){p.money+=50;ui.toast("Sorte! +$50");confetti();}
-            else{p.money-=50;ui.toast("Revés! -$50");}
-        }
+        ui.hud();
+        if(turn!==0) setTimeout(game.roll, 1000);
     },
-    jail:(pid)=>{
-        players[pid].jailed=true; players[pid].pos=10; ui.placeToken(pid,10); players[pid].doubles=0;
-        if(pid===1) setTimeout(game.pass,1000);
-    },
-    payJail:()=>{
-        if(players[0].money>=50){
-            players[0].money-=50; players[0].jailed=false; ui.toast("Livre!"); ui.updateHUD();
-        }
-    },
-    confirmBuy:()=>{
-        const p=players[0], s=BD[p.pos];
-        if(p.money>=s.p){
-            p.money-=s.p; props[p.pos]={owner:0,level:0,mtg:false};
-            play('cash'); confetti(); ui.closeCard(); ui.updateHUD();
-        } else {
-            ui.toast("Sem dinheiro!");
-        }
-    },
-    aiBuy:()=>{
-        const p=players[1], s=BD[p.pos];
-        p.money-=s.p; props[p.pos]={owner:1,level:0,mtg:false};
-        ui.toast("CPU Comprou "+s.n); ui.updateHUD();
-    },
-    toggleMortgage:(isPaying)=>{ // True = Pay to unmortgage, False = Get money
+    toggleMortgage: (isPaying) => {
         const p=players[0];
-        const s=BD[activeCardIdx];
-        const pr=props[activeCardIdx];
-        const val = Math.floor(s.p/2);
+        const s=BD[activeIdx];
+        const pr=props[activeIdx];
         
         if(isPaying){ // Unmortgage
-            const cost = Math.floor(val*1.1);
-            if(p.money >= cost){
-                p.money -= cost;
+            if(p.money >= pr.loan){
+                p.money -= pr.loan;
                 pr.mtg = false;
-                ui.toast("Propriedade Recuperada!");
+                pr.loan = 0;
+                ui.toast("Recuperado!");
             } else {
-                ui.toast("Dinheiro insuficiente!");
+                ui.toast("Saldo insuficiente!");
                 return;
             }
-        } else { // Mortgage
-            p.money += val;
+        } else { // Mortgage (80% value)
+            const loan = Math.floor(s.p * 0.8);
+            p.money += loan;
             pr.mtg = true;
-            ui.toast(`Hipotecado por $${val}`);
+            pr.loan = loan;
+            ui.toast(`Recebeu $${loan}`);
         }
-        ui.closeCard();
-        ui.updateHUD();
+        ui.closeCard(); ui.hud();
     },
-    eventGalo:()=>{
-        ui.animGalo();
-        ui.toast("O GALO PASSOU! +$100 PRA TODOS!");
-        players.forEach(p=>p.money+=100);
-        ui.updateHUD();
+    build: () => {
+        const p=players[0];
+        const s=BD[activeIdx];
+        const pr=props[activeIdx];
+        
+        // UNIFORM RULE CHECK
+        const grp = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1);
+        const minLvl = Math.min(...grp.map(i=>props[i].level));
+        
+        if(pr.level > minLvl){
+            alert("Construção uniforme! Construa nas outras primeiro.");
+            return;
+        }
+
+        if(p.money >= s.h && pr.level<5){
+            p.money -= s.h;
+            pr.level++;
+            play('cash'); ui.hud();
+        }
     },
-    pass:()=>{
-        turn=(turn+1)%2; rolled=false;
-        ui.updateHUD();
-        if(turn===1) setTimeout(game.roll, 1500);
+    offerTrade: () => {
+        const targetId = parseInt(document.getElementById('trade-who').value);
+        const price = parseInt(document.getElementById('trade-price').value);
+        const s = BD[activeIdx];
+        
+        const target = players[targetId];
+        // AI Logic: Buy if good deal (<= 1.5x cost) and rich
+        if(price <= s.p*1.5 && target.money >= price){
+            target.money -= price;
+            players[0].money += price;
+            props[activeIdx].owner = targetId;
+            ui.toast("Negócio Fechado!");
+            play('cash'); ui.closeCard(); ui.hud();
+        } else {
+            ui.toast("Recusado!");
+        }
     }
 };
+
+ui.toChar(); // Auto init for fast test
 </script>
 </body>
 </html>
