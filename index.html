@@ -3,372 +3,465 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife V24: Solo Blindado</title>
+    <title>Recife V26: Vida e Cores</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-carnaval: linear-gradient(135deg, #ff9800 0%, #f44336 50%, #9c27b0 100%);
-            --wood: #3e2723; --paper: #fff8e1; --gold: #ffca28;
-            --frevo-blue: #0277bd; --frevo-red: #c62828; --frevo-green: #2e7d32;
-            --shadow-deep: 0 30px 60px rgba(0,0,0,0.6);
+            --frevo-blue: #0288d1; --frevo-green: #2e7d32; --frevo-red: #c62828; --frevo-yellow: #fbc02d;
+            --wood-tex: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            --paper-tex: url('https://www.transparenttextures.com/patterns/cream-paper.png');
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-carnaval); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        h1, h2, h3, button, .brand { font-family: 'Rye', serif; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-
-        /* TELAS */
-        #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9000; background: url('https://www.transparenttextures.com/patterns/cubes.png'), var(--bg-carnaval); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .card-menu { background: var(--paper); width: 90%; max-width: 450px; padding: 40px; border: 8px solid var(--wood); border-radius: 15px; text-align: center; box-shadow: var(--shadow-deep); animation: popIn 0.5s; }
-        .btn-big { width: 100%; padding: 20px; margin-top: 20px; border: none; border-radius: 50px; font-size: 1.5rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 0 rgba(0,0,0,0.2); color: white; background: var(--frevo-blue); font-family: 'Rye'; transition: transform 0.1s; }
-        .btn-big:active { transform: translateY(4px); box-shadow: none; }
-
-        /* SELEÇÃO */
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
-        .char-opt { background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 10px; padding: 10px; cursor: pointer; transition: 0.3s; text-align: center; }
-        .char-opt.selected { background: var(--gold); border-color: var(--wood); transform: scale(1.15); color: black; box-shadow: 0 0 15px var(--gold); }
-        .char-icon { font-size: 2.5rem; }
-
-        /* JOGO */
-        #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; transition: 1s; pointer-events: none; }
-        #game-layout.active { opacity: 1; pointer-events: all; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: #5d4037 var(--wood-tex); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
-        #board-viewport { flex: 1; perspective: 1500px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, #4fc3f7, #01579b); overflow: hidden; }
-        #board { display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px); background: #f5f5f5; border: 20px solid var(--wood); border-radius: 12px; position: relative; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: var(--shadow-deep); background-image: url('https://www.transparenttextures.com/patterns/white-brick-wall.png'); }
+        /* LAYOUT PRINCIPAL */
+        #main-stage { display: flex; flex: 1; height: 100%; position: relative; }
         
-        .space { border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); font-size: 0.6rem; text-align: center; position: relative; font-weight: bold; display: flex; flex-direction: column; transition: 0.3s; backface-visibility: hidden; }
-        .color-bar { height: 25%; border-bottom: 2px solid #333; }
-        .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 2.5rem; text-align: center; line-height: 50px; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5)); transition: all 0.3s ease-out; transform-origin: bottom center; }
-        .jump { animation: jump 0.3s; } @keyframes jump { 50% { transform: translateY(-40px) scale(1.1); } }
+        /* TABULEIRO 3D */
+        #viewport { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1200px; overflow: hidden; }
+        #board {
+            display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px);
+            background: #f5f5f5; border: 15px solid #3e2723; border-radius: 10px;
+            transform: rotateX(25deg) scale(0.9); transform-style: preserve-3d;
+            box-shadow: 0 50px 80px rgba(0,0,0,0.6); position: relative;
+        }
 
-        /* SIDEBAR */
-        #sidebar { width: 360px; background: rgba(255,255,255,0.95); padding: 15px; display: flex; flex-direction: column; z-index: 100; border-left: 8px solid var(--wood); box-shadow: -10px 0 30px rgba(0,0,0,0.3); }
-        .hud-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px dashed #888; padding-bottom: 5px; }
-        .turn-box { background: #333; color: var(--gold); padding: 8px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem; }
+        .space { 
+            border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.65rem; text-align: center; 
+            font-weight: bold; position: relative; display: flex; flex-direction: column; 
+            transition: 0.2s; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        .space:hover { transform: translateZ(10px); z-index: 10; border: 2px solid var(--frevo-yellow); }
+        .color-strip { height: 20%; border-bottom: 2px solid #333; }
+        .space-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; }
+        .space-price { font-size: 0.6rem; color: #666; margin-bottom: 2px; }
+
+        /* PEÕES */
+        .token {
+            width: 40px; height: 40px; position: absolute; z-index: 50; font-size: 2.5rem;
+            text-align: center; line-height: 40px; transition: top 0.3s ease-out, left 0.3s ease-out;
+            filter: drop-shadow(0 5px 2px rgba(0,0,0,0.5)); pointer-events: none;
+        }
+        .token.active { filter: drop-shadow(0 0 10px var(--frevo-yellow)); transform: scale(1.2); z-index: 60; }
+
+        /* HUD LATERAL */
+        #sidebar { 
+            width: 350px; background: #fff var(--paper-tex); border-left: 8px solid #3e2723; 
+            padding: 20px; display: flex; flex-direction: column; z-index: 100; box-shadow: -10px 0 30px rgba(0,0,0,0.5); 
+        }
+        .hud-title { font-family: 'Rye'; font-size: 2rem; color: var(--frevo-red); text-align: center; margin: 0 0 20px 0; text-shadow: 1px 1px 0 #000; }
         
-        .btn-game { padding: 10px; border: 3px solid #000; border-radius: 8px; font-weight: bold; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.2s; text-transform: uppercase; font-size: 0.8rem; }
-        .btn-game.on { opacity: 1; pointer-events: all; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
-        .btn-game.on:active { transform: translateY(0); box-shadow: none; }
+        .player-card { 
+            background: #fff; border: 2px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; 
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+        }
+        .player-card.turn { background: #fff9c4; border-color: var(--frevo-yellow); transform: scale(1.02); }
+        .money-badge { font-family: 'Rye'; color: var(--frevo-green); font-size: 1.2rem; }
 
-        .p-card { background: #fff; padding: 5px 10px; margin-bottom: 5px; border-radius: 5px; border-left: 5px solid #ccc; display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; align-items: center; }
-        .p-card.active { background: #fff9c4; transform: scale(1.02); border-color: var(--gold); }
-        #deed-list { flex: 1; overflow-y: auto; background: #fff8e1; border: 2px solid #ccc; padding: 5px; margin-top: 5px; }
+        .action-panel { margin-top: auto; display: grid; gap: 10px; }
+        .btn-game { 
+            padding: 15px; border: 3px solid #000; border-radius: 50px; font-weight: 900; 
+            font-family: 'Rye'; text-transform: uppercase; cursor: pointer; font-size: 1rem;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.3); transition: 0.1s; color: white;
+        }
+        .btn-game:active { transform: translateY(4px); box-shadow: 0 0 0; }
+        .btn-game:disabled { background: #aaa !important; cursor: not-allowed; box-shadow: none; opacity: 0.5; transform: none; }
 
-        /* DADOS 3D CORRIGIDOS (COM BOLINHAS) */
-        #dice-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
-        .hand-throw { font-size: 15rem; position: absolute; bottom: -100px; left: -100px; animation: handToss 0.8s forwards; z-index: 5001; }
-        @keyframes handToss { 0% { transform: translate(0,0); } 50% { transform: translate(40vw, -40vh) rotate(45deg); } 100% { transform: translate(40vw, 100vh); } }
+        /* POPUP DE EVENTOS (CARTAS/COMPRA) */
+        #event-modal { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; 
+            display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        .cordel-card {
+            width: 320px; background: #fff var(--paper-tex); border: 8px solid #3e2723; border-radius: 10px;
+            padding: 20px; text-align: center; animation: flipIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative;
+        }
+        .cordel-card::before {
+            content: ''; position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 20px; background: #3e2723; border-radius: 50%;
+        }
+        .card-img { font-size: 4rem; display: block; margin: 10px 0; }
+        .card-title { font-family: 'Rye'; font-size: 1.8rem; color: var(--frevo-red); margin: 0; }
+        .card-desc { font-size: 1.1rem; margin: 15px 0; font-weight: bold; color: #333; }
+        .card-price { font-size: 2rem; color: var(--frevo-green); font-family: 'Rye'; display: block; margin: 10px 0; }
         
-        .dice-wrap { width: 90px; height: 90px; position: relative; transform-style: preserve-3d; margin: 30px; }
-        .cube { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        .modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+
+        @keyframes flipIn { 0% { transform: rotateY(90deg) scale(0.5); opacity: 0; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
+
+        /* DADOS 3D */
+        #dice-stage { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); pointer-events: none; z-index: 200; display: none; gap: 40px; }
+        .cube { width: 80px; height: 80px; position: relative; transform-style: preserve-3d; transition: transform 1s ease-out; }
+        .face { position: absolute; inset: 0; background: #fff; border: 4px solid #000; border-radius: 12px; display: grid; place-items: center; font-size: 2rem; font-weight: bold; backface-visibility: hidden; }
         
-        /* Faces do dado com Grid para as bolinhas */
-        .face { position: absolute; width: 100%; height: 100%; background: #fff; border: 4px solid #000; border-radius: 12px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 8px; backface-visibility: hidden; box-shadow: inset 0 0 15px rgba(0,0,0,0.1); }
-        .dot { background-color: black; border-radius: 50%; width: 16px; height: 16px; align-self: center; justify-self: center; }
+        .f1 { transform: translateZ(40px); } .f6 { transform: rotateX(180deg) translateZ(40px); }
+        .f2 { transform: rotateY(-90deg) translateZ(40px); } .f5 { transform: rotateY(90deg) translateZ(40px); }
+        .f3 { transform: rotateX(-90deg) translateZ(40px); } .f4 { transform: rotateX(90deg) translateZ(40px); }
         
-        /* Posicionamento dos pontos */
-        .face[data-val="1"] .dot:nth-child(1) { grid-column: 2; grid-row: 2; }
-        .face[data-val="2"] .dot:nth-child(1) { grid-column: 1; grid-row: 1; } .face[data-val="2"] .dot:nth-child(2) { grid-column: 3; grid-row: 3; }
-        .face[data-val="3"] .dot:nth-child(1) { grid-column: 1; grid-row: 1; } .face[data-val="3"] .dot:nth-child(2) { grid-column: 2; grid-row: 2; } .face[data-val="3"] .dot:nth-child(3) { grid-column: 3; grid-row: 3; }
-        .face[data-val="4"] .dot:nth-child(1) { grid-column: 1; grid-row: 1; } .face[data-val="4"] .dot:nth-child(2) { grid-column: 3; grid-row: 1; } .face[data-val="4"] .dot:nth-child(3) { grid-column: 1; grid-row: 3; } .face[data-val="4"] .dot:nth-child(4) { grid-column: 3; grid-row: 3; }
-        .face[data-val="5"] .dot:nth-child(1) { grid-column: 1; grid-row: 1; } .face[data-val="5"] .dot:nth-child(2) { grid-column: 3; grid-row: 1; } .face[data-val="5"] .dot:nth-child(3) { grid-column: 2; grid-row: 2; } .face[data-val="5"] .dot:nth-child(4) { grid-column: 1; grid-row: 3; } .face[data-val="5"] .dot:nth-child(5) { grid-column: 3; grid-row: 3; }
-        .face[data-val="6"] .dot:nth-child(1) { grid-column: 1; grid-row: 1; } .face[data-val="6"] .dot:nth-child(2) { grid-column: 3; grid-row: 1; } .face[data-val="6"] .dot:nth-child(3) { grid-column: 1; grid-row: 2; } .face[data-val="6"] .dot:nth-child(4) { grid-column: 3; grid-row: 2; } .face[data-val="6"] .dot:nth-child(5) { grid-column: 1; grid-row: 3; } .face[data-val="6"] .dot:nth-child(6) { grid-column: 3; grid-row: 3; }
+        .show-1 { transform: rotateX(0deg) rotateY(0deg); } .show-6 { transform: rotateX(180deg); }
+        .show-2 { transform: rotateY(90deg); } .show-5 { transform: rotateY(-90deg); }
+        .show-3 { transform: rotateX(90deg); } .show-4 { transform: rotateX(-90deg); }
 
-        /* Rotação das Faces */
-        .face:nth-child(1) { transform: translateZ(45px); } 
-        .face:nth-child(6) { transform: rotateX(180deg) translateZ(45px); }
-        .face:nth-child(2) { transform: rotateY(90deg) translateZ(45px); } 
-        .face:nth-child(5) { transform: rotateY(-90deg) translateZ(45px); }
-        .face:nth-child(3) { transform: rotateX(90deg) translateZ(45px); } 
-        .face:nth-child(4) { transform: rotateX(-90deg) translateZ(45px); }
-
-        /* Classes de Resultado */
-        .show-1 { transform: rotateX(0deg) rotateY(0deg); } .show-6 { transform: rotateX(180deg) rotateY(0deg); }
-        .show-2 { transform: rotateY(-90deg); } .show-5 { transform: rotateY(90deg); }
-        .show-3 { transform: rotateX(-90deg); } .show-4 { transform: rotateX(90deg); }
-
-        .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #fff; padding: 15px 30px; border: 4px solid var(--frevo-blue); border-radius: 50px; font-weight: bold; z-index: 8000; animation: popIn 0.3s; font-family: 'Rye'; box-shadow: 0 10px 20px rgba(0,0,0,0.3); text-align: center; }
-        @keyframes popIn { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
-
-        @media (min-width: 900px) { #board { transform: rotateX(25deg) scale(0.9); } }
-        @media (max-width: 899px) { #game-layout { flex-direction: column; } #sidebar { order: 2; height: auto; border-top: 8px solid var(--wood); width: 100%; border-left: none; } #board { transform: scale(0.58); margin-bottom: 20px; } }
+        .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; z-index: 9999; animation: fadeUp 2s forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translate(-50%, 20px); } 20% { opacity: 1; transform: translate(-50%, 0); } 80% { opacity: 1; } 100% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div id="screen-start">
-    <h1 style="color:#fff; font-size:3rem; margin-bottom:10px;">RECIFE DE LUXO</h1>
-    <div class="card-menu">
-        <h2 style="color:var(--wood); margin:0;">MODO SOLO</h2>
-        <p>Você vs Inteligência Artificial</p>
-        <button class="btn-big" onclick="ui.toChar()">JOGAR AGORA</button>
-    </div>
-</div>
-
-<div id="screen-char" style="display:none;">
-    <h1 style="color:var(--gold);">ESCOLHA SEU PEÃO</h1>
-    <div class="card-menu" style="width:600px;">
-        <div class="char-grid" id="char-grid"></div>
-        <button id="btn-start-game" class="btn-big" style="background:var(--frevo-green); display:none;" onclick="game.start()">INICIAR PARTIDA</button>
-    </div>
-</div>
-
-<div id="game-layout">
-    <div id="board-viewport">
+<div id="main-stage">
+    <div id="viewport">
         <div id="board">
-            <div class="center-hub">
-                <h1 style="color:var(--frevo-blue); z-index:2; text-shadow:2px 2px #fff; font-size:3rem; margin:0;">RECIFE</h1>
+            <div id="center-logo" style="grid-column:2/11; grid-row:2/11; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <h1 style="font-family:'Rye'; font-size:4rem; color:var(--frevo-blue); margin:0; text-shadow:2px 2px #fff;">RECIFE</h1>
+                <div style="background:#fff; padding:5px 15px; border-radius:20px; font-weight:bold; border:2px solid #000;">☀️ Sol</div>
             </div>
-            </div>
+        </div>
     </div>
-    
-    <div id="sidebar">
-        <div class="hud-header">
-            <h2 style="margin:0; color:var(--frevo-red);">Pernambuco</h2>
-            <div id="my-cash" style="font-size:1.5rem; font-weight:900; color:#388e3c;">$1500</div>
-        </div>
-        <div id="turn-msg" class="turn-box">...</div>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px;">
-            <button id="b-roll" class="btn-game" style="background:var(--gold); color:#000; grid-column:span 2;">🎲 ROLAR DADOS</button>
-            <button id="b-buy" class="btn-game" style="background:#43a047; color:#fff;">💰 COMPRAR</button>
-            <button id="b-bail" class="btn-game" style="background:#607d8b; color:#fff;">💸 SUBORNO</button>
-            <button id="b-end" class="btn-game" style="background:#d32f2f; color:#fff; grid-column:span 2;">🛑 PASSAR</button>
-        </div>
 
-        <div style="font-weight:bold; font-size:0.8rem;">Jogadores:</div>
-        <div id="hud-list" style="margin-bottom:10px;"></div>
-        
-        <div style="font-weight:bold; font-size:0.8rem;">Minhas Escrituras:</div>
-        <div id="deed-list"></div>
+    <div id="sidebar">
+        <h1 class="hud-title">PERNAMBUCO</h1>
+        <div id="players-list">
+            </div>
+        <div style="flex:1; background:rgba(0,0,0,0.05); border:1px dashed #999; padding:10px; margin-bottom:10px; overflow-y:auto;" id="log-box">
+            <div style="font-size:0.8rem; color:#666;">Bem-vindo ao Recife!</div>
+        </div>
+        <div class="action-panel">
+            <button id="btn-roll" class="btn-game" style="background:var(--frevo-yellow); color:#000;">🎲 ROLAR</button>
+            <button id="btn-pass" class="btn-game" style="background:var(--frevo-red);" disabled>🛑 PASSAR</button>
+        </div>
     </div>
 </div>
 
-<div id="dice-overlay">
-    <div class="hand-throw">🫳</div>
-    <div class="dice-wrap"><div id="d1" class="cube"></div></div>
-    <div class="dice-wrap"><div id="d2" class="cube"></div></div>
+<div id="dice-stage">
+    <div id="d1" class="cube"><div class="face f1">1</div><div class="face f2">2</div><div class="face f3">3</div><div class="face f4">4</div><div class="face f5">5</div><div class="face f6">6</div></div>
+    <div id="d2" class="cube"><div class="face f1">1</div><div class="face f2">2</div><div class="face f3">3</div><div class="face f4">4</div><div class="face f5">5</div><div class="face f6">6</div></div>
+</div>
+
+<div id="event-modal">
+    <div class="cordel-card">
+        <span class="card-img" id="mod-icon">🏠</span>
+        <h2 class="card-title" id="mod-title">TITULO</h2>
+        <p class="card-desc" id="mod-desc">Descrição do evento</p>
+        <div class="modal-btns" id="mod-btns"></div>
+    </div>
 </div>
 
 <script>
-/* DADOS */
-const CHARS=[{id:'crab',i:'🦀',n:'Caranguejo'},{id:'shark',i:'🦈',n:'Tubarão'},{id:'umb',i:'☂️',n:'Sombrinha'},{id:'sun',i:'☀️',n:'Sol'},{id:'drum',i:'🥁',n:'Tambor'},{id:'coco',i:'🥥',n:'Coco'},{id:'ursa',i:'🐻',n:'La Ursa'},{id:'corn',i:'🌽',n:'Milho'}];
-const BD=[
-    {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô Centro'},{t:'pr',g:'#03a9f4',n:'Santo Amaro',p:100,h:50,r:[6,30,90,270,400,550]},{t:'ch',n:'Revés'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270,400,550]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300,450,600]},
-    {t:'jl',n:'Trânsito'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450,750,950]},{t:'ut',n:'Neoenergia',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450,750,950]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500,700,900]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,r:[14,70,200,550,750,950]},{t:'ch',n:'Sorte'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550,750,950]},{t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Parque Jaqueira'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'pr',g:'#fbc02d',n:'Poço da Panela',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},
-    {t:'gj',n:'Blitz!'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'ch',n:'Sorte'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000,1200,1400]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100,1300,1500]},{t:'tx',n:'Taxa Luxo',p:100},{t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,r:[50,200,600,1400,1700,2000]}
+/* CONFIGURAÇÃO */
+const BD = [
+    {t:'st',n:'Início'}, {t:'pr',g:'#795548',n:'Coque',p:60}, {t:'ch',n:'Sorte'}, {t:'pr',g:'#795548',n:'Ibura',p:60}, {t:'tx',n:'IPTU',p:200}, {t:'rr',n:'Metrô'}, {t:'pr',g:'#03a9f4',n:'Santo Amaro',p:100}, {t:'ch',n:'Revés'}, {t:'pr',g:'#03a9f4',n:'Afogados',p:100}, {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120},
+    {t:'jl',n:'Cadeia'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140}, {t:'ut',n:'Neoenergia',p:150}, {t:'pr',g:'#e91e63',n:'Cordeiro',p:140}, {t:'pr',g:'#e91e63',n:'Várzea',p:160}, {t:'rr',n:'Metrô Oeste'}, {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180}, {t:'ch',n:'Sorte'}, {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180}, {t:'pr',g:'#ff5722',n:'Torre',p:200},
+    {t:'pk',n:'Parque'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220}, {t:'ch',n:'Revés'}, {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220}, {t:'pr',g:'#d32f2f',n:'Madalena',p:240}, {t:'rr',n:'Via Mangue'}, {t:'pr',g:'#fbc02d',n:'Graças',p:260}, {t:'pr',g:'#fbc02d',n:'Poço',p:260}, {t:'ut',n:'Compesa',p:150}, {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280},
+    {t:'gj',n:'Blitz'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300}, {t:'pr',g:'#388e3c',n:'Parnamirim',p:300}, {t:'ch',n:'Sorte'}, {t:'pr',g:'#388e3c',n:'Paiva',p:320}, {t:'rr',n:'Aeroporto'}, {t:'ch',n:'Revés'}, {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350}, {t:'tx',n:'Taxa',p:100}, {t:'pr',g:'#1565c0',n:'Jaqueira',p:400}
 ];
-const SFX={dice:new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3')};
-const play=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{})}catch(e){}};
 
-/* ESTADO DO JOGO */
-let state = {
-    players: [
-        {id:'human', name:'Você', char:null, money:1500, pos:0, jailed:false, color:'#d32f2f'},
-        {id:'cpu', name:'Zé do Código (IA)', char:null, money:1500, pos:0, jailed:false, color:'#0288d1'}
-    ],
-    turn: 0,
-    rolled: false,
-    props: BD.map(()=>({owner:null, level:0, mtg:false})),
-    doubles: 0
-};
-let isAnimating = false;
+const CARDS_SORTE = [
+    "Achou 20 conto no Marco Zero! (+$20)",
+    "Ganhou na rifa do Galo! (+$100)",
+    "Vendeu água no carnaval. Lucro! (+$50)"
+];
+const CARDS_REVES = [
+    "Perdeu a carteira no ônibus. (-$50)",
+    "Multa de trânsito na Agamenon. (-$100)",
+    "Pneu furou na chuva. (-$30)"
+];
 
-/* UI & GAMEPLAY */
-const ui = {
-    toChar: () => {
-        document.getElementById('screen-start').style.display='none';
-        document.getElementById('screen-char').style.display='flex';
-        const g = document.getElementById('char-grid');
-        g.innerHTML = '';
-        CHARS.forEach(c => {
-            g.innerHTML += `<div class="char-opt" onclick="ui.pickChar('${c.id}')"><div class="char-icon">${c.i}</div><div>${c.n}</div></div>`;
-        });
-        ui.prepDice();
-    },
-    prepDice: () => {
-        // Gerar as faces com bolinhas para garantir que não use fontes
-        const cubes = document.querySelectorAll('.cube');
-        cubes.forEach(c => {
-            c.innerHTML = '';
-            for(let i=1; i<=6; i++) {
-                let dots = '';
-                for(let j=0; j<i; j++) dots += '<div class="dot"></div>';
-                c.innerHTML += `<div class="face" data-val="${i}">${dots}</div>`;
-            }
-        });
-    },
-    pickChar: (cid) => {
-        state.players[0].char = cid;
-        const others = CHARS.filter(c=>c.id!==cid);
-        state.players[1].char = others[Math.floor(Math.random()*others.length)].id;
-        document.getElementById('screen-char').style.display='none';
-        game.start();
-    },
-    genBoard: () => {
-        const b = document.getElementById('board');
-        BD.forEach((s,i)=>{
-            const d=document.createElement('div');d.className='space';d.id=`s${i}`;
-            let r,c;if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
-            d.style.gridRow=r;d.style.gridColumn=c;
-            d.innerHTML=s.t==='pr'?`<div class="color-bar" style="background:${s.g}"></div><div>${s.n}<br>$${s.p}</div>`:`<div style="margin:auto">${s.n}</div>`;
-            b.appendChild(d);
-        });
-    },
-    render: () => {
-        const p = state.players[state.turn];
-        document.getElementById('turn-msg').innerText = `Vez de: ${p.name}`;
-        document.getElementById('my-cash').innerText = `$${state.players[0].money}`;
-        
-        const isHuman = state.turn === 0;
-        const canAct = isHuman && !isAnimating;
-        const curProp = BD[state.players[0].pos];
-        
-        ui.btn('b-roll', canAct && (!state.rolled || state.doubles > 0));
-        ui.btn('b-buy', canAct && state.rolled && curProp.t==='pr' && state.props[state.players[0].pos].owner===null);
-        ui.btn('b-end', canAct && state.rolled && state.doubles===0);
-        ui.btn('b-bail', canAct && state.players[0].jailed);
+const PLAYERS = [
+    {name:"Você", color:"red", icon:"🦀", pos:0, money:1500, jailed:false, id:0},
+    {name:"Zé (IA)", color:"blue", icon:"🦈", pos:0, money:1500, jailed:false, id:1}
+];
 
-        document.getElementById('hud-list').innerHTML = state.players.map((pl,i) => {
-            const charObj = CHARS.find(c=>c.id===pl.char);
-            return `<div class="p-card ${state.turn===i?'active':''}"><span>${charObj.i} ${pl.name}</span><span>$${pl.money}</span></div>`;
-        }).join('');
+let turn = 0;
+let props = Array(40).fill(null); // Owner index
+let rolled = false;
+let animating = false;
 
-        document.querySelectorAll('.token').forEach(e=>e.remove());
-        state.players.forEach((pl, i) => {
-            const charObj = CHARS.find(c=>c.id===pl.char);
-            const t = document.createElement('div'); t.className='token'; t.innerText=charObj.i;
-            const sp = document.getElementById(`s${pl.pos}`);
-            const br = document.getElementById('board').getBoundingClientRect();
-            const sr = sp.getBoundingClientRect();
-            t.style.left = (sr.left - br.left + 15 + (i*10)) + 'px';
-            t.style.top = (sr.top - br.top + 10 + (i*10)) + 'px';
-            document.getElementById('board').appendChild(t);
-        });
-
-        const dl = document.getElementById('deed-list'); dl.innerHTML='';
-        state.props.forEach((pr, i) => {
-            const sp = document.getElementById(`s${i}`);
-            if(pr.owner !== null) sp.style.border = `4px solid ${state.players[pr.owner].color}`;
-            if(pr.owner === 0) { 
-                dl.innerHTML += `<div class="deed-item"><span>${BD[i].n}</span></div>`;
-            }
-        });
-    },
-    btn: (id, on) => { const b=document.getElementById(id); if(on){b.classList.add('on');b.disabled=false;}else{b.classList.remove('on');b.disabled=true;} },
-    diceAnim: (d1, d2) => {
-        const o=document.getElementById('dice-overlay'); o.style.display='flex'; play('dice');
-        const c1=document.querySelector('#d1'), c2=document.querySelector('#d2');
-        // Reset classes
-        c1.className='cube'; c2.className='cube'; void c1.offsetWidth;
-        c1.style.transition='transform 1.5s'; c2.style.transition='transform 1.5s';
-        setTimeout(()=>{c1.classList.add('show-'+d1); c2.classList.add('show-'+d2);},50);
-        setTimeout(()=>{o.style.display='none';}, 2500);
-    },
-    toast: (m) => {
-        const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);
-    }
+const SFX = {
+    step: new Audio('https://www.soundjay.com/misc/sounds/wood-block-1.mp3'),
+    cash: new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'),
+    win: new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3')
 };
 
-/* GAME LOGIC */
-const game = {
-    start: () => {
-        document.getElementById('game-layout').classList.add('active');
-        ui.genBoard();
-        ui.render();
-        confetti();
-    },
-    roll: () => {
-        if(isAnimating) return;
-        isAnimating = true;
-        
-        // Safety Break: Se algo der errado na animação, libera em 4s
-        const safeBreak = setTimeout(()=>{ isAnimating=false; ui.render(); }, 4000);
+/* INICIALIZAÇÃO */
+function init() {
+    drawBoard();
+    updateHUD();
+}
 
-        const d1 = Math.ceil(Math.random()*6), d2 = Math.ceil(Math.random()*6);
-        ui.diceAnim(d1, d2);
+function drawBoard() {
+    const b = document.getElementById('board');
+    BD.forEach((s, i) => {
+        const d = document.createElement('div');
+        d.className = 'space'; d.id = `s${i}`;
         
-        setTimeout(async () => {
-            clearTimeout(safeBreak); // Animação funcionou
-            try {
-                const p = state.players[state.turn];
-                if(d1===d2){ state.doubles++; state.rolled=false; ui.toast("DADOS IGUAIS!"); }
-                else { state.doubles=0; state.rolled=true; }
+        let r, c;
+        if (i<=10) { r=11; c=11-i; }
+        else if (i<=20) { r=11-(i-10); c=1; }
+        else if (i<=30) { r=1; c=1+(i-20); }
+        else { r=1+(i-30); c=11; }
+        d.style.gridRow = r; d.style.gridColumn = c;
 
-                if(state.doubles >= 3) {
-                    p.jailed=true; p.pos=10; state.rolled=true; state.doubles=0; ui.toast("PRESO!");
-                } else {
-                    if(p.jailed) {
-                        if(d1===d2){ p.jailed=false; await game.moveToken(p, d1+d2); state.rolled=true; }
-                        else { state.rolled=true; ui.toast("Continua preso..."); }
-                    } else {
-                        await game.moveToken(p, d1+d2);
-                    }
-                }
-            } catch(e) {
-                console.error(e);
-                state.rolled = true; // Força estado seguro
-            } finally {
-                isAnimating = false;
-                ui.render();
-                if(state.turn === 1 && !state.rolled) setTimeout(ai.play, 1000);
-                else if(state.turn === 1 && state.rolled) setTimeout(game.endTurn, 1000);
-            }
-        }, 2500);
-    },
-    moveToken: async (p, steps) => {
-        for(let i=0; i<steps; i++){
-            p.pos++; if(p.pos>=40){p.pos=0; p.money+=200; ui.toast("Salário +$200");}
-            ui.render(); await new Promise(r=>setTimeout(r, 200));
+        if (s.t === 'pr') {
+            d.innerHTML = `<div class="color-strip" style="background:${s.g}"></div><div class="space-name">${s.n}</div><div class="space-price">$${s.p}</div>`;
+        } else {
+            d.innerHTML = `<div class="space-name" style="margin:auto">${s.n}</div>`;
         }
-        // Chegada
-        const pr = state.props[p.pos];
-        const s = BD[p.pos];
-        if(pr.owner !== null && pr.owner !== state.turn) {
-            let r = s.r ? s.r[0] : 50;
-            p.money -= r; state.players[pr.owner].money += r;
-            play('cash'); ui.toast(`Pagou aluguel $${r}`);
-        }
-        if(s.t==='tx') { p.money-=s.p; ui.toast("Imposto!"); }
-    },
-    buy: () => {
-        const p = state.players[state.turn];
-        const idx = p.pos;
-        if(p.money >= BD[idx].p && state.props[idx].owner === null) {
-            p.money -= BD[idx].p;
-            state.props[idx].owner = state.turn;
-            play('cash'); ui.render();
-        }
-    },
-    endTurn: () => {
-        state.turn = (state.turn + 1) % 2;
-        state.rolled = false;
-        state.doubles = 0;
-        ui.render();
-        if(state.turn === 1) setTimeout(ai.play, 1500);
-    }
-};
+        b.appendChild(d);
+    });
+    
+    // Create Tokens
+    PLAYERS.forEach((p, i) => {
+        const t = document.createElement('div');
+        t.className = 'token'; t.id = `tok${i}`;
+        t.innerText = p.icon;
+        b.appendChild(t);
+        placeToken(i, 0); // Start at 0
+    });
+}
 
-/* AI LOGIC */
-const ai = {
-    play: () => {
-        game.roll();
-        setTimeout(() => {
-            const p = state.players[1];
-            const s = BD[p.pos];
-            if(s.t==='pr' && state.props[p.pos].owner === null && p.money > s.p + 200) {
-                game.buy();
+function placeToken(pid, pos) {
+    const t = document.getElementById(`tok${pid}`);
+    const cell = document.getElementById(`s${pos}`);
+    const br = document.getElementById('board').getBoundingClientRect();
+    const cr = cell.getBoundingClientRect();
+    
+    // Offset for multiple players
+    const offX = pid * 8; 
+    const offY = pid * 8;
+
+    // Calculate relative position inside the board container
+    // Since board is transformed 3D, we use simple grid math for stability or precise offsets
+    // Simplified logic: stick to the cell visually
+    // Better approach: append token INTO cell? No, z-index issues.
+    // Let's use simple style overrides.
+    
+    // Reset transform to avoid accumulation
+    t.style.left = (cell.offsetLeft + 10 + offX) + 'px';
+    t.style.top = (cell.offsetTop + 10 + offY) + 'px';
+}
+
+/* LOGICA DO JOGO */
+async function rollDice() {
+    if (animating || rolled) return;
+    animating = true;
+    
+    // Roll Math
+    const d1 = Math.ceil(Math.random()*6);
+    const d2 = Math.ceil(Math.random()*6);
+    const total = d1 + d2;
+
+    // Animation
+    const diceBox = document.getElementById('dice-stage');
+    diceBox.style.display = 'flex';
+    const c1 = document.getElementById('d1');
+    const c2 = document.getElementById('d2');
+    
+    // Reset classes
+    c1.className = 'cube'; c2.className = 'cube';
+    void c1.offsetWidth; // Reflow
+    
+    // Apply visual rotation
+    setTimeout(() => { c1.classList.add(`show-${d1}`); c2.classList.add(`show-${d2}`); }, 50);
+
+    await sleep(2000); // Wait for animation
+    diceBox.style.display = 'none';
+    
+    await movePawn(turn, total);
+    
+    // Turn Logic
+    rolled = true;
+    checkButtons();
+    animating = false;
+}
+
+async function movePawn(pid, steps) {
+    const p = PLAYERS[pid];
+    
+    for (let i = 0; i < steps; i++) {
+        p.pos++;
+        if (p.pos >= 40) {
+            p.pos = 0;
+            p.money += 200;
+            log(`${p.name} passou no início: +$200`);
+            playSound('win');
+        }
+        placeToken(pid, p.pos);
+        playSound('step');
+        await sleep(200); // "Poc-Poc" effect
+    }
+    
+    handleLanding(pid);
+    updateHUD();
+}
+
+function handleLanding(pid) {
+    const p = PLAYERS[pid];
+    const s = BD[p.pos];
+    const owner = props[p.pos];
+
+    if (s.t === 'pr' || s.t === 'rr' || s.t === 'ut') {
+        if (owner === null) {
+            // Unowned - Offer to Buy (Only if Human)
+            if (pid === 0) {
+                if (p.money >= s.p) showModal('buy', s);
+                else toast("Dinheiro insuficiente para comprar.");
+            } else {
+                // AI Logic
+                if (p.money >= s.p + 200) buyProp(pid); // AI buys if safe
             }
-            if(state.rolled) game.endTurn();
-            if(!state.rolled && state.turn === 1) setTimeout(ai.play, 1000);
-        }, 4000);
+        } else if (owner !== pid) {
+            // Pay Rent
+            const rent = Math.floor(s.p * 0.1);
+            p.money -= rent;
+            PLAYERS[owner].money += rent;
+            log(`${p.name} pagou aluguel de $${rent} a ${PLAYERS[owner].name}`);
+            playSound('cash');
+        }
+    } else if (s.t === 'ch') {
+        drawCard('sorte');
+    } else if (s.t === 'rev') {
+        drawCard('reves');
+    } else if (s.t === 'tx') {
+        p.money -= s.p;
+        log(`${p.name} pagou taxa de $${s.p}`);
     }
-};
+}
 
-document.getElementById('b-roll').onclick = () => game.roll();
-document.getElementById('b-buy').onclick = () => game.buy();
-document.getElementById('b-end').onclick = () => game.endTurn();
+function drawCard(type) {
+    const deck = type === 'sorte' ? CARDS_SORTE : CARDS_REVES;
+    const txt = deck[Math.floor(Math.random() * deck.length)];
+    const val = parseInt(txt.match(/\d+/)[0]);
+    const isGain = txt.includes('+');
+    
+    showModal('card', { title: type.toUpperCase(), desc: txt, type: type });
+    
+    const p = PLAYERS[turn];
+    if (isGain) { p.money += val; playSound('win'); }
+    else { p.money -= val; }
+}
+
+function showModal(type, data) {
+    const m = document.getElementById('event-modal');
+    const icon = document.getElementById('mod-icon');
+    const title = document.getElementById('mod-title');
+    const desc = document.getElementById('mod-desc');
+    const btns = document.getElementById('mod-btns');
+    
+    m.style.display = 'flex';
+    btns.innerHTML = '';
+
+    if (type === 'buy') {
+        icon.innerText = '🏠';
+        title.innerText = data.n;
+        desc.innerHTML = `Preço: <span class="card-price">$${data.p}</span><br>Deseja comprar?`;
+        
+        const bYes = document.createElement('button');
+        bYes.className = 'btn-game'; bYes.style.background = '#2e7d32'; bYes.innerText = 'SIM';
+        bYes.onclick = () => { buyProp(turn); closeModal(); };
+        
+        const bNo = document.createElement('button');
+        bNo.className = 'btn-game'; bNo.style.background = '#c62828'; bNo.innerText = 'NÃO';
+        bNo.onclick = () => { closeModal(); }; // In real game, auction
+        
+        btns.appendChild(bYes); btns.appendChild(bNo);
+    } 
+    else if (type === 'card') {
+        icon.innerText = data.type === 'sorte' ? '🍀' : '⚠️';
+        title.innerText = data.title;
+        desc.innerText = data.desc;
+        
+        const bOk = document.createElement('button');
+        bOk.className = 'btn-game'; bOk.style.background = '#0288d1'; bOk.innerText = 'OK';
+        bOk.onclick = closeModal;
+        btns.appendChild(bOk);
+        
+        if (data.type === 'sorte') confetti();
+    }
+}
+
+function closeModal() {
+    document.getElementById('event-modal').style.display = 'none';
+    updateHUD();
+}
+
+function buyProp(pid) {
+    const p = PLAYERS[pid];
+    const s = BD[p.pos];
+    p.money -= s.p;
+    props[p.pos] = pid;
+    
+    // Visual Marker
+    document.getElementById(`s${p.pos}`).style.border = `4px solid ${p.color}`;
+    log(`${p.name} comprou ${s.n}!`);
+    playSound('cash');
+    updateHUD();
+}
+
+function passTurn() {
+    if (!rolled) return;
+    turn = (turn + 1) % PLAYERS.length;
+    rolled = false;
+    log(`Vez de: ${PLAYERS[turn].name}`);
+    checkButtons();
+    updateHUD();
+    
+    if (turn === 1) setTimeout(aiTurn, 1000);
+}
+
+async function aiTurn() {
+    await rollDice();
+    await sleep(1000);
+    passTurn();
+}
+
+/* UI UTILS */
+function updateHUD() {
+    const list = document.getElementById('players-list');
+    list.innerHTML = PLAYERS.map((p, i) => `
+        <div class="player-card ${turn === i ? 'turn' : ''}">
+            <div style="font-size:1.5rem;">${p.icon}</div>
+            <div>${p.name}</div>
+            <div class="money-badge">$${p.money}</div>
+        </div>
+    `).join('');
+    
+    checkButtons();
+}
+
+function checkButtons() {
+    const isHuman = turn === 0;
+    document.getElementById('btn-roll').disabled = !(isHuman && !rolled);
+    document.getElementById('btn-pass').disabled = !(isHuman && rolled);
+}
+
+function log(msg) {
+    const box = document.getElementById('log-box');
+    box.innerHTML += `<div>> ${msg}</div>`;
+    box.scrollTop = box.scrollHeight;
+}
+
+function toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast'; t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2000);
+}
+
+function playSound(type) {
+    try { SFX[type].currentTime = 0; SFX[type].play(); } catch(e){}
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* EVENTOS */
+document.getElementById('btn-roll').onclick = rollDice;
+document.getElementById('btn-pass').onclick = passTurn;
+
+// Start
+init();
+
 </script>
 </body>
 </html>
