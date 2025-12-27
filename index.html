@@ -3,348 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário: Visual 3D</title>
+    <title>Recife Imobiliário: V20 Final</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-grad: radial-gradient(circle at center, #0288d1, #01579b);
-            --wood: #3e2723; --paper: #fff8e1; --gold: #ffca28;
-            --frevo-blue: #0277bd; --frevo-red: #c62828; --frevo-green: #2e7d32;
-            --shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --bg-carnaval: linear-gradient(135deg, #ff9800 0%, #f44336 50%, #9c27b0 100%);
+            --wood: #3e2723; --paper: #fff8e1; --gold: #ffd700;
+            --frevo-blue: #0277bd; --frevo-green: #2e7d32; --frevo-red: #c62828;
+            --shadow-deep: 0 30px 60px rgba(0,0,0,0.6);
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-grad); height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1200px; transition: filter 2s; }
-        h1, h2, button { font-family: 'Rye', serif; letter-spacing: 1px; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-carnaval); height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: filter 2s; }
+        h1, h2, h3, button, .brand { font-family: 'Rye', serif; letter-spacing: 1px; text-shadow: 2px 2px 0px rgba(0,0,0,0.2); }
 
         /* AMBIENTE */
         #rain-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 8000; display: none; }
         .night-mode { filter: brightness(0.6) contrast(1.2); }
-        .night-mode .space { box-shadow: inset 0 0 20px #ffb300; border-color: #fff; }
+        .night-mode .space { box-shadow: inset 0 0 20px #ffd700; border-color: #fff; }
 
-        /* --- LOBBY (V9 Style mas Bonito) --- */
-        #lobby { position: fixed; inset: 0; z-index: 9000; background: url('https://www.transparenttextures.com/patterns/cubes.png'), var(--bg-grad); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .card-lobby { background: var(--paper); padding: 40px; border: 8px solid var(--wood); border-radius: 15px; text-align: center; width: 90%; max-width: 450px; box-shadow: var(--shadow); }
-        .input-box { width: 100%; padding: 15px; margin: 10px 0; border: 3px solid var(--wood); font-family: 'Rye'; font-size: 1.2rem; text-align: center; border-radius: 8px; }
-        .btn-main { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.3); color: white; transition: 0.1s; }
-        .btn-main:active { transform: translateY(4px); box-shadow: none; }
-        .bg-y { background: var(--gold); color: black; } .bg-g { background: var(--frevo-green); } .bg-r { background: var(--frevo-red); }
+        /* --- TELA 1: LOBBY --- */
+        #screen-lobby, #screen-char { position: fixed; inset: 0; z-index: 9000; background: url('https://www.transparenttextures.com/patterns/cubes.png'), var(--bg-carnaval); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .estandarte-card { background: var(--paper); width: 90%; max-width: 450px; padding: 30px; border: 8px solid var(--wood); border-radius: 10px 10px 50px 50px; text-align: center; box-shadow: var(--shadow-deep); position: relative; }
+        .input-recife { width: 100%; padding: 15px; margin: 10px 0; border: 3px solid var(--wood); font-family: 'Rye'; font-size: 1.1rem; text-align: center; border-radius: 8px; }
+        .btn-frevo { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.2); color: white; font-family: 'Rye'; transition: transform 0.1s; }
+        .btn-frevo:active { transform: translateY(4px); box-shadow: none; }
+        .bg-blue { background: #0288d1; } .bg-green { background: #43a047; } .bg-red { background: #d32f2f; }
+        #net-status { font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }
 
-        /* --- JOGO --- */
-        #game { display: none; width: 100%; height: 100%; }
-        #game.active { display: flex; } /* Flex row default, media query handles mobile */
+        /* CHAR SELECT */
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+        .char-opt { background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 10px; padding: 10px; cursor: pointer; transition: 0.3s; text-align: center; position: relative; }
+        .char-opt.taken { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
+        .char-opt.selected { background: var(--gold); transform: scale(1.1); border-color: var(--wood); color: black; }
+        .char-icon { font-size: 2.5rem; }
 
-        #board-viewport { flex: 1; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d; overflow: hidden; }
-        #board { 
-            display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px); 
-            background: #f5f5f5; border: 20px solid var(--wood); border-radius: 12px; position: relative; 
-            transform: rotateX(25deg) scale(0.9); transform-style: preserve-3d; box-shadow: var(--shadow); 
-            transition: transform 1s; background-image: url('https://www.transparenttextures.com/patterns/white-brick-wall.png');
-        }
-
-        .space { 
-            border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.92); 
-            font-size: 0.6rem; text-align: center; position: relative; font-weight: bold; 
-            display: flex; flex-direction: column; transition: 0.3s; backface-visibility: hidden; 
-        }
-        .space:hover { transform: translateZ(20px); z-index: 100; border: 2px solid var(--gold); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
-        .color-bar { height: 25%; border-bottom: 2px solid #333; }
+        /* --- TELA 3: JOGO --- */
+        #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; transition: 1s; pointer-events: none; }
+        #game-layout.active { opacity: 1; pointer-events: all; }
         
-        .center-hub { grid-column: 2/11; grid-row: 2/11; background: #e1f5fe; border: 5px solid var(--wood); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.1); }
-        .umbrella { position: absolute; width: 200%; height: 200%; opacity: 0.15; background: conic-gradient(red 0deg 45deg, green 45deg 90deg, yellow 90deg 135deg, blue 135deg 180deg, red 180deg 225deg, green 225deg 270deg, yellow 270deg 315deg, blue 315deg 360deg); animation: spin 20s linear infinite; }
+        #board-viewport { flex: 1; perspective: 1500px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, #4fc3f7, #01579b); overflow: hidden; }
+        #board { display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px); background: #f5f5f5; border: 20px solid var(--wood); border-radius: 12px; position: relative; transform-style: preserve-3d; transition: transform 1s; box-shadow: var(--shadow-deep); background-image: url('https://www.transparenttextures.com/patterns/white-brick-wall.png'); }
+        
+        .space { border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); font-size: 0.6rem; text-align: center; position: relative; font-weight: bold; display: flex; flex-direction: column; transition: 0.3s; backface-visibility: hidden; }
+        .color-bar { height: 25%; border-bottom: 2px solid #333; position: relative; }
+        .mortgaged { filter: grayscale(1); opacity: 0.7; background: #ddd; }
+        .mortgaged::after { content:'HIPOTECADO'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-45deg); color:red; border:2px solid red; padding:2px; font-size:0.6rem; }
+
+        .center-hub { grid-column: 2/11; grid-row: 2/11; background: #e1f5fe; border: 5px solid var(--wood); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .umbrella-spin { position: absolute; width: 200%; height: 200%; opacity: 0.1; background: conic-gradient(red 0deg 45deg, green 45deg 90deg, yellow 90deg 135deg, blue 135deg 180deg, red 180deg 225deg, green 225deg 270deg, yellow 270deg 315deg, blue 315deg 360deg); animation: spin 20s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .token { width: 40px; height: 40px; position: absolute; z-index: 50; font-size: 2.5rem; text-align: center; line-height: 40px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 2.5rem; text-align: center; line-height: 50px; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5)); transition: top 0.3s, left 0.3s; transform-origin: bottom center; }
+        .jump { animation: jump 0.3s; } @keyframes jump { 50% { transform: translateY(-30px) scale(1.1); } }
 
-        /* SIDEBAR */
-        #sidebar { width: 350px; background: rgba(255,255,255,0.95); padding: 20px; display: flex; flex-direction: column; z-index: 100; border-left: 8px solid var(--wood); box-shadow: -10px 0 30px rgba(0,0,0,0.3); }
-        .hud-header { border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-act { padding: 12px; margin-bottom: 10px; border: 3px solid #000; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; opacity: 0.5; pointer-events: none; transition: 0.2s; font-size: 1rem; }
-        .btn-act.on { opacity: 1; pointer-events: all; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
-        .btn-act.on:active { transform: translateY(0); box-shadow: none; }
-
-        .p-item { padding: 8px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; font-weight: bold; }
-        .p-item.turn { background: #fff9c4; border-left: 5px solid var(--gold); }
-
-        /* DADOS 3D OVERLAY */
-        #dice-view { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
-        .dice-wrap { width: 100px; height: 100px; position: relative; transform-style: preserve-3d; margin: 40px; }
-        .cube { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1.5s ease-out; }
-        .face { position: absolute; inset: 0; background: #fff; border: 4px solid #000; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: bold; backface-visibility: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
-        .f1{transform:translateZ(50px)} .f6{transform:rotateX(180deg) translateZ(50px)}
-        .f2{transform:rotateY(180deg) translateZ(50px)} .f5{transform:rotateY(-90deg) translateZ(50px)} /* Fix rotation map logic later */
-        .f2{transform:rotateY(90deg) translateZ(50px)} .f3{transform:rotateY(90deg) translateZ(50px)} /* Simplificando CSS para V10 */
-        .face:nth-child(1) { transform: translateZ(50px); } .face:nth-child(6) { transform: rotateX(180deg) translateZ(50px); }
-        .face:nth-child(2) { transform: rotateY(90deg) translateZ(50px); } .face:nth-child(5) { transform: rotateY(-90deg) translateZ(50px); }
-        .face:nth-child(3) { transform: rotateX(90deg) translateZ(50px); } .face:nth-child(4) { transform: rotateX(-90deg) translateZ(50px); }
+        /* HUD */
+        #sidebar { width: 360px; background: rgba(255,255,255,0.95); padding: 15px; display: flex; flex-direction: column; z-index: 100; border-left: 8px solid var(--wood); box-shadow: -10px 0 30px rgba(0,0,0,0.3); }
+        .hud-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px dashed #888; padding-bottom: 5px; }
+        .turn-box { background: #333; color: var(--gold); padding: 8px; border-radius: 5px; text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem; }
         
-        .r1{transform:rotateX(0) rotateY(0)} .r6{transform:rotateX(180deg) rotateY(0)}
-        .r2{transform:rotateY(-90deg)} .r5{transform:rotateY(90deg)}
-        .r3{transform:rotateX(-90deg)} .r4{transform:rotateX(90deg)}
+        .btn-game { padding: 10px; border: 3px solid #000; border-radius: 8px; font-weight: bold; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.2s; text-transform: uppercase; font-size: 0.8rem; }
+        .btn-game.on { opacity: 1; pointer-events: all; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+        .btn-game.on:active { transform: translateY(0); box-shadow: none; }
 
-        /* RESPONSIVO */
-        @media (max-width: 900px) { body { flex-direction: column; } #game { flex-direction: column; } #sidebar { order: 2; height: auto; width: 100%; border-left: none; border-top: 8px solid var(--wood); } #board { transform: scale(0.55); margin-bottom: 20px; } }
+        .p-card { background: #fff; padding: 5px 10px; margin-bottom: 5px; border-radius: 5px; border-left: 5px solid #ccc; display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; align-items: center; }
+        .p-card.active { background: #fff9c4; transform: scale(1.02); border-color: var(--gold); }
+
+        #deed-list { flex: 1; overflow-y: auto; background: #fff8e1; border: 2px solid #ccc; padding: 5px; margin-top: 5px; }
+        .deed-item { font-size: 0.75rem; border-bottom: 1px dashed #aaa; padding: 5px; cursor: pointer; }
+
+        /* OVERLAYS */
+        #dice-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
+        
+        /* A MÃO GIGANTE */
+        .hand-throw { font-size: 15rem; position: absolute; bottom: -100px; left: -100px; animation: handToss 0.8s forwards; z-index: 5001; }
+        @keyframes handToss { 0% { transform: translate(0,0); } 50% { transform: translate(40vw, -40vh) rotate(45deg); } 100% { transform: translate(40vw, 100vh); } }
+
+        .dice-wrap { width: 90px; height: 90px; position: relative; transform-style: preserve-3d; margin: 30px; }
+        .cube { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        .face { position: absolute; width: 100%; height: 100%; background: #fff; border: 4px solid #000; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: bold; backface-visibility: hidden; box-shadow: inset 0 0 15px rgba(0,0,0,0.1); }
+        .face:nth-child(1) { transform: translateZ(45px); } .face:nth-child(6) { transform: rotateX(180deg) translateZ(45px); }
+        .face:nth-child(2) { transform: rotateY(90deg) translateZ(45px); } .face:nth-child(5) { transform: rotateY(-90deg) translateZ(45px); }
+        .face:nth-child(3) { transform: rotateX(90deg) translateZ(45px); } .face:nth-child(4) { transform: rotateX(-90deg) translateZ(45px); }
+        .show-1{transform:rotateX(0) rotateY(0)} .show-6{transform:rotateX(180deg)} .show-2{transform:rotateY(-90deg)} .show-5{transform:rotateY(90deg)} .show-3{transform:rotateX(-90deg)} .show-4{transform:rotateX(90deg)}
+
+        #card-zoom { display: none; pointer-events: auto; background: rgba(0,0,0,0.7); position: fixed; inset: 0; z-index: 6000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .big-card { width: 300px; background: #fff; border-radius: 15px; border: 4px solid #fff; box-shadow: 0 0 50px rgba(0,0,0,0.8); overflow: hidden; animation: popIn 0.3s; }
+        .bc-head { padding: 20px; text-align: center; color: white; font-family: 'Rye'; font-size: 1.5rem; text-shadow: 1px 1px 0 #000; }
+        .bc-body { padding: 20px; font-size: 1.1rem; text-align: center; }
+
+        .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #fff; padding: 15px 30px; border: 4px solid var(--frevo-blue); border-radius: 50px; font-weight: bold; z-index: 8000; animation: popIn 0.3s; font-family: 'Rye'; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        @keyframes popIn { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
+
+        @media (min-width: 900px) { #board { transform: rotateX(25deg) scale(0.9); } }
+        @media (max-width: 899px) { #game-layout { flex-direction: column; } #sidebar { order: 2; height: auto; border-top: 8px solid var(--wood); width: 100%; border-left: none; } #board { transform: scale(0.58); margin-bottom: 20px; } }
     </style>
 </head>
 <body>
 
 <canvas id="rain-canvas"></canvas>
 
-<div id="lobby">
-    <div class="card-lobby">
-        <h1 style="color:var(--wood); font-size:2.5rem; margin:0;">RECIFE 3D</h1>
-        <p style="color:#666;">Edição Visual</p>
-        
-        <input id="my-name" class="input-box" placeholder="Seu Apelido" maxlength="12">
-        <button onclick="net.host()" class="btn-main bg-y">🏠 CRIAR SALA</button>
-        <p style="font-weight:bold; margin:10px;">- OU -</p>
-        <input id="host-id" class="input-box" placeholder="Código da Sala" style="font-size:1rem;">
-        <button onclick="net.join()" class="btn-main bg-g">🔗 ENTRAR</button>
-
-        <div id="wait-area" style="display:none; margin-top:20px; border-top:2px dashed #ccc; padding-top:10px;">
-            <p>Sala: <b id="disp-id" style="background:#eee; padding:5px;">...</b></p>
-            <div id="p-list" style="margin-bottom:10px;"></div>
-            <button id="btn-start" style="display:none;" class="btn-main bg-r" onclick="net.start()">INICIAR JOGO</button>
-            <p id="msg-cli" style="display:none; color:red;">Aguardando o Host...</p>
+<div id="screen-lobby">
+    <h1 style="color:#fff; font-size:3rem; margin-bottom:10px;">RECIFE DE LUXO</h1>
+    <div class="estandarte-card">
+        <h2 style="color:var(--wood); margin:0;">CONCENTRAÇÃO</h2>
+        <div id="net-status" style="color:var(--frevo-blue); font-weight:bold; margin-bottom:10px; font-size:0.8rem;">Conectando ao servidor...</div>
+        <input id="p-name" class="input-recife" placeholder="Seu Apelido" maxlength="12">
+        <div id="lobby-controls">
+            <button class="btn-frevo bg-blue" onclick="net.host()">CRIAR BLOCO</button>
+            <p style="margin:10px; font-weight:bold; color:#aaa;">- OU -</p>
+            <input id="host-id" class="input-recife" placeholder="Código da Sala" style="font-size:0.9rem;">
+            <button class="btn-frevo bg-green" onclick="net.join()">ENTRAR NO BLOCO</button>
+        </div>
+        <div id="lobby-status" style="display:none; margin-top:20px; border-top: 2px dashed #ccc; padding-top:10px;">
+            <p style="font-weight:bold; color:var(--frevo-blue);">Sala: <span id="disp-id" onclick="util.copy()" style="background:#eee; padding:5px; cursor:pointer; font-weight:bold;">...</span> (Toque para copiar)</p>
+            <div id="player-list-area"></div>
+            <p id="host-msg" style="font-size:0.8rem; color:#d32f2f; display:none;">Aguardando o Mestre...</p>
+            <button id="btn-phase-1" class="btn-frevo bg-red" style="display:none;" onclick="net.toChar()">ABRIR ALAS</button>
         </div>
     </div>
 </div>
 
-<div id="game">
+<div id="screen-char" style="display:none;">
+    <h1 style="color:var(--gold);">ESCOLHA A FANTASIA</h1>
+    <div class="char-grid" id="char-grid"></div>
+    <h2 id="char-status" style="color:#fff;">Aguardando...</h2>
+    <button id="btn-start-game" class="btn-frevo bg-green" style="width:300px; display:none;" onclick="net.startGame()">TOCAR O FREVO!</button>
+</div>
+
+<div id="game-layout">
     <div id="board-viewport">
         <div id="board">
             <div class="center-hub">
-                <div class="umbrella"></div>
-                <h1 style="z-index:2; color:var(--frevo-blue); text-shadow:2px 2px #fff; font-size:3rem; margin:0;">RECIFE</h1>
-                <div id="weather-tag" style="z-index:2; background:#fff; padding:5px 15px; border-radius:20px; border:2px solid #000; font-weight:bold;">☀️ Sol</div>
+                <div class="umbrella-spin"></div>
+                <h1 style="color:var(--frevo-blue); z-index:2; text-shadow:2px 2px #fff; font-size:3rem; margin:0;">RECIFE</h1>
             </div>
             </div>
     </div>
     
     <div id="sidebar">
         <div class="hud-header">
-            <h2 style="margin:0; color:var(--frevo-red);">Pernambuco</h2>
-            <div id="turn-txt" style="font-weight:bold;">...</div>
+            <h2 style="margin:0; color:#d32f2f;">Pernambuco</h2>
+            <div id="my-cash" style="font-size:1.5rem; font-weight:900; color:#388e3c;">$1500</div>
         </div>
+        <div id="turn-msg" class="turn-box">...</div>
         
-        <button id="btn-roll" class="btn-act" style="background:var(--gold); color:black;" onclick="game.act('roll')">🎲 ROLAR DADOS</button>
-        <button id="btn-buy" class="btn-act" style="background:var(--frevo-green); color:white;" onclick="game.act('buy')">💰 COMPRAR</button>
-        <button id="btn-pass" class="btn-act" style="background:var(--frevo-red); color:white;" onclick="game.act('pass')">🛑 PASSAR VEZ</button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px;">
+            <button id="b-roll" class="btn-game" style="background:var(--gold); color:#000; grid-column:span 2;">🎲 ROLAR DADOS</button>
+            <button id="b-buy" class="btn-game" style="background:#43a047; color:#fff;">💰 COMPRAR</button>
+            <button id="b-end" class="btn-game" style="background:#d32f2f; color:#fff;">🛑 PASSAR</button>
+        </div>
 
-        <div style="margin-top:20px; font-weight:bold;">Jogadores:</div>
-        <div id="hud-players"></div>
+        <div style="font-weight:bold; font-size:0.8rem;">Jogadores:</div>
+        <div id="hud-list" style="margin-bottom:10px;"></div>
+        
+        <div style="font-weight:bold; font-size:0.8rem;">Minhas Escrituras:</div>
+        <div id="deed-list"></div>
     </div>
 </div>
 
-<div id="dice-view">
-    <div style="display:flex; gap:50px;">
-        <div class="dice-wrap"><div id="d1" class="cube"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div></div>
-        <div class="dice-wrap"><div id="d2" class="cube"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div></div>
+<div id="dice-overlay">
+    <div class="hand-throw">🫳</div>
+    <div class="dice-wrap"><div id="d1" class="cube"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div></div>
+    <div class="dice-wrap"><div id="d2" class="cube"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div></div>
+</div>
+
+<div id="card-zoom">
+    <div class="big-card">
+        <div class="bc-head" id="card-h">Nome</div>
+        <div class="bc-body" id="card-b">Detalhes</div>
+        <button class="btn-frevo bg-red" style="width:100%; margin:0; border-radius:0;" onclick="document.getElementById('card-zoom').style.display='none'">FECHAR</button>
     </div>
 </div>
 
 <script>
-/* DADOS DOS BAIRROS (V16 APROVADA) */
-const COLS = { br:'#795548', lb:'#03a9f4', pk:'#e91e63', or:'#ff5722', rd:'#d32f2f', yl:'#fbc02d', gr:'#388e3c', bl:'#1565c0' };
-const BD = [
-    {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'br',n:'Coque',p:60}, {t:'ch',n:'Sorte'}, {t:'pr',g:'br',n:'Ibura',p:60}, {t:'tx',n:'IPTU',p:200}, {t:'rr',n:'Metrô Centro',p:200}, {t:'pr',g:'lb',n:'Santo Amaro',p:100}, {t:'ch',n:'Revés'}, {t:'pr',g:'lb',n:'Afogados',p:100}, {t:'pr',g:'lb',n:'Mustardinha',p:120},
-    {t:'jl',n:'Trânsito'}, {t:'pr',g:'pk',n:'Iputinga',p:140}, {t:'ut',n:'Neoenergia',p:150}, {t:'pr',g:'pk',n:'Cordeiro',p:140}, {t:'pr',g:'pk',n:'Várzea',p:160}, {t:'rr',n:'Metrô Oeste',p:200}, {t:'pr',g:'or',n:'Imbiribeira',p:180}, {t:'ch',n:'Sorte'}, {t:'pr',g:'or',n:'Encruzilhada',p:180}, {t:'pr',g:'or',n:'Torre',p:200},
-    {t:'pk',n:'Parque Jaqueira'}, {t:'pr',g:'rd',n:'Aflitos',p:220}, {t:'ch',n:'Revés'}, {t:'pr',g:'rd',n:'Espinheiro',p:220}, {t:'pr',g:'rd',n:'Madalena',p:240}, {t:'rr',n:'Via Mangue',p:200}, {t:'pr',g:'yl',n:'Graças',p:260}, {t:'pr',g:'yl',n:'Poço da Panela',p:260}, {t:'ut',n:'Compesa',p:150}, {t:'pr',g:'yl',n:'Casa Forte',p:280},
-    {t:'gj',n:'Blitz!'}, {t:'pr',g:'gr',n:'Apipucos',p:300}, {t:'pr',g:'gr',n:'Parnamirim',p:300}, {t:'ch',n:'Sorte'}, {t:'pr',g:'gr',n:'Paiva',p:320}, {t:'rr',n:'Aeroporto',p:200}, {t:'ch',n:'Revés'}, {t:'pr',g:'bl',n:'Boa Viagem',p:350}, {t:'tx',n:'Taxa Luxo',p:100}, {t:'pr',g:'bl',n:'Jaqueira',p:400}
+/* DADOS V20 - RECIFE FINAL CORRIGIDO */
+const CHARS=[{id:'crab',i:'🦀',n:'Caranguejo'},{id:'shark',i:'🦈',n:'Tubarão'},{id:'umb',i:'☂️',n:'Sombrinha'},{id:'sun',i:'☀️',n:'Sol'},{id:'drum',i:'🥁',n:'Tambor'},{id:'coco',i:'🥥',n:'Coco'},{id:'ursa',i:'🐻',n:'La Ursa'},{id:'corn',i:'🌽',n:'Milho'}];
+const BD=[
+    {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'#795548',n:'Coque',p:60,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte'},{t:'pr',g:'#795548',n:'Ibura',p:60,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô Centro'},{t:'pr',g:'#03a9f4',n:'Santo Amaro',p:100,r:[6,30,90,270,400,550]},{t:'ch',n:'Revés'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,r:[6,30,90,270,400,550]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,r:[8,40,100,300,450,600]},
+    {t:'jl',n:'Trânsito'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,r:[10,50,150,450,750,950]},{t:'ut',n:'Neoenergia',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,r:[10,50,150,450,750,950]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,r:[12,60,180,500,700,900]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,r:[14,70,200,550,750,950]},{t:'ch',n:'Sorte'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,r:[14,70,200,550,750,950]},{t:'pr',g:'#ff5722',n:'Torre',p:200,r:[16,80,220,600,800,1000]},
+    {t:'pk',n:'Parque Jaqueira'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,r:[18,90,250,700,875,1050]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,r:[18,90,250,700,875,1050]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,r:[20,100,300,750,925,1100]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'#fbc02d',n:'Graças',p:260,r:[22,110,330,800,975,1150]},{t:'pr',g:'#fbc02d',n:'Poço da Panela',p:260,r:[22,110,330,800,975,1150]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,r:[24,120,360,850,1025,1200]},
+    {t:'gj',n:'Blitz!'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,r:[26,130,390,900,1100,1275]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,r:[26,130,390,900,1100,1275]},{t:'ch',n:'Sorte'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,r:[28,150,450,1000,1200,1400]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,r:[35,175,500,1100,1300,1500]},{t:'tx',n:'Taxa Luxo',p:100},{t:'pr',g:'#1565c0',n:'Jaqueira',p:400,r:[50,200,600,1400,1700,2000]}
 ];
+const SFX={dice:new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'),step:new Audio('https://www.soundjay.com/misc/sounds/wood-block-1.mp3')};
+const play=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{})}catch(e){}};
 
-let myId=null, hostConn=null, conns=[], isHost=false, meName="";
-let state = { players:[], turn:0, rolled:false, props:BD.map(()=>({owner:null})), weather:'sun' };
+/* STATE */
+let myId=null,hostConn=null,conns=[],isHost=false,me={name:"Folião",char:null};
+let state={phase:'LOBBY',players:[],turn:0,rolled:false,props:BD.map(()=>({owner:null,mtg:false})),doubles:0};
 
-/* REDE SIMPLES (V9) */
-const net = {
-    peer: new Peer(null),
-    init: () => {
-        net.peer.on('open', id => myId = id);
-        net.peer.on('connection', c => {
-            if(isHost) {
-                conns.push(c);
-                c.on('data', d => net.handleHost(d, c));
-                c.send({t:'LOBBY', l:state.players});
-            }
-        });
+/* NET */
+const net={
+    peer:new Peer(null,{debug:1}),
+    init:()=>{
+        net.peer.on('open',id=>{myId=id;document.getElementById('net-status').innerText="✅ REDE PRONTA!"; document.getElementById('net-status').style.color="green";});
+        net.peer.on('connection',c=>{if(isHost){c.on('open',()=>c.send({t:'WELCOME',l:state.players}));c.on('data',d=>net.host(d,c));conns.push(c);}});
+        net.peer.on('error',e=>alert("Erro Rede: "+e));
     },
-    host: () => {
-        const n = document.getElementById('my-name').value || "Host";
-        if(!myId) return alert("Aguarde ID...");
-        isHost = true; meName = n;
-        state.players.push({id:myId, name:n, money:1500, pos:0, color:'#d32f2f'}); // Red default
-        ui.wait();
+    host:()=>{const n=document.getElementById('p-name').value.trim();if(!n)return alert("Nome?");if(!myId)return alert("Espere conectar...");isHost=true;me.name=n;state.players.push({id:myId,name:n,char:null,money:1500,pos:0,jailed:false,color:'#d32f2f'});ui.screen('lobby-wait');},
+    join:()=>{const n=document.getElementById('p-name').value.trim(),id=document.getElementById('host-id').value.trim();if(!n||!id)return alert("Dados?");me.name=n;hostConn=net.peer.connect(id);hostConn.on('open',()=>{hostConn.send({t:'JOIN',name:n});document.getElementById('lobby-controls').innerHTML="<h3>Conectando...</h3>";});hostConn.on('data',d=>net.cli(d));},
+    toChar:()=>{if(state.players.length<2)return alert("Mínimo 2!");net.bc({t:'PHASE',p:'CHARS'});ui.screen('chars');},
+    startGame:()=>{if(state.players.some(p=>!p.char))return alert("Escolham!");net.bc({t:'PHASE',p:'GAME',st:state});ui.start();},
+    host:(d,c)=>{
+        if(d.t==='JOIN'){if(!state.players.find(p=>p.id===c.peer)){const cl=['#2196f3','#4caf50','#fbc02d','#7b1fa2'];state.players.push({id:c.peer,name:d.name,char:null,money:1500,pos:0,jailed:false,color:cl[state.players.length%4]});net.bc({t:'UPD',l:state.players});ui.rLobby(state.players);}}
+        else if(d.t==='PICK'){const p=state.players.find(x=>x.id===d.pid);if(p){p.char=d.char;net.bc({t:'UPD',l:state.players});ui.rChars();}}
+        else if(d.t==='ACT')game.proc(d);
+        else if(d.t==='MTG')game.mtg(d.i);
     },
-    join: () => {
-        const n = document.getElementById('my-name').value || "Visitante";
-        const id = document.getElementById('host-id').value;
-        if(!id) return alert("ID?");
-        meName = n;
-        hostConn = net.peer.connect(id);
-        hostConn.on('open', () => { hostConn.send({t:'JOIN', name:n}); });
-        hostConn.on('data', d => net.handleCli(d));
-        ui.waitCli();
+    cli:(d)=>{
+        if(d.t==='WELCOME'||d.t==='UPD'){state.players=d.l;if(state.phase==='LOBBY')ui.rLobby(d.l);if(state.phase==='CHARS')ui.rChars();}
+        else if(d.t==='PHASE'){state.phase=d.p;if(d.p==='CHARS')ui.screen('chars');if(d.p==='GAME'){state=d.st;ui.start();}}
+        else if(d.t==='STATE'){state=d.st;ui.rGame();}
+        else if(d.t==='ANIM')ui.dice(d.d1,d.d2);
+        else if(d.t==='TOAST')ui.toast(d.m);
+        else if(d.t==='SC')ui.card(d.i);
     },
-    start: () => {
-        if(state.players.length < 2) return alert("Min 2 jogadores!");
-        net.bc({t:'START', s:state}); game.init(state);
-    },
-    handleHost: (d, c) => {
-        if(d.t === 'JOIN') {
-            const cl = ['#1976d2','#388e3c','#fbc02d','#7b1fa2'];
-            state.players.push({id:c.peer, name:d.name, money:1500, pos:0, color:cl[state.players.length%4]});
-            net.bc({t:'LOBBY', l:state.players}); ui.updLobby(state.players);
-        } else if (d.t === 'ACT') game.process(d);
-    },
-    handleCli: (d) => {
-        if(d.t === 'LOBBY') ui.updLobby(d.l);
-        else if(d.t === 'START') game.init(d.s);
-        else if(d.t === 'STATE') { state = d.s; ui.render(); }
-        else if(d.t === 'ANIM') ui.animDice(d.d1, d.d2);
-        else if(d.t === 'ENV') env.set(d.w);
-    },
-    bc: (m) => { if(isHost){conns.forEach(c=>c.send(m));} else {hostConn.send(m);} }
+    bc:(m)=>{if(isHost){conns.forEach(c=>c.send(m));if(m.t==='STATE'||m.t==='UPD'){}else net.cli(m);}else hostConn.send(m);}
 };
 
-/* LOGICA */
-const game = {
-    init: (s) => {
-        state = s;
-        document.getElementById('lobby').style.display = 'none';
-        document.getElementById('game').classList.add('active');
-        ui.genBoard(); ui.render();
-        if(isHost) env.check();
+/* GAME */
+const game={
+    act:(a)=>{const d={t:'ACT',act:a,pid:myId};if(isHost)game.proc(d);else hostConn.send(d);},
+    proc:(d)=>{
+        const idx=state.players.findIndex(p=>p.id===d.pid),p=state.players[idx];
+        if(state.turn!==idx)return;
+        if(d.act==='roll'){
+            if(state.rolled && state.doubles===0) return; // Prevent double roll unless doubles
+            const d1=Math.ceil(Math.random()*6),d2=Math.ceil(Math.random()*6);
+            net.bc({t:'ANIM',d1,d2});
+            setTimeout(async ()=>{
+                if(d1===d2){ state.doubles++; state.rolled=false; if(state.doubles>=3){p.jailed=true;p.pos=10;state.doubles=0;state.rolled=true;}} 
+                else { state.doubles=0; state.rolled=true; }
+                
+                await game.moveToken(p, d1+d2);
+                
+                if(p.jailed && d1!==d2) state.rolled=true;
+                
+                net.bc({t:'STATE',st:state});if(isHost)ui.rGame();
+            },2000);
+        }
+        else if(d.act==='buy'){const s=BD[p.pos];if(p.money>=s.p&&state.props[p.pos].owner===null){p.money-=s.p;state.props[p.pos].owner=idx;play('cash');net.bc({t:'TOAST',m:`${p.name} comprou ${s.n}`});net.bc({t:'STATE',st:state});}}
+        else if(d.act==='end'){state.turn=(state.turn+1)%state.players.length;state.rolled=false;state.doubles=0;net.bc({t:'STATE',st:state});}
     },
-    act: (act) => {
-        const d = {t:'ACT', act:act, pid:myId};
-        if(isHost) game.process(d); else hostConn.send(d);
+    moveToken: async (p, steps) => {
+        for(let i=0; i<steps; i++){
+            p.pos++; if(p.pos>=40){p.pos=0;p.money+=200;}
+            net.bc({t:'STATE',st:state}); // Update visual step by step
+            if(isHost) ui.rGame();
+            await new Promise(r=>setTimeout(r, 200)); // Hop delay
+        }
+        // Arrival logic
+        const pr=state.props[p.pos], bd=BD[p.pos];
+        if(bd.t==='pr'||bd.t==='rr'||bd.t==='ut') net.bc({t:'SC',i:p.pos});
+        if(pr.owner!==null&&pr.owner!==state.players.indexOf(p)&&!pr.mtg){let r=bd.r?bd.r[0]:50;p.money-=r;state.players[pr.owner].money+=r;play('cash');}
+        if(bd.t==='tx')p.money-=bd.p;
     },
-    process: (d) => {
-        const idx = state.players.findIndex(p => p.id === d.pid);
-        const p = state.players[idx];
-        if(state.turn !== idx) return;
-
-        if(d.act === 'roll') {
-            if(state.rolled) return;
-            const r1 = Math.ceil(Math.random()*6), r2 = Math.ceil(Math.random()*6);
-            net.bc({t:'ANIM', d1:r1, d2:r2}); 
-            if(isHost) ui.animDice(r1, r2); // Host sees too
-
-            setTimeout(() => {
-                p.pos += (r1+r2);
-                if(p.pos >= 40) { p.pos -= 40; p.money += 200; }
-                const prop = state.props[p.pos];
-                if(prop.owner !== null && prop.owner !== idx) {
-                    let r = 50; p.money -= r; state.players[prop.owner].money += r;
-                }
-                state.rolled = true;
-                net.bc({t:'STATE', s:state});
-                if(isHost) ui.render();
-            }, 2000);
-        }
-        else if(d.act === 'buy') {
-            const s = BD[p.pos];
-            if(p.money >= s.p && state.props[p.pos].owner === null) {
-                p.money -= s.p; state.props[p.pos].owner = idx;
-                net.bc({t:'STATE', s:state}); if(isHost) ui.render();
-            }
-        }
-        else if(d.act === 'pass') {
-            state.rolled = false;
-            state.turn = (state.turn + 1) % state.players.length;
-            if(isHost) env.check();
-            net.bc({t:'STATE', s:state}); if(isHost) ui.render();
-        }
-    }
+    mtg:(i)=>{const pr=state.props[i];if(pr.mtg){if(state.players[pr.owner].money>=BD[i].p*0.6){state.players[pr.owner].money-=BD[i].p*0.6;pr.mtg=false;}}else{state.players[pr.owner].money+=BD[i].p*0.5;pr.mtg=true;}net.bc({t:'STATE',st:state});},
+    reqMtg:(i)=>{const d={t:'MTG',i};if(isHost)game.mtg(i);else hostConn.send(d);}
 };
 
 /* UI */
-const ui = {
-    wait: () => {
-        document.getElementById('wait-area').style.display='block';
-        document.getElementById('disp-id').innerText = myId;
-        document.getElementById('btn-start').style.display = 'block';
-        ui.updLobby(state.players);
+const ui={
+    screen:(k)=>{
+        document.getElementById('screen-lobby').style.display=k==='lobby'?'flex':'none';
+        if(k==='lobby-wait'){document.getElementById('lobby-controls').style.display='none';document.getElementById('lobby-status').style.display='block';document.getElementById('disp-id').innerText=myId;document.getElementById('btn-phase-1').style.display='block';ui.rLobby(state.players);}
+        document.getElementById('screen-char').style.display=k==='chars'?'flex':'none';
+        document.getElementById('game-layout').classList.toggle('active',k==='game');if(k==='chars')ui.rChars();
     },
-    waitCli: () => {
-        document.getElementById('wait-area').style.display='block';
-        document.getElementById('msg-cli').style.display='block';
-        document.getElementById('disp-id').innerText = "CONECTADO";
-    },
-    updLobby: (l) => { document.getElementById('p-list').innerHTML = l.map(p => `<b>${p.name}</b>`).join(', '); },
-    genBoard: () => {
-        const b = document.getElementById('board');
-        BD.forEach((s, i) => {
-            const d = document.createElement('div'); d.className = 'space'; d.id = `s${i}`;
-            let r, c; if (i<=10) { r=11; c=11-i; } else if (i<=20) { r=11-(i-10); c=1; } else if (i<=30) { r=1; c=1+(i-20); } else { r=1+(i-30); c=11; }
-            d.style.gridRow = r; d.style.gridColumn = c;
-            d.innerHTML = s.t==='pr' ? `<div class="color-bar" style="background:${COLS[s.g]}"></div><div>${s.n}<br>$${s.p}</div>` : `<div>${s.n}</div>`;
-            b.appendChild(d);
-        });
-    },
-    render: () => {
-        const turnP = state.players[state.turn];
-        const meP = state.players.find(p=>p.id===myId);
-        document.getElementById('turn-txt').innerText = `Vez de: ${turnP.name}`;
-        
-        // Buttons
-        const myTurn = turnP.id === myId;
-        ui.btn('btn-roll', myTurn && !state.rolled);
-        const s = BD[meP.pos];
-        ui.btn('btn-buy', myTurn && state.rolled && s.t==='pr' && state.props[meP.pos].owner===null);
-        ui.btn('btn-pass', myTurn && state.rolled);
+    rLobby:(l)=>{document.getElementById('player-list-area').innerHTML=l.map(p=>`<span style="background:#fff;border:1px solid #000;padding:5px;margin:5px;display:inline-block;">${p.name}</span>`).join('');if(!isHost){document.getElementById('lobby-controls').style.display='none';document.getElementById('lobby-status').style.display='block';document.getElementById('host-msg').style.display='block';document.getElementById('disp-id').innerText="Conectado!";}},
+    rChars:()=>{const g=document.getElementById('char-grid');g.innerHTML='';CHARS.forEach(c=>{const taken=state.players.find(p=>p.char===c.id),isMe=taken&&taken.id===myId;g.innerHTML+=`<div class="char-opt ${taken?'taken':''} ${isMe?'selected':''}" onclick="${!taken?`ui.pick('${c.id}')`:''}"><div class="char-icon">${c.i}</div><div>${c.n}</div>${taken?`<div class="char-tag">${taken.name}</div>`:''}</div>`;});const r=state.players.every(p=>p.char);document.getElementById('char-status').innerText=r?"Prontos!":"Aguardando...";if(isHost&&r)document.getElementById('btn-start-game').style.display='block';},
+    pick:(id)=>{if(isHost){state.players.find(x=>x.id===myId).char=id;net.bc({t:'UPD',l:state.players});ui.rChars();}else hostConn.send({t:'PICK',pid:myId,char:id});},
+    start:()=>{document.getElementById('screen-char').style.display='none';document.getElementById('game-layout').classList.add('active');ui.genBoard();ui.rGame();confetti();ui.binds();},
+    genBoard:()=>{const b=document.getElementById('board');BD.forEach((s,i)=>{const d=document.createElement('div');d.className='space';d.id=`s${i}`;let r,c;if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}d.style.gridRow=r;d.style.gridColumn=c;d.innerHTML=s.t==='pr'?`<div class="color-bar" style="background:${s.g}"></div><div>${s.n}<br>$${s.p}</div>`:`<div style="margin:auto">${s.n}</div>`;b.appendChild(d);});},
+    rGame:()=>{
+        const meP=state.players.find(p=>p.id===myId),trn=state.players[state.turn];
+        document.getElementById('my-cash').innerText=`$${meP.money}`;document.getElementById('turn-msg').innerText=`Vez de: ${trn.name}`;
+        const myT=trn.id===myId,s=BD[meP.pos];
+        // Button Logic Fix: If doubles, enable roll even if rolled previously in same turn
+        const canRoll = myT && (!state.rolled || state.doubles > 0);
+        ui.btn('b-roll', canRoll);
+        ui.btn('b-buy',myT&&state.rolled&&s.t==='pr'&&state.props[meP.pos].owner===null);
+        ui.btn('b-end',myT&&state.rolled&&state.doubles===0); // Can only end if not doubles
 
-        // Players
-        document.getElementById('hud-players').innerHTML = state.players.map((p,i) => 
-            `<div class="p-item ${state.turn===i?'turn':''}" style="border-left-color:${p.color}">${p.name}: $${p.money}</div>`
-        ).join('');
-
-        // Tokens
-        document.querySelectorAll('.token').forEach(e => e.remove());
-        state.players.forEach((p, i) => {
-            const t = document.createElement('div'); t.className = 'token'; t.innerText = '♟️'; t.style.color = p.color;
-            const sp = document.getElementById(`s${p.pos}`), br = document.getElementById('board').getBoundingClientRect(), sr = sp.getBoundingClientRect();
-            t.style.left = (sr.left - br.left + 10 + (i*5)) + 'px';
-            t.style.top = (sr.top - br.top + 10 + (i*5)) + 'px';
+        document.getElementById('hud-list').innerHTML=state.players.map((p,i)=>{const c=CHARS.find(x=>x.id===p.char);return `<div class="p-card ${state.turn===i?'active':''}"><span>${c.i} ${p.name}</span><span>${p.id===myId?'$'+p.money:'???'}</span></div>`;}).join('');
+        document.querySelectorAll('.token').forEach(e=>e.remove());
+        state.players.forEach((p,i)=>{
+            const c=CHARS.find(x=>x.id===p.char),t=document.createElement('div');t.className='token';t.innerText=c.i;
+            const sp=document.getElementById(`s${p.pos}`),br=document.getElementById('board').getBoundingClientRect(),sr=sp.getBoundingClientRect();
+            t.style.left=(sr.left-br.left+10+((i%3)*10))+'px';t.style.top=(sr.top-br.top+10+(Math.floor(i/3)*10))+'px';
             document.getElementById('board').appendChild(t);
+            // Play Step Sound on change
+            if(state.rolled) play('step');
         });
-
-        // Borders
-        state.props.forEach((pr, i) => {
-            if(pr.owner !== null) document.getElementById(`s${i}`).style.border = `4px solid ${state.players[pr.owner].color}`;
-        });
+        const dl=document.getElementById('deed-list');dl.innerHTML='';
+        state.props.forEach((pr,i)=>{const sp=document.getElementById(`s${i}`);if(pr.owner!==null)sp.style.border=`4px solid ${state.players[pr.owner].color}`;if(pr.mtg)sp.classList.add('mortgaged');else sp.classList.remove('mortgaged');if(state.players[pr.owner]?.id===myId)dl.innerHTML+=`<div class="deed-item" onclick="game.reqMtg(${i})">${BD[i].n} (${pr.mtg?'Deshipotecar':'Hipotecar'})</div>`;});
     },
-    btn: (id, on) => { const b=document.getElementById(id); if(on){b.classList.add('on');b.disabled=false;}else{b.classList.remove('on');b.disabled=true;} },
-    animDice: (d1, d2) => {
-        const o = document.getElementById('dice-view'); o.style.display='flex';
-        const c1=document.querySelector('#d1 .cube'), c2=document.querySelector('#d2 .cube');
-        c1.style.transition='none'; c2.style.transition='none'; c1.className='cube'; c2.className='cube'; void c1.offsetWidth;
-        c1.style.transition='transform 1.5s'; c2.style.transition='transform 1.5s';
-        setTimeout(()=>{c1.classList.add('r'+d1); c2.classList.add('r'+d2);}, 50);
-        setTimeout(()=>{o.style.display='none';}, 2000);
-    }
+    btn:(id,on)=>{const b=document.getElementById(id);if(on){b.classList.add('on');b.disabled=false;}else{b.classList.remove('on');b.disabled=true;}},
+    binds:()=>{document.getElementById('b-roll').onclick=()=>game.act('roll');document.getElementById('b-buy').onclick=()=>game.act('buy');document.getElementById('b-end').onclick=()=>game.act('end');},
+    dice:(d1,d2)=>{const o=document.getElementById('dice-overlay');o.style.display='flex';play('dice');const c1=document.querySelector('#d1 .cube'),c2=document.querySelector('#d2 .cube');c1.className='cube';c2.className='cube';void c1.offsetWidth;c1.style.transition='transform 1.5s';c2.style.transition='transform 1.5s';const m=['show-1','show-2','show-3','show-4','show-5','show-6'];setTimeout(()=>{c1.classList.add(m[d1-1]);c2.classList.add(m[d2-1]);},50);setTimeout(()=>o.style.display='none',2500);},
+    card:(i)=>{const s=BD[i],ov=document.getElementById('card-zoom');document.getElementById('card-h').innerText=s.n;document.getElementById('card-h').style.background=s.g||'#333';document.getElementById('card-b').innerHTML=`Preço: $${s.p}<br>Aluguel: $${s.r?s.r[0]:50}`;ov.style.display='flex';},
+    toast:(m)=>{const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);}
 };
-
-/* ENV */
-const env = {
-    check: () => { if(Math.random()<0.2){ state.weather = state.weather==='sun'?'rain':'sun'; net.bc({t:'ENV', w:state.weather}); } },
-    set: (w) => {
-        const c = document.getElementById('rain-canvas');
-        c.style.display = w==='rain'?'block':'none';
-        document.body.classList.toggle('night-mode', w==='rain');
-        document.getElementById('weather-tag').innerText = w==='rain'?'🌧️ Chuva':'☀️ Sol';
-        if(w==='rain') env.rain();
-    },
-    rain: () => {
-        const c=document.getElementById('rain-canvas'), x=c.getContext('2d'); c.width=innerWidth; c.height=innerHeight;
-        const d=Array(100).fill().map(()=>({x:Math.random()*c.width, y:Math.random()*c.height, s:Math.random()*5+2}));
-        const l=()=>{ x.clearRect(0,0,c.width,c.height); x.strokeStyle='#88a'; d.forEach(p=>{ x.beginPath(); x.moveTo(p.x,p.y); x.lineTo(p.x,p.y+p.s); x.stroke(); p.y+=p.s; if(p.y>c.height)p.y=0; }); requestAnimationFrame(l); }; l();
-    }
-};
-
-const util = { copy: () => { navigator.clipboard.writeText(myId); alert("Copiado!"); } };
+const util={copy:()=>{navigator.clipboard.writeText(myId);alert("Copiado!");}};
 net.init();
 </script>
 </body>
