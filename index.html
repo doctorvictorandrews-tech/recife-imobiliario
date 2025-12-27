@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Recife Imobiliário - Ultimate</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e2e;
+            --board-bg: #e3f2fd;
+            --accent: #ffb300;
+            --primary: #0288d1;
+            --text: #ffffff;
+            --green: #43a047;
+            --red: #e53935;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg-color); color: var(--text); height: 100vh; overflow: hidden; display: flex; }
+
+        /* --- LOBBY --- */
+        #lobby { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .lobby-card { background: white; color: #333; padding: 40px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 0 40px rgba(2,136,209,0.3); }
+        .lobby-btn { width: 100%; padding: 14px; margin-top: 10px; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-green { background: var(--green); color: white; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        #game-layout.active { opacity: 1; pointer-events: all; }
+
+        /* --- SIDEBAR (CONTROLES) --- */
+        #sidebar { width: 320px; background: var(--panel-bg); display: flex; flex-direction: column; padding: 15px; border-right: 2px solid #333; box-shadow: 5px 0 15px rgba(0,0,0,0.5); z-index: 20; }
+        
+        .header-logo { text-align: center; margin-bottom: 15px; }
+        .header-logo h2 { margin: 0; color: var(--accent); font-weight: 900; letter-spacing: 1px; }
+        
+        #turn-indicator { background: #333; color: #fff; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 15px; border: 1px solid #444; }
+        .my-turn-anim { animation: pulseBorder 1.5s infinite; background: var(--primary) !important; border-color: var(--accent) !important; }
+        @keyframes pulseBorder { 0% { box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 179, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 179, 0, 0); } }
+
+        #dice-box { font-size: 2.5rem; text-align: center; margin: 10px 0; height: 50px; }
+        
+        .action-grid { display: grid; gap: 8px; }
+        .ctrl-btn { padding: 12px; border: none; border-radius: 6px; font-weight: bold; color: white; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.2s; }
+        .ctrl-btn.enabled { opacity: 1; pointer-events: all; transform: translateY(-2px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+        .ctrl-btn.enabled:active { transform: translateY(0); box-shadow: none; }
+        
+        #players-list { margin-top: 20px; flex-grow: 1; overflow-y: auto; }
+        .player-row { background: #2a2a3a; padding: 10px; margin-bottom: 6px; border-radius: 4px; display: flex; justify-content: space-between; border-left: 5px solid transparent; }
+        .player-row.current { background: #3a3a4a; border: 1px solid #555; }
+        
+        #log-feed { height: 120px; background: #000; font-family: monospace; font-size: 11px; padding: 8px; overflow-y: auto; border-radius: 4px; border: 1px solid #333; color: #0f0; }
+
+        /* --- TABULEIRO --- */
+        #board-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #0d1117; position: relative; overflow: hidden; }
+        #board { display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); width: 90vh; height: 90vh; background: var(--board-bg); border: 8px solid #222; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+
+        .space { border: 1px solid #999; position: relative; display: flex; flex-direction: column; font-size: 0.6rem; color: #000; font-weight: bold; text-align: center; background: white; }
+        .corner { background: #cfd8dc; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; text-align: center; }
+        .color-bar { height: 25%; width: 100%; border-bottom: 2px solid #333; position: relative; }
+        
+        /* Construções */
+        .build-slots { position: absolute; bottom: -5px; left: 0; width: 100%; display: flex; justify-content: center; gap: 2px; }
+        .house { width: 8px; height: 8px; background: var(--green); border: 1px solid white; }
+        .hotel { width: 12px; height: 10px; background: var(--red); border: 1px solid white; }
+        .owner-border { position: absolute; inset: 0; border: 0px solid transparent; pointer-events: none; z-index: 5; }
+
+        /* Tokens */
+        .token { width: 22px; height: 22px; border-radius: 50%; position: absolute; z-index: 10; border: 2px solid white; box-shadow: 3px 3px 6px rgba(0,0,0,0.6); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        /* Centro */
+        .center-decor { grid-column: 2 / 11; grid-row: 2 / 11; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0.9; text-align: center; background: radial-gradient(circle, #fff 0%, #bbdefb 100%); z-index: 1; }
+        .toast-area { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
+        .toast { background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px; margin-bottom: 5px; animation: fadeUp 3s forwards; font-weight: bold; text-align: center; border: 1px solid var(--accent); }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(20px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; } 100% { opacity: 0; transform: translateY(-20px); } }
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; color: black; padding: 25px; border-radius: 8px; width: 400px; max-width: 90%; max-height: 80vh; overflow-y: auto; text-align: center; }
+        .prop-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.9rem; }
+
+        /* RESPONSIVIDADE (Celular) */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            #sidebar { width: 100%; height: 200px; order: 2; flex-direction: row; flex-wrap: wrap; }
+            #board-container { height: auto; flex-grow: 1; order: 1; }
+            #board { width: 95vw; height: 95vw; }
+            #log-feed, #players-list { display: none; } /* Simplifica no mobile */
+            .action-grid { display: flex; width: 100%; gap: 5px; }
+            .ctrl-btn { flex: 1; font-size: 0.8rem; padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="lobby">
+    <div class="lobby-card">
+        <h1 style="color:var(--primary); margin:0;">Recife Imobiliário</h1>
+        <h3 style="color:#555; margin-top:5px;">Ultimate Edition</h3>
+        
+        <div id="lobby-start">
+            <input type="text" id="my-name" placeholder="Seu Apelido" maxlength="12">
+            <button class="lobby-btn btn-blue" onclick="net.hostGame()">🏠 Criar Nova Sala</button>
+            <div style="margin:10px 0; color:#888;">- OU -</div>
+            <input type="text" id="host-id-input" placeholder="Cole o ID da Sala">
+            <button class="lobby-btn btn-green" onclick="net.joinGame()">🔗 Entrar na Sala</button>
+        </div>
+
+        <div id="lobby-waiting" style="display:none;">
+            <h3>Sala Criada!</h3>
+            <p>Toque no código para copiar e mande pros amigos:</p>
+            <div style="background:#eee; padding:15px; font-family:monospace; font-size:1.2rem; cursor:pointer; border:2px dashed #999;" onclick="ui.copyId()" id="my-id-display">...</div>
+            <p>Jogadores:</p>
+            <ul id="players-lobby-list" style="list-style:none; padding:0; font-weight:bold;"></ul>
+            <button class="lobby-btn btn-blue" onclick="net.startGame()">🎮 INICIAR JOGO</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-layout">
+    <div id="board-container">
+        <div id="board">
+            <div class="center-decor">
+                <h1 style="margin:0; color:var(--primary); font-size:3rem; text-shadow: 2px 2px var(--accent);">RECIFE</h1>
+                <div id="weather-badge" style="background:white; padding:5px 15px; border-radius:20px; border:2px solid #333; font-weight:bold; margin-top:10px;">☀️ Dia de Sol</div>
+                <div class="toast-area" id="toast-area"></div>
+            </div>
+            </div>
+    </div>
+
+    <div id="sidebar">
+        <div class="header-logo">
+            <h2>RECIFE</h2>
+        </div>
+        
+        <div id="turn-indicator">Aguardando...</div>
+        <div id="dice-box">🎲 🎲</div>
+
+        <div class="action-grid">
+            <button id="btn-roll" class="ctrl-btn" style="background:#e67e22;" onclick="game.act('roll')">ROLAR DADOS</button>
+            <button id="btn-buy" class="ctrl-btn" style="background:#43a047;" onclick="game.act('buy')">COMPRAR</button>
+            <button id="btn-manage" class="ctrl-btn" style="background:#8e44ad;" onclick="ui.openManage()">GERENCIAR</button>
+            <button id="btn-bail" class="ctrl-btn" style="background:#607d8b;" onclick="game.act('bail')">PAGAR FLANELINHA ($50)</button>
+            <button id="btn-end" class="ctrl-btn" style="background:#d32f2f;" onclick="game.act('end')">PASSAR VEZ</button>
+        </div>
+
+        <div id="players-list"></div>
+        <div id="log-feed"></div>
+    </div>
+</div>
+
+<div id="manage-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Gerenciar Propriedades</h3>
+        <p style="font-size:0.8rem; color:#666;">Você só pode construir se tiver todas as cartas da cor.</p>
+        <div id="manage-list"></div>
+        <button class="lobby-btn btn-red" style="background:#d32f2f; color:white; margin-top:15px;" onclick="document.getElementById('manage-modal').style.display='none'">Fechar</button>
+    </div>
+</div>
+
+<script>
+/* --- DADOS E CONSTANTES --- */
+const COLORS = { brown: '#795548', lightblue: '#4fc3f7', pink: '#ec407a', orange: '#ff9800', red: '#f44336', yellow: '#ffeb3b', green: '#43a047', blue: '#2962ff' };
+
+const CARDS = [
+    { t: "Ganhou na Loteria!", v: 150, type: 'money' },
+    { t: "Multa da CTTU por estacionamento.", v: -50, type: 'money' },
+    { t: "Vendeu Bolo de Rolo para turista.", v: 100, type: 'money' },
+    { t: "Reforma no apartamento.", v: -100, type: 'money' },
+    { t: "Achou dinheiro na areia de Boa Viagem.", v: 20, type: 'money' },
+    { t: "Vá para o Trânsito (Prisão)!", type: 'jail' },
+    { t: "Avance para o Recife Antigo (Carmo).", type: 'move', pos: 8 },
+    { t: "Volte 3 casas.", type: 'move_back', val: 3 }
+];
+
+const BOARD = [
+    { type: 'start', name: 'PARTIDA', price: 0 },
+    { type: 'prop', group: 'brown', name: 'Rua da Aurora', price: 60, cost: 50, rent: [2, 10, 30, 90, 160, 250] },
+    { type: 'chance', name: 'Sorte/Revés' },
+    { type: 'prop', group: 'brown', name: 'Rua do Imperador', price: 60, cost: 50, rent: [4, 20, 60, 180, 320, 450] },
+    { type: 'tax', name: 'IPTU', price: 200 },
+    { type: 'station', name: 'Metrô Centro', price: 200 },
+    { type: 'prop', group: 'lightblue', name: 'Varadouro', price: 100, cost: 50, rent: [6, 30, 90, 270, 400, 550] },
+    { type: 'chance', name: 'Sorte/Revés' },
+    { type: 'prop', group: 'lightblue', name: 'Carmo', price: 100, cost: 50, rent: [6, 30, 90, 270, 400, 550] },
+    { type: 'prop', group: 'lightblue', name: 'Alto da Sé', price: 120, cost: 50, rent: [8, 40, 100, 300, 450, 600] },
+    { type: 'jail', name: 'Trânsito' }, // 10
+    { type: 'prop', group: 'pink', name: 'Cordeiro', price: 140, cost: 100, rent: [10, 50, 150, 450, 750, 950] },
+    { type: 'utility', name: 'Neoenergia', price: 150 },
+    { type: 'prop', group: 'pink', name: 'Várzea', price: 140, cost: 100, rent: [10, 50, 150, 450, 750, 950] },
+    { type: 'prop', group: 'pink', name: 'Iputinga', price: 160, cost: 100, rent: [12, 60, 180, 500, 700, 900] },
+    { type: 'station', name: 'Metrô Oeste', price: 200 },
+    { type: 'prop', group: 'orange', name: 'Torre', price: 180, cost: 100, rent: [14, 70, 200, 550, 750, 950] },
+    { type: 'chance', name: 'Sorte/Revés' },
+    { type: 'prop', group: 'orange', name: 'Madalena', price: 180, cost: 100, rent: [14, 70, 200, 550, 750, 950] },
+    { type: 'prop', group: 'orange', name: 'Graças', price: 200, cost: 100, rent: [16, 80, 220, 600, 800, 1000] },
+    { type: 'parking', name: 'Parque da Jaqueira' }, // 20
+    { type: 'prop', group: 'red', name: 'Espinheiro', price: 220, cost: 150, rent: [18, 90, 250, 700, 875, 1050] },
+    { type: 'chance', name: 'Sorte/Revés' },
+    { type: 'prop', group: 'red', name: 'Aflitos', price: 220, cost: 150, rent: [18, 90, 250, 700, 875, 1050] },
+    { type: 'prop', group: 'red', name: 'Casa Forte', price: 240, cost: 150, rent: [20, 100, 300, 750, 925, 1100] },
+    { type: 'station', name: 'Via Mangue', price: 200 },
+    { type: 'prop', group: 'yellow', name: 'Poço da Panela', price: 260, cost: 150, rent: [22, 110, 330, 800, 975, 1150] },
+    { type: 'prop', group: 'yellow', name: 'Apipucos', price: 260, cost: 150, rent: [22, 110, 330, 800, 975, 1150] },
+    { type: 'utility', name: 'Compesa', price: 150 },
+    { type: 'prop', group: 'yellow', name: 'Parnamirim', price: 280, cost: 150, rent: [24, 120, 360, 850, 1025, 1200] },
+    { type: 'gotojail', name: 'Vá p/ Trânsito' }, // 30
+    { type: 'prop', group: 'green', name: 'Imbiribeira', price: 300, cost: 200, rent: [26, 130, 390, 900, 1100, 1275] },
+    { type: 'prop', group: 'green', name: 'Pina', price: 300, cost: 200, rent: [26, 130, 390, 900, 1100, 1275] },
+    { type: 'chance', name: 'Sorte/Revés' },
+    { type: 'prop', group: 'green', name: 'Paiva', price: 320, cost: 200, rent: [28, 150, 450, 1000, 1200, 1400] },
+    { type: 'station', name: 'Aeroporto', price: 200 },
+    { type: 'chance', name: 'Sorte/Revés' },
+    { type: 'prop', group: 'blue', name: 'Setúbal', price: 350, cost: 200, rent: [35, 175, 500, 1100, 1300, 1500] },
+    { type: 'tax', name: 'Taxa de Luxo', price: 100 },
+    { type: 'prop', group: 'blue', name: 'Boa Viagem', price: 400, cost: 200, rent: [50, 200, 600, 1400, 1700, 2000] }
+];
+
+const AUDIO = {
+    dice: new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'),
+    cash: new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'),
+    bell: new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3'),
+    shark: new Audio('https://www.myinstants.com/media/sounds/tubarao-te-amo.mp3'),
+    galo: new Audio('https://www.myinstants.com/media/sounds/hino-do-galo-da-madrugada.mp3')
+};
+function playSound(k) { try{AUDIO[k].currentTime=0; AUDIO[k].play().catch(()=>{});}catch(e){} }
+
+/* --- REDE (NETWORKING) --- */
+let myId = null, hostConn = null, conns = [], isHost = false, myName = "Player";
+let state = {
+    players: [], // {id, name, color, money, pos, jailed, turnsJailed, out}
+    props: BOARD.map(()=>({owner:null, level:0})), // Level 0-5 (5=Hotel)
+    turn: 0, rolled: false, doubles: 0, weather: 'sun', galoCooldown: 0
+};
+
+const net = {
+    peer: new Peer(null, {debug:1}),
+    init: () => {
+        net.peer.on('open', id => myId = id);
+        net.peer.on('connection', c => {
+            if(!isHost) return;
+            c.on('data', d => net.handleData(d, c));
+            conns.push(c);
+        });
+        net.peer.on('error', e => alert("Erro P2P: " + e));
+    },
+    hostGame: () => {
+        myName = document.getElementById('my-name').value || "Host";
+        if(!myId) return alert("Gerando ID...");
+        isHost = true;
+        state.players.push({id:myId, name:myName, color:'#f44336', money:1500, pos:0, jailed:false, turnsJailed:0, out:false});
+        ui.toLobbyWait();
+    },
+    joinGame: () => {
+        myName = document.getElementById('my-name').value || "Guest";
+        const id = document.getElementById('host-id-input').value;
+        if(!id) return alert("Cole o ID!");
+        hostConn = net.peer.connect(id);
+        hostConn.on('open', () => {
+            hostConn.send({type:'JOIN', name:myName});
+            document.querySelector('.lobby-card').innerHTML = "<h3>Conectado! Aguardando Host...</h3>";
+        });
+        hostConn.on('data', d => net.handleClient(d));
+    },
+    startGame: () => {
+        if(state.players.length < 2) return alert("Mínimo 2 jogadores!");
+        net.broadcast({type:'START', state:state});
+        game.start(state);
+    },
+    // Host Logic
+    handleData: (d, conn) => {
+        if(d.type==='JOIN') {
+            const colors = ['#2196f3','#4caf50','#ff9800','#9c27b0','#795548'];
+            state.players.push({id:conn.peer, name:d.name, color:colors[state.players.length%5], money:1500, pos:0, jailed:false, turnsJailed:0, out:false});
+            net.broadcast({type:'LOBBY_UPD', list:state.players});
+        }
+        else if(d.type==='ACT') game.process(d.act, d.val, d.pid);
+    },
+    // Client Logic
+    handleClient: (d) => {
+        if(d.type==='LOBBY_UPD') ui.updateLobby(d.list);
+        else if(d.type==='START') game.start(d.state);
+        else if(d.type==='STATE') { state = d.state; ui.render(); }
+        else if(d.type==='TOAST') ui.toast(d.msg, d.sub);
+        else if(d.type==='SOUND') playSound(d.key);
+    },
+    broadcast: (msg) => {
+        if(isHost) {
+            conns.forEach(c => c.send(msg));
+            if(msg.type==='STATE') ui.render();
+            if(msg.type==='TOAST') ui.toast(msg.msg, msg.sub);
+            if(msg.type==='SOUND') playSound(msg.key);
+        } else hostConn.send(msg);
+    }
+};
+
+/* --- ENGINE DO JOGO --- */
+const game = {
+    start: (s) => {
+        state = s;
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('game-layout').classList.add('active');
+        ui.initBoard();
+        ui.render();
+    },
+    act: (type, val) => {
+        if(isHost) game.process(type, val, myId);
+        else hostConn.send({type:'ACT', act:type, val:val, pid:myId});
+    },
+    process: (act, val, pid) => {
+        const pIdx = state.players.findIndex(p => p.id === pid);
+        const p = state.players[pIdx];
+        if(state.turn !== pIdx || p.out) return;
+
+        // ROLAR DADOS
+        if(act === 'roll') {
+            if(state.rolled) return;
+            const d1 = Math.ceil(Math.random()*6), d2 = Math.ceil(Math.random()*6);
+            net.broadcast({type:'TOAST', msg:`${p.name} rolou ${d1} + ${d2}`});
+            net.broadcast({type:'SOUND', key:'dice'});
+            // Update Dice Visual (Simple broadcast via state not efficient for animation, but ok for logic)
+            // Lógica Prisão
+            if(p.jailed) {
+                if(d1===d2) {
+                    p.jailed = false; p.turnsJailed=0;
+                    net.broadcast({type:'TOAST', msg:"Saiu do Trânsito!", sub:"Dados iguais"});
+                    game.move(p, d1+d2);
+                    state.rolled = true;
+                } else {
+                    p.turnsJailed++;
+                    if(p.turnsJailed>=3) {
+                        p.money-=50; p.jailed=false; p.turnsJailed=0;
+                        net.broadcast({type:'TOAST', msg:"Pagou $50 e saiu", sub:"Tempo esgotado"});
+                        game.move(p, d1+d2);
+                    } else {
+                        net.broadcast({type:'TOAST', msg:"Continua preso...", sub:`${p.turnsJailed}/3 tentativas`});
+                    }
+                    state.rolled = true;
+                }
+            } else {
+                // Lógica Galo
+                if(d1===6 && d2===6 && state.galoCooldown === 0) {
+                    net.broadcast({type:'TOAST', msg:"🐓 GALO DA MADRUGADA!", sub:"Todos pro Centro!"});
+                    net.broadcast({type:'SOUND', key:'galo'});
+                    state.players.forEach(pl => { if(!pl.out){ pl.pos=8; pl.money-=50; } }); // Move to Carmo
+                    state.galoCooldown = 4; // Imunidade
+                    state.rolled = true;
+                } else {
+                    // Dados Iguais 3x
+                    if(d1===d2) state.doubles++; else state.doubles=0;
+                    
+                    if(state.doubles >= 3) {
+                        net.broadcast({type:'TOAST', msg:"Excesso de Velocidade!", sub:"Preso no Trânsito"});
+                        game.toJail(p);
+                        game.endTurn(); // Encerra forçado
+                        return;
+                    }
+
+                    game.move(p, d1+d2);
+                    if(d1!==d2) state.rolled = true;
+                    else net.broadcast({type:'TOAST', msg:"Dados Iguais!", sub:"Jogue de novo"});
+                }
+            }
+        }
+        // COMPRAR
+        else if(act === 'buy') {
+            const spot = BOARD[p.pos];
+            if(p.money >= spot.price && state.props[p.pos].owner === null) {
+                p.money -= spot.price;
+                state.props[p.pos].owner = pIdx;
+                net.broadcast({type:'TOAST', msg:`${p.name} comprou ${spot.name}`, sub:`-$${spot.price}`});
+                net.broadcast({type:'SOUND', key:'cash'});
+            }
+        }
+        // PAGAR FLANELINHA
+        else if(act === 'bail') {
+            if(p.jailed && p.money >= 50) {
+                p.money -= 50; p.jailed = false; p.turnsJailed = 0; state.rolled = false;
+                net.broadcast({type:'TOAST', msg:"Pagou o Flanelinha", sub:"Livre para jogar"});
+                net.broadcast({type:'SOUND', key:'cash'});
+            }
+        }
+        // CONSTRUIR (Recebe index do board)
+        else if(act === 'build') {
+            const spot = BOARD[val];
+            if(state.props[val].owner === pIdx && state.props[val].level < 5 && p.money >= spot.cost) {
+                p.money -= spot.cost;
+                state.props[val].level++;
+                net.broadcast({type:'TOAST', msg:`Construiu em ${spot.name}`, sub:`Nível ${state.props[val].level}`});
+                net.broadcast({type:'SOUND', key:'cash'});
+            }
+        }
+        // FIM TURNO
+        else if(act === 'end') {
+            game.endTurn();
+        }
+        net.broadcast({type:'STATE', state:state});
+    },
+
+    move: (p, steps) => {
+        p.pos += steps;
+        if(p.pos >= 40) { p.pos -= 40; p.money += 200; net.broadcast({type:'TOAST', msg:"13º Salário!", sub:"+$200"}); }
+        
+        const spot = BOARD[p.pos];
+        const prop = state.props[p.pos];
+
+        // 1. Chance
+        if(spot.type === 'chance') {
+            const card = CARDS[Math.floor(Math.random()*CARDS.length)];
+            net.broadcast({type:'TOAST', msg:"Sorte ou Revés", sub:card.t});
+            if(card.type === 'money') p.money += card.v;
+            else if(card.type === 'jail') game.toJail(p);
+            else if(card.type === 'move') p.pos = card.pos;
+            else if(card.type === 'move_back') p.pos -= card.val;
+        }
+        // 2. Go Jail
+        else if(spot.type === 'gotojail') {
+            net.broadcast({type:'TOAST', msg:"Blitz da Lei Seca!", sub:"Vá pro Trânsito"});
+            game.toJail(p);
+            return;
+        }
+        // 3. Tax
+        else if(spot.type === 'tax') {
+            p.money -= spot.price;
+            net.broadcast({type:'TOAST', msg:"Pagou Imposto", sub:`-$${spot.price}`});
+        }
+        // 4. Rent
+        else if(prop.owner !== null && prop.owner !== state.players.indexOf(p)) {
+            let rent = 0;
+            const owner = state.players[prop.owner];
+            
+            // Regra Clima (Chuva = Zona Baixa Grátis)
+            const isFlood = state.weather === 'rain' && (spot.group==='green'||spot.group==='orange'||spot.group==='pink');
+            
+            if(isFlood) {
+                net.broadcast({type:'TOAST', msg:"Rua Alagada!", sub:"Aluguel Grátis"});
+            } else {
+                if(spot.type === 'prop') rent = spot.rent[prop.level];
+                else if(spot.type === 'station') rent = 50; // Simplificado
+                else rent = 4 * (Math.floor(Math.random()*6)+Math.floor(Math.random()*6)); // Utility
+
+                p.money -= rent;
+                owner.money += rent;
+                net.broadcast({type:'TOAST', msg:`Pagou Aluguel a ${owner.name}`, sub:`-$${rent}`});
+                net.broadcast({type:'SOUND', key:'cash'});
+            }
+        }
+        // 5. Shark
+        if(['Boa Viagem','Pina','Paiva'].some(s=>spot.name.includes(s)) && Math.random()<0.2) {
+            p.money -= 100;
+            net.broadcast({type:'TOAST', msg:"TUBARÃO! 🦈", sub:"Mordida: -$100"});
+            net.broadcast({type:'SOUND', key:'shark'});
+        }
+
+        if(p.money < 0) game.bankrupt(p);
+    },
+
+    toJail: (p) => {
+        p.pos = 10; p.jailed = true; p.turnsJailed = 0; state.rolled = true;
+        net.broadcast({type:'SOUND', key:'bell'}); // Jail sound
+    },
+
+    bankrupt: (p) => {
+        p.out = true;
+        // Assets return to null (Bank) - Simplification for web
+        state.props.forEach(pr => { if(pr.owner === state.players.indexOf(p)) { pr.owner = null; pr.level = 0; } });
+        net.broadcast({type:'TOAST', msg:`${p.name} FALIU!`, sub:"Game Over para ele"});
+    },
+
+    endTurn: () => {
+        state.turn = (state.turn + 1) % state.players.length;
+        while(state.players[state.turn].out) state.turn = (state.turn + 1) % state.players.length;
+        state.rolled = false;
+        state.doubles = 0;
+        if(state.galoCooldown > 0) state.galoCooldown--;
+        
+        // Clima
+        if(Math.random() < 0.15) {
+            state.weather = state.weather==='sun' ? 'rain' : 'sun';
+            const wTxt = state.weather==='rain' ? '🌧️ Chuva Forte!' : '☀️ O Sol abriu!';
+            net.broadcast({type:'TOAST', msg:wTxt, sub: state.weather==='rain' ? 'Alagamentos possíveis' : 'Tudo normal'});
+        }
+        
+        // Sound notification for next player
+        net.broadcast({type:'SOUND', key:'bell'});
+    }
+};
+
+/* --- UI --- */
+const ui = {
+    initBoard: () => {
+        const b = document.getElementById('board');
+        BOARD.forEach((s, i) => {
+            const d = document.createElement('div');
+            d.id = `space-${i}`;
+            // Grid logic
+            let r, c;
+            if(i<=10){r=11;c=11-i;} else if(i<=20){r=11-(i-10);c=1;} else if(i<=30){r=1;c=1+(i-20);} else {r=1+(i-30);c=11;}
+            d.style.gridRow=r; d.style.gridColumn=c;
+            d.className = (i%10===0) ? 'space corner' : 'space';
+            
+            if(s.type === 'prop') {
+                d.innerHTML = `<div class="color-bar" style="background:${COLORS[s.group]}"></div>
+                               <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center;">${s.name}<br>$${s.price}</div>
+                               <div class="build-slots" id="build-${i}"></div><div class="owner-border" id="border-${i}"></div>`;
+            } else {
+                d.innerHTML = `<div style="margin:auto;">${s.name}</div>`;
+            }
+            b.appendChild(d);
+        });
+    },
+    render: () => {
+        const pList = document.getElementById('players-list');
+        pList.innerHTML = '';
+        state.players.forEach((p, i) => {
+            if(p.out) return;
+            const row = document.createElement('div');
+            row.className = `player-row ${state.turn===i?'current':''}`;
+            row.style.borderLeftColor = p.color;
+            row.innerHTML = `<span>${p.name} ${state.turn===i?'(Vez)':''}</span> <b>$${p.money}</b>`;
+            pList.appendChild(row);
+        });
+
+        const myP = state.players.find(p => p.id === myId);
+        const amITurn = myP && state.players[state.turn].id === myId && !myP.out;
+        
+        // Buttons
+        document.getElementById('turn-indicator').innerText = `Vez de: ${state.players[state.turn].name}`;
+        if(amITurn) document.getElementById('turn-indicator').classList.add('my-turn-anim');
+        else document.getElementById('turn-indicator').classList.remove('my-turn-anim');
+
+        ui.btn('btn-roll', amITurn && !state.rolled);
+        ui.btn('btn-buy', amITurn && state.rolled && !myP.jailed);
+        ui.btn('btn-manage', amITurn);
+        ui.btn('btn-end', amITurn && state.rolled);
+        ui.btn('btn-bail', amITurn && myP.jailed && !state.rolled);
+
+        // Weather
+        document.getElementById('weather-badge').innerText = state.weather==='rain' ? '🌧️ Chuva Forte' : '☀️ Dia de Sol';
+        document.getElementById('board').style.filter = state.weather==='rain' ? 'grayscale(0.6)' : 'none';
+
+        // Tokens & Props
+        // Clean tokens first
+        document.querySelectorAll('.token').forEach(e => e.remove());
+        state.players.forEach(p => {
+            if(p.out) return;
+            const t = document.createElement('div');
+            t.className = 'token'; t.style.background = p.color;
+            const space = document.getElementById(`space-${p.pos}`);
+            const bRect = document.getElementById('board').getBoundingClientRect();
+            const sRect = space.getBoundingClientRect();
+            t.style.top = (sRect.top - bRect.top + 5 + (state.players.indexOf(p)*3)) + 'px';
+            t.style.left = (sRect.left - bRect.left + 5 + (state.players.indexOf(p)*3)) + 'px';
+            document.getElementById('board').appendChild(t);
+        });
+
+        // Props Border & Builds
+        state.props.forEach((pr, i) => {
+            const border = document.getElementById(`border-${i}`);
+            const build = document.getElementById(`build-${i}`);
+            if(border) {
+                border.style.border = pr.owner !== null ? `4px solid ${state.players[pr.owner].color}` : 'none';
+                // Builds
+                build.innerHTML = '';
+                if(pr.level === 5) build.innerHTML = '<div class="hotel"></div>';
+                else for(let k=0; k<pr.level; k++) build.innerHTML += '<div class="house"></div>';
+            }
+        });
+    },
+    btn: (id, on) => {
+        const b = document.getElementById(id);
+        if(on) { b.classList.add('enabled'); b.disabled = false; }
+        else { b.classList.remove('enabled'); b.disabled = true; }
+    },
+    toast: (msg, sub) => {
+        const area = document.getElementById('toast-area');
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.innerHTML = `<div>${msg}</div><small>${sub||''}</small>`;
+        area.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+        // Add to log
+        const log = document.getElementById('log-feed');
+        log.innerHTML = `<div>> ${msg} ${sub?`(${sub})`:''}</div>` + log.innerHTML;
+    },
+    openManage: () => {
+        const myP = state.players.find(p => p.id === myId);
+        const myIdx = state.players.indexOf(myP);
+        const list = document.getElementById('manage-list');
+        list.innerHTML = '';
+        
+        let hasProps = false;
+        BOARD.forEach((b, i) => {
+            if(b.type === 'prop' && state.props[i].owner === myIdx) {
+                // Check monopoly
+                const groupProps = BOARD.filter(x => x.group === b.group);
+                const groupIndices = BOARD.map((x, idx) => x.group === b.group ? idx : -1).filter(x => x !== -1);
+                const ownAll = groupIndices.every(idx => state.props[idx].owner === myIdx);
+                
+                if(ownAll) {
+                    hasProps = true;
+                    const item = document.createElement('div');
+                    item.className = 'prop-item';
+                    const canBuild = state.props[i].level < 5 && myP.money >= b.cost;
+                    item.innerHTML = `
+                        <div>
+                            <span style="color:${COLORS[b.group]}">■</span> ${b.name} (Nível ${state.props[i].level})<br>
+                            <small>Custo: $${b.cost}</small>
+                        </div>
+                        <button class="lobby-btn btn-green" style="width:auto; padding:5px 10px;" 
+                            ${canBuild?'':'disabled'} 
+                            onclick="game.act('build', ${i}); document.getElementById('manage-modal').style.display='none'">
+                            +1
+                        </button>
+                    `;
+                    list.appendChild(item);
+                }
+            }
+        });
+        if(!hasProps) list.innerHTML = "<p>Você precisa ter todas as propriedades de uma cor para construir.</p>";
+        document.getElementById('manage-modal').style.display = 'flex';
+    },
+    toLobbyWait: () => {
+        document.getElementById('lobby-start').style.display = 'none';
+        document.getElementById('lobby-waiting').style.display = 'block';
+        document.getElementById('my-id-display').innerText = myId;
+    },
+    updateLobby: (list) => {
+        document.getElementById('players-lobby-list').innerHTML = list.map(p => `<li>👤 ${p.name}</li>`).join('');
+    },
+    copyId: () => { navigator.clipboard.writeText(myId); alert("Copiado!"); }
+};
+
+net.init();
+</script>
+</body>
+</html>
