@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife V30: Final Fix</title>
+    <title>Recife V31: Estável</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
@@ -115,12 +115,10 @@
         .cube { width: 80px; height: 80px; position: relative; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.1,0.9,0.2,1); }
         .face { position: absolute; inset: 0; background: #fff; border: 4px solid #000; border-radius: 12px; display: grid; place-items: center; font-size: 2.5rem; font-weight: bold; }
         
-        /* Mapeamento Faces */
         .f1{transform:translateZ(40px)} .f6{transform:rotateX(180deg) translateZ(40px)}
         .f2{transform:rotateY(-90deg) translateZ(40px)} .f5{transform:rotateY(90deg) translateZ(40px)}
         .f3{transform:rotateX(-90deg) translateZ(40px)} .f4{transform:rotateX(90deg) translateZ(40px)}
         
-        /* Rotações Resultado */
         .r1{transform:rotateX(0) rotateY(0)} .r6{transform:rotateX(180deg)} 
         .r2{transform:rotateY(90deg)} .r5{transform:rotateY(-90deg)} 
         .r3{transform:rotateX(90deg)} .r4{transform:rotateX(-90deg)}
@@ -138,7 +136,7 @@
     <div class="card-menu">
         <h1 style="color:var(--frevo-red); font-size:3rem; margin:0;">RECIFE</h1>
         <h2 style="color:var(--wood-dark);">DE LUXO 👑</h2>
-        <p>Versão V30 (Correção Final)</p>
+        <p>Versão V31 (Estável)</p>
         <button class="btn-big" onclick="ui.toChar()">JOGAR SOLO</button>
     </div>
 </div>
@@ -206,15 +204,15 @@
 /* DADOS */
 const CHARS=[{id:'c',i:'🦀',n:'Caranguejo'},{id:'s',i:'🦈',n:'Tubarão'},{id:'u',i:'☂️',n:'Sombrinha'},{id:'sol',i:'☀️',n:'Sol'}];
 const BD=[
-    {t:'st',n:'Início'}, {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90]},{t:'ch',n:'Sorte'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô'},{t:'pr',g:'#03a9f4',n:'Sto Amaro',p:100,h:50,r:[6,30,90,270]},{t:'ch',n:'Revés'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300]},
-    {t:'jl',n:'Cadeia'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450]},{t:'ut',n:'Luz',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,r:[14,70,200,550]},{t:'ch',n:'Sorte'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550]},{t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600]},
-    {t:'pk',n:'Parque'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800]},{t:'pr',g:'#fbc02d',n:'Poço',p:260,h:150,r:[22,110,330,800]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850]},
+    {t:'st',n:'Início',i:'🚩'}, {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90]},{t:'ch',n:'Sorte'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô'},{t:'pr',g:'#03a9f4',n:'Sto Amaro',p:100,h:50,r:[6,30,90,270]},{t:'ch',n:'Revés'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300]},
+    {t:'jl',n:'Cadeia',i:'👮'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450]},{t:'ut',n:'Luz',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,r:[14,70,200,550]},{t:'ch',n:'Sorte'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550]},{t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600]},
+    {t:'pk',n:'Parque',i:'🎡'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800]},{t:'pr',g:'#fbc02d',n:'Poço',p:260,h:150,r:[22,110,330,800]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850]},
     {t:'gj',n:'Blitz'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900]},{t:'ch',n:'Sorte'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100]},{t:'tx',n:'Taxa',p:100},{t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,r:[50,200,600,1400]}
 ];
 
 let players=[
-    {name:"Você",icon:"",pos:0,money:1500,jailed:false,doubles:0},
-    {name:"CPU",icon:"🤖",pos:0,money:1500,jailed:false,doubles:0}
+    {name:"Você",icon:"",pos:0,money:1500,jailed:false,doubles:0,color:"#d32f2f"},
+    {name:"CPU",icon:"🤖",pos:0,money:1500,jailed:false,doubles:0,color:"#0288d1"}
 ];
 let props=Array(40).fill(null);
 let turn=0, rolled=false, animating=false;
@@ -269,11 +267,14 @@ const ui={
         const p=players[0];
         document.getElementById('turn-display').innerText=`VEZ DE: ${players[turn].name}`;
         document.getElementById('p-money').innerText=`$${p.money}`;
+        if(p.money<0) ui.toast("⚠️ CUIDADO! SALDO NEGATIVO!");
+        
         document.getElementById('players-list').innerHTML=players.map((pl,i)=>`<div class="p-stat ${turn===i?'active':''}"><span style="font-size:1.2rem">${pl.icon}</span><b>${pl.name}</b><span>$${pl.money}</span></div>`).join('');
         
-        // Buttons
+        // Buttons Logic
         const hum=turn===0;
         document.getElementById('b-roll').disabled = !(hum && !rolled && !animating && !p.jailed);
+        
         if(p.jailed && hum) {
             const b=document.getElementById('b-roll'); b.disabled=false; b.innerText="PAGAR FIANÇA ($50)"; b.onclick=game.payJail;
         } else {
@@ -284,7 +285,7 @@ const ui={
         const canBuy = hum && rolled && cur.t==='pr' && !props[p.pos];
         document.getElementById('b-buy').disabled = !canBuy;
         
-        // Doubles Logic: if rolled and doubles>0 (and not jailed), must roll again, so pass disabled
+        // Doubles Logic
         const dEqual = players[turn].doubles > 0;
         document.getElementById('b-pass').disabled = !(hum && rolled && !dEqual);
 
@@ -295,7 +296,6 @@ const ui={
         else {
             inv.innerHTML=myP.map(x=>{
                 const s=BD[x.i];
-                // Mono Check
                 const grp=BD.map((b,k)=>b.g===s.g?k:-1).filter(k=>k!==-1);
                 const mono=grp.every(k=>props[k]&&props[k].owner===0);
                 return `<div style="background:#eee;border-left:5px solid ${s.g};padding:5px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center"><b>${s.n}</b>${mono&&x.pr.level<5?`<button style="background:green;color:white;border:none;border-radius:3px;cursor:pointer" onclick="game.build(${x.i})">+🏠 $${s.h}</button>`:''}</div>`;
@@ -359,7 +359,7 @@ const game={
         rolled=true; animating=false; ui.updateHUD();
         
         if(d1===d2 && !players[turn].jailed){
-            rolled=false; // Allow re-roll
+            rolled=false; 
             if(turn===1) setTimeout(game.roll, 1500);
         } else {
             if(turn===1) setTimeout(game.pass, 1500);
@@ -368,4 +368,64 @@ const game={
     move:async(pid,steps)=>{
         const p=players[pid];
         for(let i=0;i<steps;i++){
-            p.pos++; if(p.pos>=40){p.pos=
+            p.pos++; if(p.pos>=40){p.pos=0;p.money+=200;ui.toast("Início: +$200");play('cash');}
+            ui.placeToken(pid,p.pos); play('step');
+            await new Promise(r=>setTimeout(r,200));
+        }
+        game.land(pid);
+    },
+    land:(pid)=>{
+        const p=players[pid], s=BD[p.pos], pr=props[p.pos];
+        if(p.pos===30){ 
+            ui.toast("BLITZ! PRESO!"); game.jail(pid); return;
+        }
+        if(s.t==='pr'){
+            if(!pr){
+                if(pid===0 && p.money>=s.p) ui.showCard(p.pos);
+                else if(pid===1 && p.money>=s.p+200) game.aiBuy();
+            } else if(pr.owner!==pid){
+                const r=s.r[pr.level]; p.money-=r; players[pr.owner].money+=r;
+                ui.toast(`Pagou aluguel $${r}`); play('cash');
+            }
+        } else if(s.t==='tx'){
+            p.money-=s.p; ui.toast(`Taxa: -$${s.p}`);
+        } else if(s.t==='ch'||s.t==='rev'){
+            const gain=Math.random()>0.5;
+            if(gain){p.money+=50;ui.toast("Sorte! +$50");confetti();}
+            else{p.money-=50;ui.toast("Revés! -$50");}
+        }
+    },
+    jail:(pid)=>{
+        players[pid].jailed=true; players[pid].pos=10; ui.placeToken(pid,10); players[pid].doubles=0;
+        if(pid===1) setTimeout(game.pass,1000);
+    },
+    payJail:()=>{
+        if(players[0].money>=50){
+            players[0].money-=50; players[0].jailed=false; ui.toast("Livre!"); ui.updateHUD();
+        }
+    },
+    confirmBuy:()=>{
+        const p=players[0], s=BD[p.pos];
+        p.money-=s.p; props[p.pos]={owner:0,level:0};
+        play('cash'); confetti(); ui.closeCard(); ui.updateHUD();
+    },
+    aiBuy:()=>{
+        const p=players[1], s=BD[p.pos];
+        p.money-=s.p; props[p.pos]={owner:1,level:0};
+        ui.toast("CPU Comprou "+s.n); ui.updateHUD();
+    },
+    build:(idx)=>{
+        const p=players[0], s=BD[idx];
+        if(p.money>=s.h){
+            p.money-=s.h; props[idx].level++; play('cash'); ui.updateHUD();
+        }
+    },
+    pass:()=>{
+        turn=(turn+1)%2; rolled=false;
+        ui.updateHUD();
+        if(turn===1) setTimeout(game.roll, 1500);
+    }
+};
+</script>
+</body>
+</html>
