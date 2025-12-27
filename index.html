@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário: Gold Master</title>
+    <title>Recife Imobiliário: V19 Final</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
@@ -44,7 +44,6 @@
             box-shadow: 0 6px 0 rgba(0,0,0,0.3); color: white; font-family: 'Rye'; transition: 0.1s; 
         }
         .btn-main:active { transform: translateY(4px); box-shadow: none; }
-        .btn-main:disabled { background: #999 !important; cursor: not-allowed; box-shadow: none; transform: none; }
         
         .bg-b { background: var(--frevo-blue); } .bg-g { background: var(--frevo-green); } .bg-r { background: var(--frevo-red); }
 
@@ -93,7 +92,6 @@
         .house-3d, .hotel-3d { position: relative; transform-style: preserve-3d; transform: rotateX(-20deg); }
         .house-3d { width: 12px; height: 12px; background: var(--frevo-green); border: 1px solid #1b5e20; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
         .hotel-3d { width: 16px; height: 16px; background: var(--frevo-red); border: 1px solid #b71c1c; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
-        /* Add depth via pseudo elements for cube effect if desired, keeping simple for perf */
 
         /* CENTRO */
         .center-hub { grid-column: 2/11; grid-row: 2/11; background: #e1f5fe; border: 5px solid var(--wood); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.1); }
@@ -150,15 +148,15 @@
     <h1 style="color:#fff; font-size:3.5rem; margin-bottom:10px;">RECIFE DE OURO</h1>
     <div class="card-menu">
         <h2 style="color:var(--wood); margin:0;">CONCENTRAÇÃO</h2>
-        <div id="status-net" style="color:var(--frevo-blue); font-weight:bold; margin-bottom:10px; font-size:0.8rem;">Conectando ao servidor...</div>
+        <div id="status-net" style="color:var(--frevo-blue); font-weight:bold; margin-bottom:10px; font-size:0.8rem;">🔌 Conectando à rede...</div>
         
         <input id="p-name" class="input-box" placeholder="Seu Apelido" maxlength="12">
         
         <div id="lobby-btns">
-            <button id="btn-host" class="btn-main bg-b" onclick="net.host()" disabled>CRIAR BLOCO</button>
+            <button id="btn-host" class="btn-main bg-b" onclick="net.host()">CRIAR BLOCO</button>
             <p style="margin:10px; font-weight:bold; color:#aaa;">- OU -</p>
             <input id="host-id" class="input-box" placeholder="Código da Sala" style="font-size:1rem;">
-            <button id="btn-join" class="btn-main bg-g" onclick="net.join()" disabled>ENTRAR NO BLOCO</button>
+            <button id="btn-join" class="btn-main bg-g" onclick="net.join()">ENTRAR NO BLOCO</button>
         </div>
 
         <div id="lobby-wait" style="display:none; border-top:2px dashed #ccc; margin-top:20px; padding-top:10px;">
@@ -276,7 +274,7 @@ const CHARS=[{id:'cb',i:'🦀',n:'Caranguejo'},{id:'sk',i:'🦈',n:'Tubarão'},{
 const BD=[
     {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô Centro',p:200},{t:'pr',g:'#03a9f4',n:'Santo Amaro',p:100,h:50,r:[6,30,90,270,400,550]},{t:'ch',n:'Revés'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270,400,550]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300,450,600]},
     {t:'jl',n:'Trânsito'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450,750,950]},{t:'ut',n:'Neoenergia',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450,750,950]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500,700,900]},{t:'rr',n:'Metrô Oeste',p:200},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,r:[14,70,200,550,750,950]},{t:'ch',n:'Sorte'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550,750,950]},{t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Parque Jaqueira'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]},{t:'rr',n:'Via Mangue',p:200},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},
+    {t:'pk',n:'Parque Jaqueira'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]},{t:'rr',n:'Via Mangue',p:200},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'pr',g:'#fbc02d',n:'Poço da Panela',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},
     {t:'gj',n:'Blitz!'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'ch',n:'Sorte'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000,1200,1400]},{t:'rr',n:'Aeroporto',p:200},{t:'ch',n:'Revés'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100,1300,1500]},{t:'tx',n:'Taxa Luxo',p:100},{t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,r:[50,200,600,1400,1700,2000]}
 ];
 const SFX={dice:new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'),gavel:new Audio('https://www.soundjay.com/misc/sounds/gavel-1.mp3')};
@@ -292,15 +290,26 @@ let trdOffer=null;
 const net={
     peer:new Peer(null,{debug:1}),
     init:()=>{
-        net.peer.on('open',id=>{myId=id; document.getElementById('status-net').innerText="REDE PRONTA!"; document.getElementById('btn-host').disabled=false; document.getElementById('btn-join').disabled=false;});
+        net.peer.on('open',id=>{myId=id;document.getElementById('status-net').innerText="✅ REDE PRONTA!"; document.getElementById('status-net').style.color="green";});
         net.peer.on('connection',c=>{if(isHost){c.on('open',()=>c.send({t:'WELCOME',l:state.players}));c.on('data',d=>net.host(d,c));conns.push(c);}});
+        net.peer.on('error',e=>alert("Erro Rede: "+e));
     },
-    host:()=>{const n=document.getElementById('p-name').value.trim();if(!n)return alert("Nome?");isHost=true;me.name=n;state.players.push({id:myId,name:n,char:null,money:1500,pos:0,jailed:false,color:'#d32f2f'});ui.screen('lobby-wait');},
-    join:()=>{const n=document.getElementById('p-name').value.trim(),id=document.getElementById('host-id').value.trim();if(!n||!id)return alert("Dados?");me.name=n;hostConn=net.peer.connect(id);hostConn.on('open',()=>{hostConn.send({t:'JOIN',name:n});});hostConn.on('data',d=>net.cli(d));},
+    host:()=>{
+        if(!myId) return alert("Aguarde a rede (status verde)...");
+        const n=document.getElementById('p-name').value.trim();if(!n)return alert("Nome?");isHost=true;me.name=n;
+        state.players.push({id:myId,name:n,char:null,money:1500,pos:0,jailed:false,color:'#d32f2f'});
+        ui.screen('lobby-wait');
+    },
+    join:()=>{
+        const n=document.getElementById('p-name').value.trim(),id=document.getElementById('host-id').value.trim();if(!n||!id)return alert("Dados?");me.name=n;
+        hostConn=net.peer.connect(id);
+        hostConn.on('open',()=>{hostConn.send({t:'JOIN',name:n});document.getElementById('status-net').innerText="🔄 Conectando...";});
+        hostConn.on('data',d=>net.cli(d));
+    },
     toChar:()=>{if(state.players.length<2)return alert("Min 2 players!");net.bc({t:'PHASE',p:'CHARS'});ui.screen('chars');},
     startGame:()=>{if(state.players.some(p=>!p.char))return alert("Escolham!");net.bc({t:'PHASE',p:'GAME',st:state});ui.start();},
     host:(d,c)=>{
-        if(d.t==='JOIN'){if(!state.players.find(p=>p.id===c.peer)){const cl=['#1976d2','#388e3c','#fbc02d','#7b1fa2'];state.players.push({id:c.peer,name:d.name,char:null,money:1500,pos:0,jailed:false,color:cl[state.players.length%4]});net.bc({t:'UPD',l:state.players});ui.rLobby(state.players);}}
+        if(d.t==='JOIN'){if(!state.players.find(p=>p.id===c.peer)){const cl=['#2196f3','#4caf50','#fbc02d','#7b1fa2'];state.players.push({id:c.peer,name:d.name,char:null,money:1500,pos:0,jailed:false,color:cl[state.players.length%4]});net.bc({t:'UPD',l:state.players});ui.rLobby(state.players);}}
         else if(d.t==='PICK'){const p=state.players.find(x=>x.id===d.pid);if(p){p.char=d.char;net.bc({t:'UPD',l:state.players});ui.rChars();}}
         else if(d.t==='ACT')game.proc(d);
         else if(d.t==='BID')auction.proc(d.pid);
@@ -336,7 +345,7 @@ const game={
             net.bc({t:'ANIM',d1,d2});
             setTimeout(()=>{
                 let mv=d1+d2;
-                if(p.jailed){if(d1===d2){p.jailed=false;game.mv(p,mv);state.rolled=true;}else{state.rolled=true;}}
+                if(p.jailed){if(d1===d2){p.jailed=false;game.mv(p,mv);state.rolled=true;}else{p.tj=(p.tj||0)+1;if(p.tj>=3){p.money-=50;p.jailed=false;game.mv(p,mv);}state.rolled=true;}}
                 else{if(d1===d2)state.doubles++;else state.doubles=0; if(state.doubles>=3){p.jailed=true;p.pos=10;}else{game.mv(p,mv);if(d1!==d2)state.rolled=true;}}
                 net.bc({t:'STATE',st:state});if(isHost)ui.rGame();
             },2500);
@@ -430,7 +439,7 @@ const ui={
         document.getElementById('b-auc').onclick=()=>game.act('auction');document.getElementById('b-bail').onclick=()=>game.act('bail');
         document.getElementById('b-trd').onclick=()=>trade.open();document.getElementById('b-end').onclick=()=>game.act('end');
     },
-    dice:(d1,d2)=>{const o=document.getElementById('dice-view');o.style.display='flex';play('dice');const c1=document.querySelector('#d1'),c2=document.querySelector('#d2');c1.className='cube';c2.className='cube';void c1.offsetWidth;c1.style.transition='transform 1.5s';c2.style.transition='transform 1.5s';const m=['r1','r2','r3','r4','r5','r6'];setTimeout(()=>{c1.classList.add(m[d1-1]);c2.classList.add(m[d2-1]);},50);setTimeout(()=>o.style.display='none',2500);},
+    dice:(d1,d2)=>{const o=document.getElementById('dice-view');o.style.display='flex';play('dice');const c1=document.querySelector('#d1 .cube'),c2=document.querySelector('#d2 .cube');c1.className='cube';c2.className='cube';void c1.offsetWidth;c1.style.transition='transform 1.5s';c2.style.transition='transform 1.5s';const m=['r1','r2','r3','r4','r5','r6'];setTimeout(()=>{c1.classList.add(m[d1-1]);c2.classList.add(m[d2-1]);},50);setTimeout(()=>o.style.display='none',2500);},
     card:(i)=>{const s=BD[i],el=document.getElementById('card-modal');document.getElementById('cd-h').innerText=s.n;document.getElementById('cd-h').style.background=s.g||'#333';document.getElementById('cd-b').innerHTML=`Preço: $${s.p}<br>Aluguel Base: $${s.r?s.r[0]:50}<br>Casa: $${s.h||0}`;el.style.display='flex';},
     toast:(m)=>{const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);},
     reactShow:(e)=>{const d=document.createElement('div');d.className='floater';d.style.left=(Math.random()*80+10)+'%';d.style.top='80%';d.innerText=e;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);}
