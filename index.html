@@ -286,30 +286,114 @@ let state={phase:'LOBBY',players:[],turn:0,rolled:false,props:BD.map(()=>({owner
 let auc={on:false,item:0,bid:0,lead:null,t:10,tm:null};
 let trdOffer=null;
 
-/* REDE */
+/* REDE ROBUSTA */
 const net={
-    peer:new Peer(null,{debug:1}),
+    peer: null,
     init:()=>{
-        net.peer.on('open',id=>{myId=id;document.getElementById('status-net').innerText="✅ REDE PRONTA!"; document.getElementById('status-net').style.color="green";});
-        net.peer.on('connection',c=>{if(isHost){c.on('open',()=>c.send({t:'WELCOME',l:state.players}));c.on('data',d=>net.host(d,c));conns.push(c);}});
-        net.peer.on('error',e=>alert("Erro Rede: "+e));
+        document.getElementById('status-net').innerText="🔌 Conectando ao servidor...";
+        // Tenta conectar usando configuração padrão do PeerJS
+        try {
+            net.peer = new Peer(null, {
+                debug: 2
+            });
+
+            net.peer.on('open', id => {
+                myId = id;
+                console.log('Meu ID:', myId);
+                document.getElementById('status-net').innerText="✅ REDE PRONTA! (Recife Online)";
+                document.getElementById('status-net').style.color="#4caf50";
+            });
+
+            net.peer.on('connection', c => {
+                if(isHost){
+                    c.on('open', () => c.send({t:'WELCOME', l:state.players}));
+                    c.on('data', d => net.host(d, c));
+                    c.on('close', () => ui.toast("Alguém saiu do bloco!"));
+                    conns.push(c);
+                }
+            });
+
+            net.peer.on('error', e => {
+                console.error(e);
+                let msg = "Erro na Rede. ";
+                if(e.type === 'browser-incompatible') msg += "Navegador incompatível.";
+                else if(e.type === 'disconnected') msg += "Desconectado.";
+                else if(e.type === 'network') msg += "Falha de conexão. Verifique internet.";
+                else if(e.type === 'unavailable-id') msg += "ID indisponível.";
+                else msg += e.type;
+                
+                document.getElementById('status-net').innerText = "❌ ERRO: " + msg;
+                document.getElementById('status-net').style.color = "red";
+                alert("Erro PeerJS: " + msg + "\nDica: Não abra o arquivo com duplo clique. Use um Live Server ou hospede no Vercel/Netlify.");
+            });
+            
+            net.peer.on('disconnected', () => {
+                 document.getElementById('status-net').innerText="⚠️ Desconectado. Tentando reconectar...";
+                 net.peer.reconnect();
+            });
+
+        } catch (err) {
+            alert("Falha crítica ao iniciar PeerJS. Verifique o console.");
+        }
     },
     host:()=>{
-        if(!myId) return alert("Aguarde a rede (status verde)...");
-        const n=document.getElementById('p-name').value.trim();if(!n)return alert("Nome?");isHost=true;me.name=n;
-        state.players.push({id:myId,name:n,char:null,money:1500,pos:0,jailed:false,color:'#d32f2f'});
+        if(!myId) return alert("A rede ainda não está pronta! Espere o status ficar VERDE.");
+        const n=document.getElementById('p-name').value.trim();
+        if(!n) return alert("Digite seu apelido, folião!");
+        
+        isHost=true;
+        me.name=n;
+        // Host é o primeiro player
+        state.players.push({id:myId, name:n, char:null, money:1500, pos:0, jailed:false, color:'#d32f2f'});
         ui.screen('lobby-wait');
     },
     join:()=>{
-        const n=document.getElementById('p-name').value.trim(),id=document.getElementById('host-id').value.trim();if(!n||!id)return alert("Dados?");me.name=n;
+        const n=document.getElementById('p-name').value.trim(), id=document.getElementById('host-id').value.trim();
+        if(!n || !id) return alert("Preencha seu nome e o código da sala!");
+        if(!myId) return alert("Aguarde a rede conectar (Status Verde).");
+
+        me.name=n;
+        ui.toast("Buscando sala...");
+        
         hostConn=net.peer.connect(id);
-        hostConn.on('open',()=>{hostConn.send({t:'JOIN',name:n});document.getElementById('status-net').innerText="🔄 Conectando...";});
-        hostConn.on('data',d=>net.cli(d));
+        
+        // Timeout de segurança se não conectar em 5s
+        const tm = setTimeout(() => {
+            if(document.getElementById('status-net').innerText.includes("Conectado ao Mestre")) return;
+            alert("Não foi possível conectar ao Mestre. Verifique o ID.");
+        }, 5000);
+
+        hostConn.on('open',()=>{
+            clearTimeout(tm);
+            hostConn.send({t:'JOIN', name:n});
+            document.getElementById('status-net').innerText="🔄 Conectado ao Mestre!";
+        });
+        
+        hostConn.on('data', d => net.cli(d));
+        hostConn.on('error', e => alert("Erro na conexão com Host: " + e));
     },
-    toChar:()=>{if(state.players.length<2)return alert("Min 2 players!");net.bc({t:'PHASE',p:'CHARS'});ui.screen('chars');},
-    startGame:()=>{if(state.players.some(p=>!p.char))return alert("Escolham!");net.bc({t:'PHASE',p:'GAME',st:state});ui.start();},
+    toChar:()=>{if(state.players.length<2)return alert("Precisa de pelo menos 2 jogadores!");net.bc({t:'PHASE',p:'CHARS'});ui.screen('chars');},
+    startGame:()=>{if(state.players.some(p=>!p.char))return alert("Todos precisam escolher uma fantasia!");net.bc({t:'PHASE',p:'GAME',st:state});ui.start();},
+    
+    // Lógica do Host recebendo dados
     host:(d,c)=>{
-        if(d.t==='JOIN'){if(!state.players.find(p=>p.id===c.peer)){const cl=['#2196f3','#4caf50','#fbc02d','#7b1fa2'];state.players.push({id:c.peer,name:d.name,char:null,money:1500,pos:0,jailed:false,color:cl[state.players.length%4]});net.bc({t:'UPD',l:state.players});ui.rLobby(state.players);}}
+        if(d.t==='JOIN'){
+            if(!state.players.find(p=>p.id===c.peer)){
+                const cl=['#2196f3','#4caf50','#fbc02d','#7b1fa2'];
+                // Adiciona player se não existir
+                state.players.push({
+                    id:c.peer, 
+                    name:d.name, 
+                    char:null, 
+                    money:1500, 
+                    pos:0, 
+                    jailed:false, 
+                    color:cl[state.players.length%4] || '#000'
+                });
+                net.bc({t:'UPD',l:state.players});
+                ui.rLobby(state.players);
+            }
+        }
         else if(d.t==='PICK'){const p=state.players.find(x=>x.id===d.pid);if(p){p.char=d.char;net.bc({t:'UPD',l:state.players});ui.rChars();}}
         else if(d.t==='ACT')game.proc(d);
         else if(d.t==='BID')auction.proc(d.pid);
@@ -318,6 +402,7 @@ const net={
         else if(d.t==='MTG')game.mtg(d.i);
         else if(d.t==='BLD')game.build(d.i);
     },
+    // Lógica do Cliente (Player) recebendo dados
     cli:(d)=>{
         if(d.t==='WELCOME'||d.t==='UPD'){state.players=d.l;if(state.phase==='LOBBY')ui.rLobby(d.l);if(state.phase==='CHARS')ui.rChars();}
         else if(d.t==='PHASE'){state.phase=d.p;if(d.p==='CHARS')ui.screen('chars');if(d.p==='GAME'){state=d.st;ui.start();}}
@@ -445,7 +530,9 @@ const ui={
     reactShow:(e)=>{const d=document.createElement('div');d.className='floater';d.style.left=(Math.random()*80+10)+'%';d.style.top='80%';d.innerText=e;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);}
 };
 const util={copy:()=>{navigator.clipboard.writeText(myId);alert("Copiado!");}};
+// INICIA A MÁQUINA
 net.init();
 </script>
 </body>
 </html>
+
