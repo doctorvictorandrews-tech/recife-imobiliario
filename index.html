@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário: Deluxe V16</title>
+    <title>Recife Imobiliário: V17 Final</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
@@ -30,6 +30,7 @@
         .btn-frevo { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.2); color: white; font-family: 'Rye'; transition: transform 0.1s; }
         .btn-frevo:active { transform: translateY(4px); box-shadow: none; }
         .bg-blue { background: #0288d1; } .bg-green { background: #43a047; } .bg-red { background: #d32f2f; }
+        #net-status { font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }
 
         /* CHAR SELECT */
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
@@ -37,20 +38,28 @@
         .char-opt.taken { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
         .char-opt.selected { background: var(--gold); transform: scale(1.1); border-color: var(--wood); color: black; }
         .char-icon { font-size: 2.5rem; }
-        .char-tag { font-size: 0.7rem; font-weight: bold; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); white-space: nowrap; color: white; text-shadow: 1px 1px 0 #000; }
 
         /* --- TELA 3: JOGO --- */
         #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; transition: 1s; pointer-events: none; }
         #game-layout.active { opacity: 1; pointer-events: all; }
         
         #board-viewport { flex: 1; perspective: 1500px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, #4fc3f7, #01579b); overflow: hidden; }
-        #board { display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px); background: #f5f5f5; border: 20px solid var(--wood); border-radius: 12px; position: relative; transform-style: preserve-3d; transition: transform 1s; box-shadow: var(--shadow-deep); background-image: url('https://www.transparenttextures.com/patterns/white-brick-wall.png'); }
+        #board { 
+            display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px); 
+            background: #f5f5f5; border: 20px solid var(--wood); border-radius: 12px; position: relative; 
+            transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            box-shadow: var(--shadow-deep); background-image: url('https://www.transparenttextures.com/patterns/white-brick-wall.png'); 
+        }
         
         .space { border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); font-size: 0.6rem; text-align: center; position: relative; font-weight: bold; display: flex; flex-direction: column; transition: 0.3s; backface-visibility: hidden; }
-        .space:hover { transform: translateZ(10px); z-index: 10; border: 2px solid var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         .color-bar { height: 25%; border-bottom: 2px solid #333; position: relative; }
         .mortgaged { filter: grayscale(1); opacity: 0.7; background: #ddd; }
         .mortgaged::after { content:'HIPOTECADO'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-45deg); color:red; border:2px solid red; padding:2px; font-size:0.6rem; }
+
+        /* Construções 3D */
+        .build-slots { position: absolute; top: -5px; left: 0; width: 100%; display: flex; justify-content: center; gap: 2px; transform-style: preserve-3d; }
+        .house-3d { width: 10px; height: 10px; background: var(--frevo-green); border: 1px solid #1b5e20; transform: translateZ(5px); box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .hotel-3d { width: 15px; height: 15px; background: var(--frevo-red); border: 1px solid #b71c1c; transform: translateZ(8px); box-shadow: 2px 2px 3px rgba(0,0,0,0.5); }
 
         .center-hub { grid-column: 2/11; grid-row: 2/11; background: #e1f5fe; border: 5px solid var(--wood); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .umbrella-spin { position: absolute; width: 200%; height: 200%; opacity: 0.1; background: conic-gradient(red 0deg 45deg, green 45deg 90deg, yellow 90deg 135deg, blue 135deg 180deg, red 180deg 225deg, green 225deg 270deg, yellow 270deg 315deg, blue 315deg 360deg); animation: spin 20s linear infinite; }
@@ -72,8 +81,8 @@
         .p-card.active { background: #fff9c4; transform: scale(1.02); border-color: var(--gold); }
 
         #deed-list { flex: 1; overflow-y: auto; background: #fff8e1; border: 2px solid #ccc; padding: 5px; margin-top: 5px; }
-        .deed-item { font-size: 0.75rem; border-bottom: 1px dashed #aaa; padding: 3px; cursor: pointer; transition: 0.2s; }
-        .deed-item:hover { background: #fff; }
+        .deed-item { font-size: 0.75rem; border-bottom: 1px dashed #aaa; padding: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .build-btn { background: var(--frevo-green); color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.7rem; padding: 2px 5px; }
 
         /* OVERLAYS */
         #dice-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
@@ -113,6 +122,7 @@
     <h1 style="color:#fff; font-size:3rem; margin-bottom:10px;">RECIFE DE LUXO</h1>
     <div class="estandarte-card">
         <h2 style="color:var(--wood); margin:0;">CONCENTRAÇÃO</h2>
+        <div id="net-status" style="color:var(--frevo-blue);">Conectando ao servidor...</div>
         <input id="p-name" class="input-recife" placeholder="Seu Apelido" maxlength="12">
         <div id="lobby-controls">
             <button class="btn-frevo bg-blue" onclick="net.host()">CRIAR BLOCO</button>
@@ -166,7 +176,7 @@
         <div style="font-weight:bold; font-size:0.8rem;">Jogadores:</div>
         <div id="hud-list" style="margin-bottom:10px;"></div>
         
-        <div style="font-weight:bold; font-size:0.8rem;">Minhas Escrituras (Clique p/ Hipotecar):</div>
+        <div style="font-weight:bold; font-size:0.8rem;">Escrituras (Comprar Casa / Hipotecar):</div>
         <div id="deed-list"></div>
 
         <div style="display:flex; justify-content:space-around; margin-top:10px; border-top:1px dashed #ccc; padding-top:5px;">
@@ -217,28 +227,42 @@
 </div>
 
 <script>
-/* DADOS V16 - RECIFE DE LUXO */
+/* DADOS V17 - RECIFE FINAL */
 const CHARS=[{id:'crab',i:'🦀',n:'Caranguejo'},{id:'shark',i:'🦈',n:'Tubarão'},{id:'umb',i:'☂️',n:'Sombrinha'},{id:'sun',i:'☀️',n:'Sol'},{id:'drum',i:'🥁',n:'Tambor'},{id:'coco',i:'🥥',n:'Coco'},{id:'ursa',i:'🐻',n:'La Ursa'},{id:'corn',i:'🌽',n:'Milho'}];
 const BD=[
-    {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'#795548',n:'Coque',p:60,r:[2,10]},{t:'ch',n:'Sorte'},{t:'pr',g:'#795548',n:'Ibura',p:60,r:[4,20]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô Centro'},{t:'pr',g:'#03a9f4',n:'Santo Amaro',p:100,r:[6,30]},{t:'ch',n:'Revés'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,r:[6,30]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,r:[8,40]},
-    {t:'jl',n:'Trânsito'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,r:[10,50]},{t:'ut',n:'Neoenergia',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,r:[10,50]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,r:[12,60]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,r:[14,70]},{t:'ch',n:'Sorte'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,r:[14,70]},{t:'pr',g:'#ff5722',n:'Torre',p:200,r:[16,80]},
-    {t:'pk',n:'Parque Jaqueira'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,r:[18,90]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,r:[18,90]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,r:[20,100]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'#fbc02d',n:'Graças',p:260,r:[22,110]},{t:'pr',g:'#fbc02d',n:'Poço da Panela',p:260,r:[22,110]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,r:[24,120]},
-    {t:'gj',n:'Blitz!'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,r:[26,130]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,r:[26,130]},{t:'ch',n:'Sorte'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,r:[28,150]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,r:[35,175]},{t:'tx',n:'Taxa Luxo',p:100},{t:'pr',g:'#1565c0',n:'Jaqueira',p:400,r:[50,200]}
+    {t:'st',n:'MARCO ZERO'}, {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô Centro'},{t:'pr',g:'#03a9f4',n:'Santo Amaro',p:100,h:50,r:[6,30,90,270,400,550]},{t:'ch',n:'Revés'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270,400,550]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300,450,600]},
+    {t:'jl',n:'Trânsito'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450,750,950]},{t:'ut',n:'Neoenergia',p:150},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450,750,950]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500,700,900]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,r:[14,70,200,550,750,950]},{t:'ch',n:'Sorte'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550,750,950]},{t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600,800,1000]},
+    {t:'pk',n:'Parque Jaqueira'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'ch',n:'Revés'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'pr',g:'#fbc02d',n:'Poço da Panela',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},
+    {t:'gj',n:'Blitz!'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'ch',n:'Sorte'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000,1200,1400]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100,1300,1500]},{t:'tx',n:'Taxa Luxo',p:100},{t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,r:[50,200,600,1400,1700,2000]}
 ];
 const SFX={dice:new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'),gavel:new Audio('https://www.soundjay.com/misc/sounds/gavel-1.mp3')};
 const play=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{})}catch(e){}};
 
 /* STATE */
 let myId=null,hostConn=null,conns=[],isHost=false,me={name:"Folião",char:null};
-let state={phase:'LOBBY',players:[],turn:0,rolled:false,props:BD.map(()=>({owner:null,mtg:false})),weather:'sun',doubles:0};
+let state={phase:'LOBBY',players:[],turn:0,rolled:false,props:BD.map(()=>({owner:null,mtg:false,level:0})),weather:'sun',doubles:0};
 let auc={on:false,item:0,bid:0,lead:null,t:10,tm:null};
 
 /* NET */
 const net={
     peer:new Peer(null,{debug:1}),
-    init:()=>{net.peer.on('open',id=>myId=id);net.peer.on('connection',c=>{if(isHost){c.on('open',()=>c.send({t:'WELCOME',l:state.players}));c.on('data',d=>net.host(d,c));conns.push(c);}});},
-    host:()=>{const n=document.getElementById('p-name').value.trim();if(!n)return;isHost=true;me.name=n;state.players.push({id:myId,name:n,char:null,money:1500,pos:0,jailed:false,color:'#d32f2f'});ui.screen('lobby-wait');},
-    join:()=>{const n=document.getElementById('p-name').value.trim(),id=document.getElementById('host-id').value.trim();if(!n||!id)return;me.name=n;hostConn=net.peer.connect(id);hostConn.on('open',()=>{hostConn.send({t:'JOIN',name:n});document.getElementById('lobby-controls').innerHTML="<h3>Conectando...</h3>";});hostConn.on('data',d=>net.cli(d));},
+    init:()=>{
+        net.peer.on('open',id=>{myId=id;document.getElementById('net-status').innerText="Rede Pronta!";});
+        net.peer.on('connection',c=>{if(isHost){c.on('open',()=>c.send({t:'WELCOME',l:state.players}));c.on('data',d=>net.host(d,c));conns.push(c);}});
+        net.peer.on('error',e=>alert("Erro Rede: "+e));
+    },
+    host:()=>{
+        if(!myId) return alert("Aguarde a rede iniciar...");
+        const n=document.getElementById('p-name').value.trim();if(!n)return;isHost=true;me.name=n;
+        state.players.push({id:myId,name:n,char:null,money:1500,pos:0,jailed:false,color:'#d32f2f'});
+        ui.screen('lobby-wait');
+    },
+    join:()=>{
+        const n=document.getElementById('p-name').value.trim(),id=document.getElementById('host-id').value.trim();if(!n||!id)return;me.name=n;
+        hostConn=net.peer.connect(id);
+        hostConn.on('open',()=>{hostConn.send({t:'JOIN',name:n});document.getElementById('lobby-controls').innerHTML="<h3>Conectando...</h3>";});
+        hostConn.on('data',d=>net.cli(d));
+    },
     toChar:()=>{if(state.players.length<2)return alert("Mínimo 2!");net.bc({t:'PHASE',p:'CHARS'});ui.screen('chars');},
     startGame:()=>{if(state.players.some(p=>!p.char))return alert("Escolham!");net.bc({t:'PHASE',p:'GAME',st:state});ui.start();},
     host:(d,c)=>{
@@ -248,6 +272,7 @@ const net={
         else if(d.t==='BID')auction.proc(d.pid);
         else if(d.t==='TRD')trade.proc(d);
         else if(d.t==='MTG')game.mtg(d.i);
+        else if(d.t==='BLD')game.build(d.i);
     },
     cli:(d)=>{
         if(d.t==='WELCOME'||d.t==='UPD'){state.players=d.l;if(state.phase==='LOBBY')ui.rLobby(d.l);if(state.phase==='CHARS')ui.rChars();}
@@ -289,15 +314,18 @@ const game={
     },
     mv:(p,s)=>{
         p.pos+=s;if(p.pos>=40){p.pos-=40;p.money+=200;}
+        ui.cam(p.pos); // Auto Zoom
         const pr=state.props[p.pos], bd=BD[p.pos];
         if(bd.t==='pr'||bd.t==='rr'||bd.t==='ut') net.bc({t:'SC',i:p.pos});
-        if(pr.owner!==null&&pr.owner!==state.players.indexOf(p)&&!pr.mtg){let r=bd.r?bd.r[0]:50;p.money-=r;state.players[pr.owner].money+=r;play('cash');}
+        if(pr.owner!==null&&pr.owner!==state.players.indexOf(p)&&!pr.mtg){let r=bd.r?bd.r[pr.level]:50;p.money-=r;state.players[pr.owner].money+=r;play('cash');}
         if(bd.t==='tx')p.money-=bd.p;
         if(['Boa Viagem','Paiva'].some(x=>bd.n.includes(x))&&Math.random()<0.2){p.money-=100;net.bc({t:'TOAST',m:"Tubarão!"});}
     },
     mtg:(i)=>{const pr=state.props[i];if(pr.mtg){if(state.players[pr.owner].money>=BD[i].p*0.6){state.players[pr.owner].money-=BD[i].p*0.6;pr.mtg=false;}}else{state.players[pr.owner].money+=BD[i].p*0.5;pr.mtg=true;}net.bc({t:'STATE',st:state});},
+    build:(i)=>{const pr=state.props[i], pl=state.players[pr.owner]; if(pl.money>=BD[i].h && pr.level<5){pl.money-=BD[i].h; pr.level++; net.bc({t:'STATE',st:state}); play('cash');}},
     react:(e)=>{const d={t:'REACT',e};if(isHost)net.bc(d);else hostConn.send(d);},
-    reqMtg:(i)=>{const d={t:'MTG',i};if(isHost)game.mtg(i);else hostConn.send(d);}
+    reqMtg:(i)=>{const d={t:'MTG',i};if(isHost)game.mtg(i);else hostConn.send(d);},
+    reqBld:(i)=>{const d={t:'BLD',i};if(isHost)game.build(i);else hostConn.send(d);}
 };
 
 /* AUCTION & TRADE */
@@ -329,22 +357,45 @@ const ui={
     rLobby:(l)=>{document.getElementById('player-list-area').innerHTML=l.map(p=>`<span style="background:#fff;border:1px solid #000;padding:5px;margin:5px;display:inline-block;">${p.name}</span>`).join('');if(!isHost){document.getElementById('lobby-controls').style.display='none';document.getElementById('lobby-status').style.display='block';document.getElementById('host-msg').style.display='block';document.getElementById('disp-id').innerText="Conectado!";}},
     rChars:()=>{const g=document.getElementById('char-grid');g.innerHTML='';CHARS.forEach(c=>{const taken=state.players.find(p=>p.char===c.id),isMe=taken&&taken.id===myId;g.innerHTML+=`<div class="char-opt ${taken?'taken':''} ${isMe?'selected':''}" onclick="${!taken?`ui.pick('${c.id}')`:''}"><div class="char-icon">${c.i}</div><div>${c.n}</div>${taken?`<div class="char-tag">${taken.name}</div>`:''}</div>`;});const r=state.players.every(p=>p.char);document.getElementById('char-status').innerText=r?"Prontos!":"Aguardando...";if(isHost&&r)document.getElementById('btn-start-game').style.display='block';},
     pick:(id)=>{if(isHost){state.players.find(x=>x.id===myId).char=id;net.bc({t:'UPD',l:state.players});ui.rChars();}else hostConn.send({t:'PICK',pid:myId,char:id});},
-    start:()=>{document.getElementById('screen-char').style.display='none';document.getElementById('game-layout').classList.add('active');ui.genBoard();ui.rGame();confetti();ui.binds();},
-    genBoard:()=>{const b=document.getElementById('board');BD.forEach((s,i)=>{const d=document.createElement('div');d.className='space';d.id=`s${i}`;let r,c;if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}d.style.gridRow=r;d.style.gridColumn=c;d.innerHTML=s.t==='pr'?`<div class="color-bar" style="background:${s.g}"></div><div>${s.n}<br>$${s.p}</div>`:`<div style="margin:auto">${s.n}</div>`;b.appendChild(d);});},
+    start:()=>{document.getElementById('screen-char').style.display='none';document.getElementById('game-layout').classList.add('active');ui.genBoard();ui.rGame();confetti();ui.binds();env.rain();},
+    genBoard:()=>{const b=document.getElementById('board');BD.forEach((s,i)=>{const d=document.createElement('div');d.className='space';d.id=`s${i}`;let r,c;if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}d.style.gridRow=r;d.style.gridColumn=c;d.innerHTML=s.t==='pr'?`<div class="color-bar" style="background:${s.g}"></div><div>${s.n}<br>$${s.p}</div><div class="build-slots" id="bl${i}"></div>`:`<div style="margin:auto">${s.n}</div>`;b.appendChild(d);});},
     rGame:()=>{
         const meP=state.players.find(p=>p.id===myId),trn=state.players[state.turn];
         document.getElementById('my-cash').innerText=`$${meP.money}`;document.getElementById('turn-msg').innerText=`Vez de: ${trn.name}`;
         const myT=trn.id===myId,s=BD[meP.pos];
-        ui.btn('b-roll',myT&&!state.rolled);ui.btn('b-buy',myT&&state.rolled&&s.t==='pr'&&state.props[meP.pos].owner===null);ui.btn('b-auc',myT&&state.rolled&&s.t==='pr'&&state.props[meP.pos].owner===null);ui.btn('b-bail',myT&&meP.jailed);ui.btn('b-trade',myT);ui.btn('b-end',myT&&state.rolled);
+        ui.btn('b-roll',myT&&!state.rolled);ui.btn('b-buy',myT&&state.rolled&&s.t==='pr'&&state.props[meP.pos].owner===null);ui.btn('b-auc',myT&&state.rolled&&s.t==='pr'&&state.props[meP.pos].owner===null);ui.btn('b-bail',myT&&meP.jailed);ui.btn('b-trade',true);ui.btn('b-end',myT&&state.rolled);
         document.getElementById('hud-list').innerHTML=state.players.map((p,i)=>{const c=CHARS.find(x=>x.id===p.char);return `<div class="p-card ${state.turn===i?'active':''}"><span>${c.i} ${p.name}</span><span>${p.id===myId?'$'+p.money:'???'}</span></div>`;}).join('');
         document.querySelectorAll('.token').forEach(e=>e.remove());state.players.forEach((p,i)=>{const c=CHARS.find(x=>x.id===p.char),t=document.createElement('div');t.className='token';t.innerText=c.i;const sp=document.getElementById(`s${p.pos}`),br=document.getElementById('board').getBoundingClientRect(),sr=sp.getBoundingClientRect();t.style.left=(sr.left-br.left+10+((i%3)*10))+'px';t.style.top=(sr.top-br.top+10+(Math.floor(i/3)*10))+'px';document.getElementById('board').appendChild(t);if(state.rolled&&state.turn===i)setTimeout(()=>t.classList.add('jump'),50);});
+        
         const dl=document.getElementById('deed-list');dl.innerHTML='';
-        state.props.forEach((pr,i)=>{const sp=document.getElementById(`s${i}`);if(pr.owner!==null)sp.style.border=`4px solid ${state.players[pr.owner].color}`;if(pr.mtg)sp.classList.add('mortgaged');else sp.classList.remove('mortgaged');if(state.players[pr.owner]?.id===myId)dl.innerHTML+=`<div class="deed-item" onclick="game.reqMtg(${i})">${BD[i].n} (${pr.mtg?'Deshipotecar':'Hipotecar'})</div>`;});
+        state.props.forEach((pr,i)=>{
+            const sp=document.getElementById(`s${i}`);if(pr.owner!==null)sp.style.border=`4px solid ${state.players[pr.owner].color}`;
+            if(pr.mtg)sp.classList.add('mortgaged');else sp.classList.remove('mortgaged');
+            // Builds
+            const bz=document.getElementById(`bl${i}`);if(bz){bz.innerHTML='';if(pr.level==5)bz.innerHTML='<div class="hotel-3d"></div>';else for(let k=0;k<pr.level;k++)bz.innerHTML+='<div class="house-3d"></div>';}
+            // List Logic
+            if(state.players[pr.owner]?.id===myId){
+                // Monopoly Check
+                const grp=BD[i].g, all=BD.map((b,x)=>b.g===grp?x:-1).filter(x=>x!==-1), mono=all.every(x=>state.props[x].owner===state.players.indexOf(meP));
+                dl.innerHTML+=`<div class="deed-item" onclick="game.reqMtg(${i})">
+                    <span>${BD[i].n} ${pr.mtg?'(Hip.)':''}</span>
+                    ${!pr.mtg&&mono&&pr.level<5?`<button class="build-btn" onclick="event.stopPropagation();game.reqBld(${i})">+Casa $${BD[i].h}</button>`:''}
+                </div>`;
+            }
+        });
+    },
+    cam:(i)=>{
+        if(window.innerWidth<900)return;
+        const r=Math.floor(i/10); // Simple quadrant logic
+        const t = document.getElementById('board');
+        let rx=25, rz=0, tx=0, ty=0;
+        if(i<=10){rz=0;ty=50;} else if(i<=20){rz=0;tx=50;} else if(i<=30){rz=0;ty=-50;} else {rz=0;tx=-50;}
+        // Keeping camera simple to avoid motion sickness, just slight tilt
     },
     btn:(id,on)=>{const b=document.getElementById(id);if(on){b.classList.add('on');b.disabled=false;}else{b.classList.remove('on');b.disabled=true;}},
     binds:()=>{document.getElementById('b-roll').onclick=()=>game.act('roll');document.getElementById('b-buy').onclick=()=>game.act('buy');document.getElementById('b-auc').onclick=()=>game.act('auction');document.getElementById('b-bail').onclick=()=>game.act('bail');document.getElementById('b-trade').onclick=()=>trade.open();document.getElementById('b-end').onclick=()=>game.act('end');},
-    dice:(d1,d2)=>{const o=document.getElementById('dice-overlay');o.style.display='flex';play('dice');const c1=document.querySelector('#d1'),c2=document.querySelector('#d2');c1.className='cube';c2.className='cube';void c1.offsetWidth;c1.style.transition='transform 1.5s';c2.style.transition='transform 1.5s';const m=['show-1','show-2','show-3','show-4','show-5','show-6'];setTimeout(()=>{c1.classList.add(m[d1-1]);c2.classList.add(m[d2-1]);},50);setTimeout(()=>o.style.display='none',2500);},
-    card:(i)=>{const s=BD[i],ov=document.getElementById('card-zoom');document.getElementById('card-h').innerText=s.n;document.getElementById('card-h').style.background=s.g||'#333';document.getElementById('card-b').innerHTML=`Preço: $${s.p}<br>Aluguel: $${s.r?s.r[0]:50}`;ov.style.display='flex';},
+    dice:(d1,d2)=>{const o=document.getElementById('dice-overlay');o.style.display='flex';play('dice');const c1=document.querySelector('#d1 .cube'),c2=document.querySelector('#d2 .cube');c1.className='cube';c2.className='cube';void c1.offsetWidth;const m=['show-1','show-2','show-3','show-4','show-5','show-6'];setTimeout(()=>{c1.classList.add(m[d1-1]);c2.classList.add(m[d2-1]);},50);setTimeout(()=>o.style.display='none',2500);},
+    card:(i)=>{const s=BD[i],ov=document.getElementById('card-zoom');document.getElementById('card-h').innerText=s.n;document.getElementById('card-h').style.background=s.g||'#333';document.getElementById('card-b').innerHTML=`Preço: $${s.p}<br>Aluguel Base: $${s.r?s.r[0]:50}<br>Casa: $${s.h||0}`;ov.style.display='flex';},
     toast:(m)=>{const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);},
     reactShow:(e)=>{const d=document.createElement('div');d.className='floater';d.style.left=(Math.random()*80+10)+'%';d.style.top='80%';d.innerText=e;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);}
 };
