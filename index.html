@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife V22: Corrigido</title>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <title>Recife: Modo Solo (Teste)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
@@ -23,24 +22,21 @@
         .night-mode { filter: brightness(0.6) contrast(1.2); }
         .night-mode .space { box-shadow: inset 0 0 20px #ffd700; border-color: #fff; }
 
-        /* --- TELA 1: LOBBY --- */
-        #screen-lobby, #screen-char { position: fixed; inset: 0; z-index: 9000; background: url('https://www.transparenttextures.com/patterns/cubes.png'), var(--bg-carnaval); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .estandarte-card { background: var(--paper); width: 90%; max-width: 450px; padding: 30px; border: 8px solid var(--wood); border-radius: 10px 10px 50px 50px; text-align: center; box-shadow: var(--shadow-deep); position: relative; }
-        .input-recife { width: 100%; padding: 15px; margin: 10px 0; border: 3px solid var(--wood); font-family: 'Rye'; font-size: 1.1rem; text-align: center; border-radius: 8px; }
-        .btn-frevo { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.2); color: white; font-family: 'Rye'; transition: transform 0.1s; }
-        .btn-frevo:active { transform: translateY(4px); box-shadow: none; }
-        .btn-frevo:disabled { background: #999 !important; cursor: wait; transform: none; box-shadow: none; }
-        .bg-blue { background: #0288d1; } .bg-green { background: #43a047; } .bg-red { background: #d32f2f; }
-        #net-status { font-weight: bold; margin-bottom: 10px; padding: 5px; border-radius: 5px; font-size: 0.9rem; transition: 0.3s; }
+        /* --- TELA INICIAL --- */
+        #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9000; background: url('https://www.transparenttextures.com/patterns/cubes.png'), var(--bg-carnaval); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .card-menu { background: var(--paper); width: 90%; max-width: 450px; padding: 40px; border: 8px solid var(--wood); border-radius: 15px; text-align: center; box-shadow: var(--shadow-deep); animation: popIn 0.5s; }
+        
+        .btn-big { width: 100%; padding: 20px; margin-top: 20px; border: none; border-radius: 50px; font-size: 1.5rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 0 rgba(0,0,0,0.2); color: white; background: var(--frevo-blue); font-family: 'Rye'; transition: transform 0.1s; }
+        .btn-big:active { transform: translateY(4px); box-shadow: none; }
 
         /* CHAR SELECT */
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
-        .char-opt { background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 10px; padding: 10px; cursor: pointer; transition: 0.3s; text-align: center; position: relative; }
-        .char-opt.taken { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-        .char-opt.selected { background: var(--gold); transform: scale(1.1); border-color: var(--wood); color: black; }
+        .char-opt { background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 10px; padding: 10px; cursor: pointer; transition: 0.3s; text-align: center; }
+        .char-opt:hover { transform: scale(1.1); background: rgba(255,255,255,0.5); }
+        .char-opt.selected { background: var(--gold); border-color: var(--wood); transform: scale(1.15); color: black; box-shadow: 0 0 15px var(--gold); }
         .char-icon { font-size: 2.5rem; }
 
-        /* --- TELA 3: JOGO --- */
+        /* --- JOGO --- */
         #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; transition: 1s; pointer-events: none; }
         #game-layout.active { opacity: 1; pointer-events: all; }
         
@@ -48,10 +44,9 @@
         #board { display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px); background: #f5f5f5; border: 20px solid var(--wood); border-radius: 12px; position: relative; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: var(--shadow-deep); background-image: url('https://www.transparenttextures.com/patterns/white-brick-wall.png'); }
         
         .space { border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.9); font-size: 0.6rem; text-align: center; position: relative; font-weight: bold; display: flex; flex-direction: column; transition: 0.3s; backface-visibility: hidden; }
+        .space:hover { transform: translateZ(15px); z-index: 100; border: 2px solid var(--gold); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         .color-bar { height: 25%; border-bottom: 2px solid #333; position: relative; }
-        .mortgaged { filter: grayscale(1); opacity: 0.7; background: #ddd; }
-        .mortgaged::after { content:'HIPOTECADO'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-45deg); color:red; border:2px solid red; padding:2px; font-size:0.6rem; }
-
+        
         /* Construções 3D */
         .build-slots { position: absolute; top: -5px; left: 0; width: 100%; display: flex; justify-content: center; gap: 2px; transform-style: preserve-3d; }
         .house-3d { width: 10px; height: 10px; background: var(--frevo-green); border: 1px solid #1b5e20; transform: translateZ(5px); box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
@@ -82,6 +77,8 @@
 
         /* OVERLAYS */
         #dice-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
+        .hand-throw { font-size: 15rem; position: absolute; bottom: -100px; left: -100px; animation: handToss 0.8s forwards; z-index: 5001; }
+        @keyframes handToss { 0% { transform: translate(0,0); } 50% { transform: translate(40vw, -40vh) rotate(45deg); } 100% { transform: translate(40vw, 100vh); } }
         .dice-wrap { width: 90px; height: 90px; position: relative; transform-style: preserve-3d; margin: 30px; }
         .cube { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.1, 0.9, 0.2, 1); }
         .face { position: absolute; width: 100%; height: 100%; background: #fff; border: 4px solid #000; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: bold; backface-visibility: hidden; box-shadow: inset 0 0 15px rgba(0,0,0,0.1); }
@@ -95,13 +92,8 @@
         .bc-head { padding: 20px; text-align: center; color: white; font-family: 'Rye'; font-size: 1.5rem; text-shadow: 1px 1px 0 #000; }
         .bc-body { padding: 20px; font-size: 1.1rem; text-align: center; }
 
-        #trade-modal { display: none; pointer-events: auto; position: fixed; inset: 0; z-index: 7500; background: rgba(0,0,0,0.9); flex-direction: column; justify-content: center; align-items: center; }
-        .trade-box { background: #fff; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; border: 5px solid var(--frevo-blue); text-align: center; }
-
         .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #fff; padding: 15px 30px; border: 4px solid var(--frevo-blue); border-radius: 50px; font-weight: bold; z-index: 8000; animation: popIn 0.3s; font-family: 'Rye'; box-shadow: 0 10px 20px rgba(0,0,0,0.3); text-align: center; }
-        .floater { position: absolute; font-size: 4rem; animation: floatUp 3s forwards; z-index: 9999; pointer-events: none; }
         @keyframes popIn { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-300px); opacity: 0; } }
 
         @media (min-width: 900px) { #board { transform: rotateX(25deg) scale(0.9); } }
         @media (max-width: 899px) { #game-layout { flex-direction: column; } #sidebar { order: 2; height: auto; border-top: 8px solid var(--wood); width: 100%; border-left: none; } #board { transform: scale(0.58); margin-bottom: 20px; } }
@@ -111,32 +103,21 @@
 
 <canvas id="rain-canvas"></canvas>
 
-<div id="screen-lobby">
+<div id="screen-start">
     <h1 style="color:#fff; font-size:3rem; margin-bottom:10px;">RECIFE DE LUXO</h1>
-    <div class="estandarte-card">
-        <h2 style="color:var(--wood); margin:0;">CONCENTRAÇÃO</h2>
-        <div id="net-status" style="background:#eee; color:#666; font-weight:bold; margin-bottom:10px; padding:5px; border-radius:5px;">⏳ Aguarde a Rede...</div>
-        <input id="p-name" class="input-recife" placeholder="Seu Apelido" maxlength="12">
-        <div id="lobby-controls">
-            <button id="btn-host" class="btn-frevo bg-blue" onclick="net.host()" disabled>CRIAR BLOCO</button>
-            <p style="margin:10px; font-weight:bold; color:#aaa;">- OU -</p>
-            <input id="host-id" class="input-recife" placeholder="Código da Sala" style="font-size:0.9rem;">
-            <button id="btn-join" class="btn-frevo bg-green" onclick="net.join()" disabled>ENTRAR NO BLOCO</button>
-        </div>
-        <div id="lobby-status" style="display:none; margin-top:20px; border-top: 2px dashed #ccc; padding-top:10px;">
-            <p style="font-weight:bold; color:var(--frevo-blue);">Sala: <span id="disp-id" onclick="util.copy()" style="background:#eee; padding:5px; cursor:pointer; font-size:1.5rem; border:2px dashed #000;">...</span> (Toque para copiar)</p>
-            <div id="player-list-area"></div>
-            <p id="host-msg" style="font-size:0.8rem; color:#d32f2f; display:none;">Aguardando o Mestre...</p>
-            <button id="btn-phase-1" class="btn-frevo bg-red" style="display:none;" onclick="net.toChar()">ABRIR ALAS</button>
-        </div>
+    <div class="card-menu">
+        <h2 style="color:var(--wood); margin:0;">MODO SOLO</h2>
+        <p>Teste o jogo contra o Computador</p>
+        <button class="btn-big" onclick="ui.toChar()">JOGAR AGORA</button>
     </div>
 </div>
 
 <div id="screen-char" style="display:none;">
-    <h1 style="color:var(--gold);">ESCOLHA A FANTASIA</h1>
-    <div class="char-grid" id="char-grid"></div>
-    <h2 id="char-status" style="color:#fff;">Aguardando...</h2>
-    <button id="btn-start-game" class="btn-frevo bg-green" style="width:300px; display:none;" onclick="net.startGame()">TOCAR O FREVO!</button>
+    <h1 style="color:var(--gold);">ESCOLHA SEU PEÃO</h1>
+    <div class="card-menu" style="width:600px;">
+        <div class="char-grid" id="char-grid"></div>
+        <button id="btn-start-game" class="btn-big" style="background:var(--frevo-green); display:none;" onclick="game.start()">INICIAR PARTIDA</button>
+    </div>
 </div>
 
 <div id="game-layout">
@@ -152,7 +133,7 @@
     
     <div id="sidebar">
         <div class="hud-header">
-            <h2 style="margin:0; color:#d32f2f;">Pernambuco</h2>
+            <h2 style="margin:0; color:var(--frevo-red);">Pernambuco</h2>
             <div id="my-cash" style="font-size:1.5rem; font-weight:900; color:#388e3c;">$1500</div>
         </div>
         <div id="turn-msg" class="turn-box">...</div>
@@ -160,7 +141,7 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px;">
             <button id="b-roll" class="btn-game" style="background:var(--gold); color:#000; grid-column:span 2;">🎲 ROLAR DADOS</button>
             <button id="b-buy" class="btn-game" style="background:#43a047; color:#fff;">💰 COMPRAR</button>
-            <button id="b-trade" class="btn-game" style="background:#7b1fa2; color:#fff;">🤝 NEGOCIAR</button>
+            <button id="b-trade" class="btn-game" style="background:#7b1fa2; color:#fff; opacity:0.3;">🤝 NEGOCIAR</button>
             <button id="b-bail" class="btn-game" style="background:#607d8b; color:#fff;">💸 SUBORNO</button>
             <button id="b-end" class="btn-game" style="background:#d32f2f; color:#fff; grid-column:span 2;">🛑 PASSAR</button>
         </div>
@@ -168,15 +149,8 @@
         <div style="font-weight:bold; font-size:0.8rem;">Jogadores:</div>
         <div id="hud-list" style="margin-bottom:10px;"></div>
         
-        <div style="font-weight:bold; font-size:0.8rem;">Escrituras (Comprar Casa / Hipotecar):</div>
+        <div style="font-weight:bold; font-size:0.8rem;">Minhas Escrituras:</div>
         <div id="deed-list"></div>
-
-        <div style="display:flex; justify-content:space-around; margin-top:10px; border-top:1px dashed #ccc; padding-top:5px;">
-            <span style="font-size:1.5rem; cursor:pointer;" onclick="game.react('😂')">😂</span>
-            <span style="font-size:1.5rem; cursor:pointer;" onclick="game.react('😡')">😡</span>
-            <span style="font-size:1.5rem; cursor:pointer;" onclick="game.react('🦈')">🦈</span>
-            <span style="font-size:1.5rem; cursor:pointer;" onclick="game.react('👏')">👏</span>
-        </div>
     </div>
 </div>
 
@@ -190,21 +164,7 @@
     <div class="big-card">
         <div class="bc-head" id="card-h">Nome</div>
         <div class="bc-body" id="card-b">Detalhes</div>
-        <button class="btn-frevo bg-red" style="width:100%; margin:0; border-radius:0;" onclick="document.getElementById('card-zoom').style.display='none'">FECHAR</button>
-    </div>
-</div>
-
-<div id="trade-modal">
-    <div class="trade-box">
-        <h2>🤝 NEGOCIAR</h2>
-        <select id="trade-target" style="width:100%; padding:10px; margin-bottom:10px;"></select>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <div>Eu dou: $<input id="trade-give" type="number" value="0" style="width:60px;"></div>
-            <div>👉</div>
-            <div>Recebo: $<input id="trade-want" type="number" value="0" style="width:60px;"></div>
-        </div>
-        <button class="btn-frevo bg-green" onclick="trade.send()">ENVIAR</button>
-        <button class="btn-frevo bg-red" style="margin-top:5px;" onclick="document.getElementById('trade-modal').style.display='none'">CANCELAR</button>
+        <button class="btn-game" style="width:100%; margin:0; border-radius:0; background:var(--frevo-red); color:white;" onclick="document.getElementById('card-zoom').style.display='none'">FECHAR</button>
     </div>
 </div>
 
@@ -220,179 +180,247 @@ const BD=[
 const SFX={dice:new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3')};
 const play=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{})}catch(e){}};
 
-/* STATE */
-let myId=null,hostConn=null,conns=[],isHost=false,me={name:"Folião",char:null};
-let state={phase:'LOBBY',players:[],turn:0,rolled:false,props:BD.map(()=>({owner:null,mtg:false,level:0})),weather:'sun',doubles:0};
-let animLock = false;
+/* ESTADO DO JOGO */
+let state = {
+    players: [
+        {id:'human', name:'Você', char:null, money:1500, pos:0, jailed:false, color:'#d32f2f'},
+        {id:'cpu', name:'Zé do Código (IA)', char:null, money:1500, pos:0, jailed:false, color:'#0288d1'}
+    ],
+    turn: 0,
+    rolled: false,
+    props: BD.map(()=>({owner:null, level:0, mtg:false})),
+    weather: 'sun',
+    doubles: 0
+};
+let isAnimating = false;
 
-/* NET */
-const net={
-    peer:new Peer(Math.floor(Math.random()*9000+1000).toString(), {debug:1}),
-    init:()=>{
-        net.peer.on('open',id=>{
-            myId=id; 
-            document.getElementById('net-status').innerText="✅ REDE PRONTA! (ID Gerado)";
-            document.getElementById('net-status').style.color="green";
-            document.getElementById('net-status').style.background="#dcedc8";
-            document.getElementById('btn-host').disabled=false;
-            document.getElementById('btn-join').disabled=false;
+/* UI & GAMEPLAY */
+const ui = {
+    toChar: () => {
+        document.getElementById('screen-start').style.display='none';
+        document.getElementById('screen-char').style.display='flex';
+        const g = document.getElementById('char-grid');
+        g.innerHTML = '';
+        CHARS.forEach(c => {
+            g.innerHTML += `<div class="char-opt" onclick="ui.pickChar('${c.id}')"><div class="char-icon">${c.i}</div><div>${c.n}</div></div>`;
         });
-        net.peer.on('connection',c=>{if(isHost){c.on('open',()=>c.send({t:'WELCOME',l:state.players}));c.on('data',d=>net.host(d,c));conns.push(c);}});
-        net.peer.on('error',e=>{alert("Erro Rede: "+e);});
     },
-    host:()=>{
-        document.getElementById('btn-host').innerText="CRIANDO...";
-        const n=document.getElementById('p-name').value.trim();if(!n)return alert("Nome?");
-        isHost=true;me.name=n;state.players.push({id:myId,name:n,char:null,money:1500,pos:0,jailed:false,color:'#d32f2f'});
-        ui.screen('lobby-wait');
+    pickChar: (cid) => {
+        state.players[0].char = cid;
+        // CPU picks random other
+        const others = CHARS.filter(c=>c.id!==cid);
+        state.players[1].char = others[Math.floor(Math.random()*others.length)].id;
+        document.getElementById('screen-char').style.display='none';
+        game.start();
     },
-    join:()=>{
-        const n=document.getElementById('p-name').value.trim(),id=document.getElementById('host-id').value.trim();if(!n||!id)return alert("Dados?");me.name=n;
-        hostConn=net.peer.connect(id);
-        hostConn.on('open',()=>{hostConn.send({t:'JOIN',name:n});document.getElementById('lobby-controls').innerHTML="<h3>Conectando...</h3>";});
-        hostConn.on('data',d=>net.cli(d));
+    genBoard: () => {
+        const b = document.getElementById('board');
+        BD.forEach((s,i)=>{
+            const d=document.createElement('div');d.className='space';d.id=`s${i}`;
+            let r,c;if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
+            d.style.gridRow=r;d.style.gridColumn=c;
+            d.innerHTML=s.t==='pr'?`<div class="color-bar" style="background:${s.g}"></div><div>${s.n}<br>$${s.p}</div><div class="build-slots" id="bl${i}"></div>`:`<div style="margin:auto">${s.n}</div>`;
+            b.appendChild(d);
+        });
     },
-    toChar:()=>{if(state.players.length<2)return alert("Mínimo 2!");net.bc({t:'PHASE',p:'CHARS'});ui.screen('chars');},
-    startGame:()=>{if(state.players.some(p=>!p.char))return alert("Escolham!");net.bc({t:'PHASE',p:'GAME',st:state});ui.start();},
-    host:(d,c)=>{
-        if(d.t==='JOIN'){if(!state.players.find(p=>p.id===c.peer)){const cl=['#2196f3','#4caf50','#fbc02d','#7b1fa2'];state.players.push({id:c.peer,name:d.name,char:null,money:1500,pos:0,jailed:false,color:cl[state.players.length%4]});net.bc({t:'UPD',l:state.players});ui.rLobby(state.players);}}
-        else if(d.t==='PICK'){const p=state.players.find(x=>x.id===d.pid);if(p){p.char=d.char;net.bc({t:'UPD',l:state.players});ui.rChars();}}
-        else if(d.t==='ACT')game.proc(d);
-        else if(d.t==='TRD')trade.proc(d);
-        else if(d.t==='MTG')game.mtg(d.i);
-        else if(d.t==='BLD')game.build(d.i);
-    },
-    cli:(d)=>{
-        if(d.t==='WELCOME'||d.t==='UPD'){state.players=d.l;if(state.phase==='LOBBY')ui.rLobby(d.l);if(state.phase==='CHARS')ui.rChars();}
-        else if(d.t==='PHASE'){state.phase=d.p;if(d.p==='CHARS')ui.screen('chars');if(d.p==='GAME'){state=d.st;ui.start();}}
-        else if(d.t==='STATE'){state=d.st;ui.rGame();}
-        else if(d.t==='ANIM')ui.dice(d.d1,d.d2);
-        else if(d.t==='TOAST')ui.toast(d.m);
-        else if(d.t==='SC')ui.card(d.i);
-        else if(d.t==='REACT')ui.reactShow(d.e);
-        else if(d.t==='TRD_S')trade.show(d.o);
-        else if(d.t==='ENV')env.set(d.w);
-    },
-    bc:(m)=>{if(isHost){conns.forEach(c=>c.send(m));if(m.t==='STATE'||m.t==='UPD'){}else net.cli(m);}else hostConn.send(m);}
-};
-
-/* GAME */
-const game={
-    act:(a)=>{if(animLock) return; const d={t:'ACT',act:a,pid:myId};if(isHost)game.proc(d);else hostConn.send(d);},
-    proc:(d)=>{
-        const idx=state.players.findIndex(p=>p.id===d.pid),p=state.players[idx];
-        if(state.turn!==idx)return;
-        if(d.act==='roll'){
-            if(state.rolled && state.doubles === 0) return; // Prevent extra rolls if not doubles
-            const d1=Math.ceil(Math.random()*6),d2=Math.ceil(Math.random()*6);
-            net.bc({t:'ANIM',d1,d2});
-            animLock = true; // Lock UI
-            
-            setTimeout(()=>{
-                animLock = false; // Unlock
-                let mv=d1+d2;
-                if(p.jailed){
-                    if(d1===d2){p.jailed=false;game.mv(p,mv);state.rolled=true;state.doubles=0;}
-                    else{state.rolled=true;}
-                } else {
-                    if(d1===d2){ state.doubles++; state.rolled=false; net.bc({t:'TOAST',m:"DADOS IGUAIS! Jogue de novo!"}); }
-                    else { state.doubles=0; state.rolled=true; }
-                    
-                    if(state.doubles>=3){p.jailed=true;p.pos=10;state.rolled=true;state.doubles=0;net.bc({t:'TOAST',m:"Preso por Excesso!"});}
-                    else game.mv(p,mv);
-                }
-                net.bc({t:'STATE',st:state});if(isHost)ui.rGame();
-            },2500);
-        }
-        else if(d.act==='buy'){const s=BD[p.pos];if(p.money>=s.p&&state.props[p.pos].owner===null){p.money-=s.p;state.props[p.pos].owner=idx;play('cash');net.bc({t:'TOAST',m:`${p.name} comprou ${s.n}`});net.bc({t:'STATE',st:state});}}
-        else if(d.act==='bail'){if(p.jailed&&p.money>=50){p.money-=50;p.jailed=false;state.rolled=true;net.bc({t:'STATE',st:state});}}
-        else if(d.act==='end'){state.turn=(state.turn+1)%state.players.length;state.rolled=false;state.doubles=0;env.chk();net.bc({t:'STATE',st:state});}
-    },
-    mv:(p,s)=>{
-        p.pos+=s;if(p.pos>=40){p.pos-=40;p.money+=200;}
-        const pr=state.props[p.pos], bd=BD[p.pos];
-        if(bd.t==='pr'||bd.t==='rr'||bd.t==='ut') net.bc({t:'SC',i:p.pos});
-        if(pr.owner!==null&&pr.owner!==state.players.indexOf(p)&&!pr.mtg){let r=bd.r?bd.r[pr.level]:50;p.money-=r;state.players[pr.owner].money+=r;play('cash');}
-        if(bd.t==='tx')p.money-=bd.p;
-        if(['Boa Viagem','Paiva'].some(x=>bd.n.includes(x))&&Math.random()<0.2){p.money-=100;net.bc({t:'TOAST',m:"Tubarão te pegou!"});}
-    },
-    mtg:(i)=>{const pr=state.props[i];if(pr.mtg){if(state.players[pr.owner].money>=BD[i].p*0.6){state.players[pr.owner].money-=BD[i].p*0.6;pr.mtg=false;}}else{state.players[pr.owner].money+=BD[i].p*0.5;pr.mtg=true;}net.bc({t:'STATE',st:state});},
-    build:(i)=>{const pr=state.props[i], pl=state.players[pr.owner]; if(pl.money>=BD[i].h && pr.level<5){pl.money-=BD[i].h; pr.level++; net.bc({t:'STATE',st:state}); play('cash');}},
-    reqMtg:(i)=>{const d={t:'MTG',i};if(isHost)game.mtg(i);else hostConn.send(d);},
-    reqBld:(i)=>{const d={t:'BLD',i};if(isHost)game.build(i);else hostConn.send(d);},
-    react:(e)=>{const d={t:'REACT',e};if(isHost)net.bc(d);else hostConn.send(d);}
-};
-
-/* TRADE */
-const trade={
-    open:()=>{const s=document.getElementById('trade-target');s.innerHTML='';state.players.forEach(p=>{if(p.id!==myId)s.innerHTML+=`<option value="${p.id}">${p.name}</option>`});document.getElementById('trade-modal').style.display='flex';},
-    send:()=>{const t=document.getElementById('trade-target').value,g=parseInt(document.getElementById('trade-give').value),w=parseInt(document.getElementById('trade-want').value);const o={f:myId,t:t,g:g,w:w};const d={t:'ACT',act:'trade',o:o};if(isHost)trade.proc({t:'TRD',o});else hostConn.send({t:'TRD',o});document.getElementById('trade-modal').style.display='none';},
-    proc:(d)=>{net.bc({t:'TRD_S',o:d.o});},
-    show:(o)=>{if(o.t===myId){if(confirm(`Troca: Receber $${o.g} e Pagar $${o.w}?`)){const me=state.players.find(p=>p.id===myId),him=state.players.find(p=>p.id===o.f);me.money+=o.g-o.w;him.money+=o.w-o.g;net.bc({t:'STATE',st:state});}}}
-};
-
-/* ENV */
-const env={
-    chk:()=>{if(Math.random()<0.2){state.weather=state.weather==='sun'?'rain':'sun';net.bc({t:'ENV',w:state.weather});}},
-    set:(w)=>{const c=document.getElementById('rain-canvas');c.style.display=w==='rain'?'block':'none';document.body.classList.toggle('night-mode',w==='rain');if(w==='rain')env.rain();},
-    rain:()=>{const c=document.getElementById('rain-canvas'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const d=Array(100).fill().map(()=>({x:Math.random()*c.width,y:Math.random()*c.height,s:Math.random()*5+2}));const l=()=>{x.clearRect(0,0,c.width,c.height);x.strokeStyle='#88a';d.forEach(p=>{x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x,p.y+p.s);x.stroke();p.y+=p.s;if(p.y>c.height)p.y=0;});requestAnimationFrame(l);};l();}
-};
-
-/* UI */
-const ui={
-    screen:(k)=>{
-        document.getElementById('screen-lobby').style.display=k==='lobby'?'flex':'none';
-        if(k==='lobby-wait'){document.getElementById('lobby-controls').style.display='none';document.getElementById('lobby-status').style.display='block';document.getElementById('disp-id').innerText=myId;document.getElementById('btn-phase-1').style.display='block';ui.rLobby(state.players);}
-        document.getElementById('screen-char').style.display=k==='chars'?'flex':'none';
-        document.getElementById('game-layout').classList.toggle('active',k==='game');if(k==='chars')ui.rChars();
-    },
-    rLobby:(l)=>{document.getElementById('player-list-area').innerHTML=l.map(p=>`<span style="background:#fff;border:1px solid #000;padding:5px;margin:5px;display:inline-block;">${p.name}</span>`).join('');if(!isHost){document.getElementById('lobby-controls').style.display='none';document.getElementById('lobby-status').style.display='block';document.getElementById('host-msg').style.display='block';document.getElementById('disp-id').innerText="Conectado!";}},
-    rChars:()=>{const g=document.getElementById('char-grid');g.innerHTML='';CHARS.forEach(c=>{const taken=state.players.find(p=>p.char===c.id),isMe=taken&&taken.id===myId;g.innerHTML+=`<div class="char-opt ${taken?'taken':''} ${isMe?'selected':''}" onclick="${!taken?`ui.pick('${c.id}')`:''}"><div class="char-icon">${c.i}</div><div>${c.n}</div>${taken?`<div class="char-tag">${taken.name}</div>`:''}</div>`;});const r=state.players.every(p=>p.char);document.getElementById('char-status').innerText=r?"Prontos!":"Aguardando...";if(isHost&&r)document.getElementById('btn-start-game').style.display='block';},
-    pick:(id)=>{if(isHost){state.players.find(x=>x.id===myId).char=id;net.bc({t:'UPD',l:state.players});ui.rChars();}else hostConn.send({t:'PICK',pid:myId,char:id});},
-    start:()=>{document.getElementById('screen-char').style.display='none';document.getElementById('game-layout').classList.add('active');ui.genBoard();ui.rGame();confetti();ui.binds();env.rain();},
-    genBoard:()=>{const b=document.getElementById('board');BD.forEach((s,i)=>{const d=document.createElement('div');d.className='space';d.id=`s${i}`;let r,c;if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}d.style.gridRow=r;d.style.gridColumn=c;d.innerHTML=s.t==='pr'?`<div class="color-bar" style="background:${s.g}"></div><div>${s.n}<br>$${s.p}</div><div class="build-slots" id="bl${i}"></div>`:`<div style="margin:auto">${s.n}</div>`;b.appendChild(d);});},
-    rGame:()=>{
-        const meP=state.players.find(p=>p.id===myId),trn=state.players[state.turn];
-        document.getElementById('my-cash').innerText=`$${meP.money}`;document.getElementById('turn-msg').innerText=`Vez de: ${trn.name}`;
-        const myT=trn.id===myId,s=BD[meP.pos];
-        // Button Logic: Rolar ativo se for minha vez E (não joguei OU tirei dados iguais)
-        ui.btn('b-roll', myT && (!state.rolled || state.doubles > 0));
-        ui.btn('b-buy',myT&&state.rolled&&s.t==='pr'&&state.props[meP.pos].owner===null);
-        ui.btn('b-bail',myT&&meP.jailed);ui.btn('b-trade',true);
-        // Passar ativo apenas se joguei E NÃO tirei dados iguais (deve jogar de novo)
-        ui.btn('b-end', myT && state.rolled && state.doubles === 0);
-
-        document.getElementById('hud-list').innerHTML=state.players.map((p,i)=>{const c=CHARS.find(x=>x.id===p.char);return `<div class="p-card ${state.turn===i?'active':''}"><span>${c.i} ${p.name}</span><span>${p.id===myId?'$'+p.money:'???'}</span></div>`;}).join('');
-        document.querySelectorAll('.token').forEach(e=>e.remove());state.players.forEach((p,i)=>{const c=CHARS.find(x=>x.id===p.char),t=document.createElement('div');t.className='token';t.innerText=c.i;const sp=document.getElementById(`s${p.pos}`),br=document.getElementById('board').getBoundingClientRect(),sr=sp.getBoundingClientRect();t.style.left=(sr.left-br.left+10+((i%3)*10))+'px';t.style.top=(sr.top-br.top+10+(Math.floor(i/3)*10))+'px';document.getElementById('board').appendChild(t);if(state.rolled&&state.turn===i)setTimeout(()=>t.classList.add('jump'),50);});
+    render: () => {
+        const p = state.players[state.turn];
+        document.getElementById('turn-msg').innerText = `Vez de: ${p.name}`;
+        document.getElementById('my-cash').innerText = `$${state.players[0].money}`;
         
-        const dl=document.getElementById('deed-list');dl.innerHTML='';
-        state.props.forEach((pr,i)=>{
-            const sp=document.getElementById(`s${i}`);if(pr.owner!==null)sp.style.border=`4px solid ${state.players[pr.owner].color}`;
-            if(pr.mtg)sp.classList.add('mortgaged');else sp.classList.remove('mortgaged');
-            const bz=document.getElementById(`bl${i}`);if(bz){bz.innerHTML='';if(pr.level==5)bz.innerHTML='<div class="hotel-3d"></div>';else for(let k=0;k<pr.level;k++)bz.innerHTML+='<div class="house-3d"></div>';}
-            if(state.players[pr.owner]?.id===myId){
-                const grp=BD[i].g, mono=BD.every((b,x)=>b.g!==grp||state.props[x].owner===state.players.indexOf(meP));
-                dl.innerHTML+=`<div class="deed-item" onclick="game.reqMtg(${i})">
+        // Buttons: Only active if Human Turn and Not Animating
+        const isHuman = state.turn === 0;
+        const canAct = isHuman && !isAnimating;
+        const curProp = BD[state.players[0].pos];
+        
+        ui.btn('b-roll', canAct && (!state.rolled || state.doubles > 0));
+        ui.btn('b-buy', canAct && state.rolled && curProp.t==='pr' && state.props[state.players[0].pos].owner===null);
+        ui.btn('b-end', canAct && state.rolled && state.doubles===0);
+        ui.btn('b-bail', canAct && state.players[0].jailed);
+
+        // Players List
+        document.getElementById('hud-list').innerHTML = state.players.map((pl,i) => {
+            const charObj = CHARS.find(c=>c.id===pl.char);
+            return `<div class="p-card ${state.turn===i?'active':''}"><span>${charObj.i} ${pl.name}</span><span>$${pl.money}</span></div>`;
+        }).join('');
+
+        // Tokens
+        document.querySelectorAll('.token').forEach(e=>e.remove());
+        state.players.forEach((pl, i) => {
+            const charObj = CHARS.find(c=>c.id===pl.char);
+            const t = document.createElement('div'); t.className='token'; t.innerText=charObj.i;
+            const sp = document.getElementById(`s${pl.pos}`);
+            const br = document.getElementById('board').getBoundingClientRect();
+            const sr = sp.getBoundingClientRect();
+            t.style.left = (sr.left - br.left + 15 + (i*10)) + 'px';
+            t.style.top = (sr.top - br.top + 10 + (i*10)) + 'px';
+            document.getElementById('board').appendChild(t);
+        });
+
+        // Deeds & Builds
+        const dl = document.getElementById('deed-list'); dl.innerHTML='';
+        state.props.forEach((pr, i) => {
+            const sp = document.getElementById(`s${i}`);
+            if(pr.owner !== null) sp.style.border = `4px solid ${state.players[pr.owner].color}`;
+            if(pr.mtg) sp.classList.add('mortgaged'); else sp.classList.remove('mortgaged');
+            
+            const bz=document.getElementById(`bl${i}`);
+            if(bz){bz.innerHTML=''; if(pr.level==5)bz.innerHTML='<div class="hotel-3d"></div>'; else for(let k=0;k<pr.level;k++)bz.innerHTML+='<div class="house-3d"></div>';}
+
+            if(pr.owner === 0) { // Human owned
+                const g=BD[i].g;
+                const mono = g && BD.map((b,x)=>b.g===g?x:-1).filter(x=>x!==-1).every(x=>state.props[x].owner===0);
+                dl.innerHTML += `<div class="deed-item" onclick="game.toggleMtg(${i})">
                     <span>${BD[i].n} ${pr.mtg?'(Hip.)':''}</span>
-                    ${!pr.mtg&&mono&&pr.level<5?`<button class="build-btn" onclick="event.stopPropagation();game.reqBld(${i})">+Casa $${BD[i].h}</button>`:''}
+                    ${!pr.mtg && mono && pr.level<5 ? `<button class="build-btn" onclick="event.stopPropagation();game.build(${i})">+Casa $${BD[i].h}</button>` : ''}
                 </div>`;
             }
         });
-        if(window.innerWidth>900){ const rX=30,rZ=0; document.getElementById('board').style.transform=`rotateX(${rX}deg) rotateZ(${rZ}deg) scale(0.9)`; }
     },
-    btn:(id,on)=>{const b=document.getElementById(id);if(on){b.classList.add('on');b.disabled=false;}else{b.classList.remove('on');b.disabled=true;}},
-    binds:()=>{
-        document.getElementById('b-roll').onclick=()=>game.act('roll');document.getElementById('b-buy').onclick=()=>game.act('buy');
-        document.getElementById('b-bail').onclick=()=>game.act('bail');
-        document.getElementById('b-trade').onclick=()=>trade.open();document.getElementById('b-end').onclick=()=>game.act('end');
+    btn: (id, on) => { const b=document.getElementById(id); if(on){b.classList.add('on');b.disabled=false;}else{b.classList.remove('on');b.disabled=true;} },
+    diceAnim: (d1, d2) => {
+        const o=document.getElementById('dice-overlay'); o.style.display='flex'; play('dice');
+        const c1=document.querySelector('#d1 .cube'), c2=document.querySelector('#d2 .cube');
+        c1.className='cube'; c2.className='cube'; void c1.offsetWidth;
+        c1.style.transition='transform 1.5s'; c2.style.transition='transform 1.5s';
+        setTimeout(()=>{c1.classList.add('show-'+d1); c2.classList.add('show-'+d2);},50);
+        setTimeout(()=>{o.style.display='none';}, 2500);
     },
-    dice:(d1,d2)=>{const o=document.getElementById('dice-overlay');o.style.display='flex';play('dice');const c1=document.querySelector('#d1 .cube'),c2=document.querySelector('#d2 .cube');c1.className='cube';c2.className='cube';void c1.offsetWidth;c1.style.transition='transform 1.5s';c2.style.transition='transform 1.5s';const m=['show-1','show-2','show-3','show-4','show-5','show-6'];setTimeout(()=>{c1.classList.add(m[d1-1]);c2.classList.add(m[d2-1]);},50);setTimeout(()=>o.style.display='none',2500);},
-    card:(i)=>{const s=BD[i],ov=document.getElementById('card-zoom');document.getElementById('card-h').innerText=s.n;document.getElementById('card-h').style.background=s.g||'#333';document.getElementById('card-b').innerHTML=`Preço: $${s.p}<br>Aluguel Base: $${s.r?s.r[0]:50}<br>Casa: $${s.h||0}`;ov.style.display='flex';},
-    toast:(m)=>{const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);},
-    reactShow:(e)=>{const d=document.createElement('div');d.className='floater';d.style.left=(Math.random()*80+10)+'%';d.style.top='80%';d.innerText=e;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);}
+    card: (i) => {
+        const s=BD[i], ov=document.getElementById('card-zoom');
+        document.getElementById('card-h').innerText=s.n; document.getElementById('card-h').style.background=s.g||'#333';
+        document.getElementById('card-b').innerHTML=`Preço: $${s.p}<br>Aluguel: $${s.r?s.r[0]:50}`;
+        ov.style.display='flex';
+    },
+    toast: (m) => {
+        const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000);
+    }
 };
-const util={copy:()=>{navigator.clipboard.writeText(myId);alert("Copiado!");}};
-net.init();
+
+/* GAME LOGIC */
+const game = {
+    start: () => {
+        document.getElementById('game-layout').classList.add('active');
+        ui.genBoard();
+        ui.render();
+        confetti();
+    },
+    roll: () => {
+        if(isAnimating) return;
+        isAnimating = true;
+        const d1 = Math.ceil(Math.random()*6), d2 = Math.ceil(Math.random()*6);
+        ui.diceAnim(d1, d2);
+        
+        setTimeout(async () => {
+            const p = state.players[state.turn];
+            if(d1===d2){ state.doubles++; state.rolled=false; ui.toast("DADOS IGUAIS!"); }
+            else { state.doubles=0; state.rolled=true; }
+
+            if(state.doubles >= 3) {
+                p.jailed=true; p.pos=10; state.rolled=true; state.doubles=0; ui.toast("PRESO!");
+            } else {
+                if(p.jailed) {
+                    if(d1===d2){ p.jailed=false; await game.moveToken(p, d1+d2); state.rolled=true; }
+                    else { state.rolled=true; ui.toast("Continua preso..."); }
+                } else {
+                    await game.moveToken(p, d1+d2);
+                }
+            }
+            isAnimating = false;
+            ui.render();
+            // If doubles, AI rolls again automatically? No, lets keep turns clear.
+            if(state.turn === 1 && !state.rolled) setTimeout(ai.play, 1000); // AI doubles
+            else if(state.turn === 1 && state.rolled) setTimeout(game.endTurn, 1000); // AI finish
+        }, 2500);
+    },
+    moveToken: async (p, steps) => {
+        for(let i=0; i<steps; i++){
+            p.pos++; if(p.pos>=40){p.pos=0; p.money+=200; ui.toast("Salário +$200");}
+            ui.render(); await new Promise(r=>setTimeout(r, 200));
+        }
+        // Arrival
+        const s = BD[p.pos], pr = state.props[p.pos];
+        if(s.t==='pr' || s.t==='rr' || s.t==='ut') ui.card(p.pos);
+        if(pr.owner !== null && pr.owner !== state.turn && !pr.mtg) {
+            let r = s.r ? s.r[pr.level] : 50;
+            p.money -= r; state.players[pr.owner].money += r;
+            play('cash'); ui.toast(`Pagou aluguel $${r}`);
+        }
+        if(s.t==='tx') { p.money-=s.p; ui.toast("Imposto!"); }
+    },
+    buy: () => {
+        const p = state.players[state.turn];
+        const idx = p.pos;
+        if(p.money >= BD[idx].p && state.props[idx].owner === null) {
+            p.money -= BD[idx].p;
+            state.props[idx].owner = state.turn;
+            play('cash'); ui.render();
+        }
+    },
+    build: (i) => {
+        const p = state.players[0];
+        if(p.money >= BD[i].h) { p.money -= BD[i].h; state.props[i].level++; ui.render(); play('cash'); }
+    },
+    toggleMtg: (i) => {
+        const pr = state.props[i];
+        const p = state.players[0];
+        if(pr.mtg) {
+            let cost = Math.round(BD[i].p * 0.6);
+            if(p.money >= cost) { p.money -= cost; pr.mtg = false; }
+        } else {
+            p.money += Math.round(BD[i].p * 0.5); pr.mtg = true;
+        }
+        ui.render();
+    },
+    endTurn: () => {
+        state.turn = (state.turn + 1) % 2;
+        state.rolled = false;
+        state.doubles = 0;
+        
+        // Environment Check
+        if(Math.random()<0.2) {
+            state.weather = state.weather==='sun'?'rain':'sun';
+            document.getElementById('rain-canvas').style.display = state.weather==='rain'?'block':'none';
+            document.body.classList.toggle('night-mode', state.weather==='rain');
+        }
+
+        ui.render();
+        if(state.turn === 1) setTimeout(ai.play, 1500);
+    }
+};
+
+/* AI LOGIC */
+const ai = {
+    play: () => {
+        game.roll();
+        // Decisions happen after roll animation in game.roll logic via timeout or check?
+        // Actually game.roll is generic. We need to hook into the post-move.
+        // Let's modify game.roll to handle AI flow better or just observe state.
+        // For simplicity: The timeouts in game.roll will handle the movement.
+        // We just need to check "Did AI land?" and decide to buy/end.
+        
+        // We can hook a "post-move" check in moveToken or add a listener.
+        // Simple hack: Wait enough time for roll + move.
+        setTimeout(() => {
+            const p = state.players[1];
+            const s = BD[p.pos];
+            // Buy?
+            if(s.t==='pr' && state.props[p.pos].owner === null && p.money > s.p + 200) {
+                game.buy();
+            }
+            // End Turn if rolled
+            if(state.rolled) game.endTurn();
+            // If doubles, roll again is triggered by game.roll recursion logic if we structured it, 
+            // but here we simply rely on the fact that if doubles, rolled=false, so we call play again?
+            if(!state.rolled && state.turn === 1) setTimeout(ai.play, 1000);
+        }, 4000); // 2.5s roll + approx move time
+    }
+};
+
+/* BINDINGS */
+document.getElementById('b-roll').onclick = () => game.roll();
+document.getElementById('b-buy').onclick = () => game.buy();
+document.getElementById('b-end').onclick = () => game.endTurn();
 </script>
 </body>
 </html>
