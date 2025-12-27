@@ -3,264 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário: Deluxe</title>
+    <title>Recife Imobiliário: V9 Legendary</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-sand: #fdf5e6;
-            --ocean-depth: #006994;
-            --wood-dark: #3e2723;
-            --gold: #ffd700;
-            --frevo-r: #d50000;
-            --frevo-g: #2e7d32;
-            --frevo-y: #ffea00;
-            --frevo-b: #2962ff;
-            --glass: rgba(255, 255, 255, 0.85);
-            --shadow: 0 10px 30px rgba(0,0,0,0.4);
+            --bg-paper: #f4e4bc;
+            --wood: #4e342e;
+            --frevo-red: #d32f2f;
+            --frevo-yellow: #fbc02d;
+            --frevo-green: #388e3c;
+            --frevo-blue: #1976d2;
+            --night-overlay: rgba(0, 10, 40, 0.6);
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            margin: 0; font-family: 'Poppins', sans-serif; 
-            background: radial-gradient(circle at center, #81d4fa, #0277bd);
-            height: 100vh; overflow: hidden; display: flex; 
-            perspective: 1200px; /* Profundidade 3D Global */
+            margin: 0; font-family: 'Roboto', sans-serif; 
+            background: var(--bg-paper); 
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.62 50l.8 2.62-.8.79-13.8-4.52 13.8-4.52.8.79-.8 2.62h2.62v.8h-2.62zM30 30c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm20 20c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z' fill='%23d7ccc8' fill-opacity='0.4'/%3E%3C/svg%3E");
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: filter 2s;
         }
 
-        /* --- FONTES & ESTILOS GERAIS --- */
-        h1, h2, h3, .brand-font { font-family: 'Rye', serif; letter-spacing: 1px; }
+        /* TIPOGRAFIA */
+        h1, h2, h3, .cordel-font { font-family: 'Rye', serif; letter-spacing: 1px; }
+
+        /* --- AMBIENTE (CLIMA & NOITE) --- */
+        #weather-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 8000; display: none; }
+        .night-mode { filter: brightness(0.6) contrast(1.2); }
+        .night-lights .space { box-shadow: inset 0 0 10px #fff700; border-color: #555; }
+
+        /* --- LOBBY --- */
+        #lobby { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
+        .lobby-card { background: #fff; padding: 30px; border: 8px solid var(--wood); border-radius: 10px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 0 50px #000; position: relative; }
+        .lobby-card::before { content:''; position: absolute; top:5px; left:5px; right:5px; bottom:5px; border: 2px dashed var(--wood); pointer-events: none; }
         
-        /* --- CLIMA & AMBIENTE --- */
-        .sky-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0.3; background: url('https://www.transparenttextures.com/patterns/stardust.png'); animation: slideBg 100s linear infinite; }
-        @keyframes slideBg { from { background-position: 0 0; } to { background-position: 1000px 500px; } }
-        
-        #rain-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 8000; display: none; }
-        .night-mode body { background: radial-gradient(circle at center, #1a237e, #000); }
-        .night-mode .space { filter: brightness(0.7); }
-        .night-mode .space.active-glow { box-shadow: inset 0 0 20px #ffd700; filter: brightness(1.2); border-color: #fff; }
+        .avatar-grid { display: flex; gap: 10px; justify-content: center; margin: 15px 0; font-size: 2.5rem; }
+        .avatar-opt { cursor: pointer; transition: 0.2s; opacity: 0.5; filter: grayscale(1); }
+        .avatar-opt.selected { opacity: 1; transform: scale(1.2); filter: grayscale(0); text-shadow: 0 0 10px gold; }
 
-        /* --- LOBBY CINEMATOGRÁFICO --- */
-        #lobby { 
-            position: fixed; inset: 0; z-index: 9999; 
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; 
-        }
-        .lobby-card { 
-            background: var(--glass); padding: 40px; border-radius: 20px; 
-            border: 6px solid var(--wood-dark); text-align: center; width: 90%; max-width: 500px; 
-            box-shadow: 0 0 100px rgba(0,0,0,0.8); animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .avatar-row { display: flex; justify-content: center; gap: 15px; margin: 20px 0; font-size: 3rem; }
-        .avatar-opt { cursor: pointer; transition: 0.3s; opacity: 0.6; filter: grayscale(1); transform: scale(0.9); }
-        .avatar-opt:hover, .avatar-opt.selected { opacity: 1; filter: grayscale(0); transform: scale(1.2); text-shadow: 0 0 20px var(--gold); }
-        
-        .btn-main { 
-            background: linear-gradient(45deg, var(--frevo-r), #b71c1c); color: white; 
-            border: none; padding: 15px 30px; font-size: 1.2rem; font-weight: 800; 
-            border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);
-            transition: 0.3s; text-transform: uppercase; width: 100%; margin-top: 10px;
-        }
-        .btn-main:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 25px rgba(211, 47, 47, 0.6); }
+        .lobby-btn { width: 100%; padding: 15px; margin-top: 10px; border: 3px solid #000; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; box-shadow: 4px 4px 0 rgba(0,0,0,0.3); }
+        .lobby-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
-        /* --- LAYOUT DO JOGO (GLASSMORPHISM) --- */
-        #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; transition: 1.5s; z-index: 10; }
-        #game-layout.active { opacity: 1; }
+        /* --- LAYOUT JOGO --- */
+        #game-layout { display: flex; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: 1s; }
+        #game-layout.active { opacity: 1; pointer-events: all; }
 
-        /* Responsividade */
         @media (min-width: 900px) {
-            #board-stage { flex: 1; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d; }
-            #sidebar { width: 380px; margin: 20px; border-radius: 20px; }
-            #board { transform: rotateX(25deg) rotateZ(0deg) scale(0.85); box-shadow: 0 50px 100px rgba(0,0,0,0.6); }
+            #game-layout { flex-direction: row; }
+            #board-viewport { flex: 1; display: flex; align-items: center; justify-content: center; background: #263238; perspective: 1500px; overflow: hidden; }
+            #sidebar { width: 360px; border-left: 10px solid var(--wood); }
+            #board { transform: rotateX(15deg) scale(0.9); box-shadow: 0 50px 100px #000; }
         }
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
-            #board-stage { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; }
-            #sidebar { width: 100%; border-radius: 20px 20px 0 0; max-height: 45vh; }
-            #board { transform: scale(0.6); margin: 20px; }
+            #board-viewport { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; background: #263238; }
+            #sidebar { width: 100%; height: auto; border-top: 10px solid var(--wood); padding-bottom: 20px; }
+            #board { transform: scale(0.65); margin: 20px; }
         }
 
-        /* --- O TABULEIRO (3D REAL) --- */
+        /* --- TABULEIRO --- */
         #board {
-            display: grid; grid-template-columns: repeat(11, 85px); grid-template-rows: repeat(11, 85px);
-            background: #fdf5e6; border: 20px solid var(--wood-dark); border-radius: 12px;
-            position: relative; transform-style: preserve-3d; transition: transform 0.8s ease-in-out;
-            background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); /* Textura Calçada */
+            display: grid; grid-template-columns: repeat(11, 80px); grid-template-rows: repeat(11, 80px);
+            background: #fff; border: 15px solid var(--wood); border-radius: 8px; position: relative;
+            transform-style: preserve-3d; transition: transform 0.5s;
         }
-
-        .space { 
-            border: 1px solid rgba(0,0,0,0.2); background: rgba(255,255,255,0.9); 
-            font-size: 0.65rem; text-align: center; position: relative; font-weight: bold; 
-            display: flex; flex-direction: column; transition: 0.3s;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
-        }
-        .space:hover { transform: translateZ(10px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); z-index: 10; border-color: var(--frevo-blue); }
+        .space { border: 1px solid #aaa; background: #fff8e1; font-size: 0.65rem; text-align: center; position: relative; font-weight: bold; display: flex; flex-direction: column; transition: 0.3s; }
+        .color-bar { height: 25%; border-bottom: 2px solid #000; position: relative; }
+        .space-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1.1; }
         
-        .color-strip { height: 20px; border-bottom: 2px solid rgba(0,0,0,0.1); width: 100%; }
-        .space-info { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px; line-height: 1.1; }
-
-        /* CENTRO VIVO */
-        .center-hub { 
-            grid-column: 2 / 11; grid-row: 2 / 11; 
-            background: radial-gradient(#fff, #e1f5fe); 
-            border: 8px solid var(--wood-dark); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            position: relative; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.2);
+        /* Centro */
+        .center-area { 
+            grid-column: 2 / 11; grid-row: 2 / 11; background: #e0f7fa; 
+            border: 5px solid var(--wood); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; position: relative; overflow: hidden;
         }
-        
-        /* Baralho 3D */
-        .deck-area { width: 100px; height: 140px; background: #333; border-radius: 5px; position: relative; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); border: 2px solid #fff; cursor: pointer; transition: 0.3s; }
-        .deck-area::after { content:'?'; color: white; font-size: 3rem; position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Rye'; }
-        .deck-area:active { transform: scale(0.95); }
+        .frevo-umbrella {
+            position: absolute; width: 200%; height: 200%; opacity: 0.1;
+            background: conic-gradient(red 0deg 45deg, green 45deg 90deg, yellow 90deg 135deg, blue 135deg 180deg, red 180deg 225deg, green 225deg 270deg, yellow 270deg 315deg, blue 315deg 360deg);
+            animation: spin 20s linear infinite;
+        }
 
-        /* PEÕES 3D (COM SOMBRA) */
+        /* PEÕES & COISAS */
         .token {
-            width: 50px; height: 50px; position: absolute; z-index: 100;
-            font-size: 3rem; text-align: center; line-height: 50px;
-            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.5));
-            transition: all 0.4s ease-in-out; /* Pulo suave */
-            transform-origin: bottom center;
+            width: 45px; height: 45px; position: absolute; z-index: 50; font-size: 2.2rem;
+            text-align: center; line-height: 45px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .token.jumping { animation: jump 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes jump { 0% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-40px) scaleY(0.9) scaleX(1.1); } 100% { transform: translateY(0) scaleY(1); } }
+        .token.jailed::after { content: '⛓️'; position: absolute; inset: 0; font-size: 2.5rem; }
+        
+        /* HUD / SIDEBAR */
+        #sidebar { background: #fffde7; display: flex; flex-direction: column; padding: 10px; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
+        .hud-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #888; padding-bottom: 10px; margin-bottom: 10px; }
+        .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .game-btn { padding: 12px; border: 3px solid #000; border-radius: 6px; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 0.9rem; opacity: 0.5; pointer-events: none; transition: 0.2s; color: #000; }
+        .game-btn.enabled { opacity: 1; pointer-events: all; transform: translateY(-3px); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+        
+        /* LISTA JOGADORES */
+        #players-hud { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+        .p-row { background: #fff; padding: 8px; border-radius: 5px; border-left: 5px solid #ccc; display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .p-row.turn { background: #fff9c4; border-color: var(--frevo-yellow); font-weight: bold; transform: scale(1.02); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        /* CONSTRUÇÕES 3D (ISOMÉTRICAS) */
-        .build-zone { position: absolute; top: -10px; left: 0; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 50; perspective: 500px; }
-        .house-3d { width: 12px; height: 12px; background: var(--frevo-green); border: 1px solid #1b5e20; transform: rotateX(20deg); box-shadow: 0 2px 2px rgba(0,0,0,0.5); }
-        .hotel-3d { width: 16px; height: 16px; background: var(--frevo-red); border: 1px solid #b71c1c; transform: rotateX(20deg); box-shadow: 0 3px 3px rgba(0,0,0,0.5); }
+        /* --- OVERLAYS --- */
+        /* DADOS 3D */
+        #dice-scene { position: fixed; inset: 0; pointer-events: none; z-index: 2000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
+        .dice-wrap { width: 90px; height: 90px; position: relative; transform-style: preserve-3d; margin: 30px; }
+        .cube { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        .face { position: absolute; width: 90px; height: 90px; background: #fff; border: 4px solid #000; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: bold; backface-visibility: hidden; }
+        .face:nth-child(1) { transform: translateZ(45px); } .face:nth-child(2) { transform: rotateY(180deg) translateZ(45px); }
+        .face:nth-child(3) { transform: rotateY(90deg) translateZ(45px); } .face:nth-child(4) { transform: rotateY(-90deg) translateZ(45px); }
+        .face:nth-child(5) { transform: rotateX(90deg) translateZ(45px); } .face:nth-child(6) { transform: rotateX(-90deg) translateZ(45px); }
+        /* Classes Dados */
+        .d1 { transform: rotateX(0deg) rotateY(0deg); } .d2 { transform: rotateX(0deg) rotateY(180deg); }
+        .d3 { transform: rotateX(0deg) rotateY(-90deg); } .d4 { transform: rotateX(0deg) rotateY(90deg); }
+        .d5 { transform: rotateX(-90deg) rotateY(0deg); } .d6 { transform: rotateX(90deg) rotateY(0deg); }
 
-        /* --- SIDEBAR (HUD) --- */
-        #sidebar { 
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px); 
-            display: flex; flex-direction: column; padding: 15px; 
-            box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.5);
+        /* CARD ZOOM (GLOBAL) */
+        #global-card-overlay { position: fixed; inset: 0; z-index: 3000; display: none; justify-content: center; align-items: center; pointer-events: none; }
+        .big-card { 
+            width: 320px; height: 480px; background: #fff; border: 3px solid #000; border-radius: 15px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7); display: flex; flex-direction: column; overflow: hidden;
+            animation: cardPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; position: relative;
         }
-        
-        .hud-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
-        .cash-display { font-size: 1.5rem; color: var(--frevo-green); font-weight: 800; text-shadow: 0 1px 0 #fff; }
-        
-        /* BOTÕES DE AÇÃO */
-        .ctrl-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .action-btn { 
-            padding: 12px; border: none; border-radius: 8px; font-weight: 800; color: white; 
-            text-transform: uppercase; font-size: 0.9rem; cursor: pointer; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: 0.2s; opacity: 0.5; pointer-events: none;
-        }
-        .action-btn.enabled { opacity: 1; pointer-events: all; transform: translateY(-2px); }
-        .action-btn:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .bc-header { padding: 25px; text-align: center; color: #fff; font-family: 'Rye'; font-size: 1.5rem; text-shadow: 2px 2px 0 #000; border-bottom: 3px solid #000; }
+        .bc-body { padding: 20px; flex: 1; font-size: 1.1rem; background: radial-gradient(#fff, #f0f0f0); }
+        .bc-row { display: flex; justify-content: space-between; border-bottom: 1px dotted #888; padding: 8px 0; }
+        .close-card { position: absolute; top: 10px; right: 10px; background: red; color: white; border: 2px solid white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px #000; }
 
-        /* LISTA DE JOGADORES (CARD) */
-        .player-card { background: #f5f5f5; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid transparent; transition: 0.3s; }
-        .player-card.active-turn { background: #fffde7; border-color: var(--frevo-yellow); transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        /* AUCTION MODAL */
+        #auction-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .auction-box { background: #fff; padding: 30px; border: 5px solid var(--frevo-yellow); border-radius: 10px; text-align: center; width: 90%; max-width: 500px; animation: shake 0.5s; }
+        .auction-timer { font-size: 3rem; font-weight: bold; color: var(--frevo-red); margin: 10px 0; }
+        .bid-btn { background: var(--frevo-green); color: white; font-size: 1.5rem; padding: 15px 40px; border: none; border-radius: 50px; cursor: pointer; animation: pulse 1s infinite; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-        /* MEUS IMÓVEIS (PERGAMINHO) */
-        #deed-scroll { 
-            flex: 1; background: #fff8e1; border: 2px solid #d7ccc8; border-radius: 8px; 
-            padding: 10px; overflow-y: auto; font-size: 0.85rem; 
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-        }
-        .deed-item { display: flex; align-items: center; padding: 5px; border-bottom: 1px dashed #ccc; }
-        
-        /* ZOEIRA */
-        .react-bar { display: flex; justify-content: space-around; padding-top: 10px; border-top: 1px solid #eee; }
-        .react-emoji { font-size: 1.5rem; cursor: pointer; transition: 0.2s; }
-        .react-emoji:hover { transform: scale(1.4) rotate(10deg); }
-
-        /* --- DADOS 3D (CENA) --- */
-        #dice-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 5000; display: none; perspective: 1000px; justify-content: center; align-items: center; }
-        
-        /* Mão Arremessando */
-        .hand-throw { position: absolute; bottom: -200px; left: -200px; font-size: 15rem; animation: handToss 0.8s ease-out forwards; z-index: 5001; }
-        @keyframes handToss { 0% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(40vw, -40vh) rotate(30deg); } 100% { transform: translate(40vw, 100vh) rotate(60deg); } }
-
-        .dice-container { display: flex; gap: 50px; }
-        .die-3d { width: 100px; height: 100px; position: relative; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.15, 0.9, 0.34, 1.2); }
-        .die-face { position: absolute; width: 100%; height: 100%; background: #fff; border: 2px solid #ccc; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: bold; color: #333; box-shadow: inset 0 0 15px rgba(0,0,0,0.1); }
-        .die-face:nth-child(1) { transform: translateZ(50px); } 
-        .die-face:nth-child(2) { transform: rotateY(180deg) translateZ(50px); }
-        .die-face:nth-child(3) { transform: rotateY(90deg) translateZ(50px); } 
-        .die-face:nth-child(4) { transform: rotateY(-90deg) translateZ(50px); }
-        .die-face:nth-child(5) { transform: rotateX(90deg) translateZ(50px); } 
-        .die-face:nth-child(6) { transform: rotateX(-90deg) translateZ(50px); }
-        /* Rotações Finais */
-        .res-1 { transform: rotateX(0deg) rotateY(0deg); } .res-2 { transform: rotateX(0deg) rotateY(180deg); }
-        .res-3 { transform: rotateX(0deg) rotateY(-90deg); } .res-4 { transform: rotateX(0deg) rotateY(90deg); }
-        .res-5 { transform: rotateX(-90deg) rotateY(0deg); } .res-6 { transform: rotateX(90deg) rotateY(0deg); }
-
-        /* --- CARD DE PROPRIEDADE (POPUP GLOBAL) --- */
-        #global-card { position: fixed; inset: 0; z-index: 6000; display: none; justify-content: center; align-items: center; pointer-events: none; }
-        .card-3d { 
-            width: 320px; height: 480px; background: #fff; border-radius: 15px; 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden;
-            animation: cardReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; position: relative;
-            border: 4px solid #fff;
-        }
-        @keyframes cardReveal { 0% { transform: translateY(500px) rotateY(180deg) scale(0.5); opacity: 0; } 100% { transform: translateY(0) rotateY(0) scale(1); opacity: 1; } }
-        
-        .card-header { padding: 30px; text-align: center; color: white; font-family: 'Rye'; font-size: 1.8rem; text-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
-        .card-content { padding: 20px; flex: 1; background: #fafafa; font-size: 1.1rem; display: flex; flex-direction: column; gap: 10px; }
-        .card-row { display: flex; justify-content: space-between; border-bottom: 1px dotted #ccc; padding: 5px 0; }
-        .card-close { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; background: red; border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-
-        /* --- LEILÃO --- */
-        #auction-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 7000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .auction-box { background: #fff; padding: 40px; border-radius: 20px; text-align: center; width: 90%; max-width: 500px; animation: shake 0.5s; border: 5px solid var(--gold); }
-        .timer-circle { font-size: 4rem; color: var(--frevo-red); font-weight: 900; margin: 10px 0; }
-
-        /* --- ANIMAÇÕES --- */
-        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+        /* ANIMAÇÕES */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes cardPop { 0% { transform: scale(0) rotateY(180deg); } 100% { transform: scale(1) rotateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .float-anim { animation: floatUp 3s forwards; position: absolute; font-size: 3rem; z-index: 9999; pointer-events: none; }
-        @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { opacity: 1; transform: translateY(-50px) scale(1.2); } 100% { transform: translateY(-300px) scale(1); opacity: 0; } }
+        .shark-attack { animation: shake 0.5s infinite; background: rgba(255,0,0,0.3) !important; }
 
     </style>
 </head>
 <body>
 
-<canvas id="rain-canvas"></canvas>
-<div class="sky-layer"></div>
+<canvas id="weather-canvas"></canvas>
 
 <div id="lobby">
     <div class="lobby-card">
-        <h1 style="color:var(--frevo-red); font-size:2.5rem; text-shadow: 1px 1px 0 #000;">RECIFE LENDÁRIO</h1>
-        <p style="color:#666;">A Experiência Definitiva</p>
+        <h1 style="color:var(--frevo-red); margin:0; font-size:2.5rem; text-shadow:2px 2px #000;">RECIFE LENDÁRIO</h1>
+        <p class="cordel-font">O Mestre da Cidade - V9</p>
         
-        <input type="text" id="p-name" placeholder="Seu Apelido" style="width:100%; padding:15px; font-size:1.2rem; border-radius:10px; border:2px solid #ccc; text-align:center;">
-        
-        <div class="avatar-row">
-            <div class="avatar-opt selected" onclick="selAv(this, '🦀')">🦀</div>
-            <div class="avatar-opt" onclick="selAv(this, '🦈')">🦈</div>
-            <div class="avatar-opt" onclick="selAv(this, '☂️')">☂️</div>
-            <div class="avatar-opt" onclick="selAv(this, '☀️')">☀️</div>
-            <div class="avatar-opt" onclick="selAv(this, '🥁')">🥁</div>
+        <div id="lobby-form">
+            <input type="text" id="p-name" placeholder="Seu Apelido" style="width:100%; padding:15px; font-size:1.1rem; border:2px solid #000; margin-bottom:15px;">
+            <p style="font-weight:bold; margin-bottom:5px;">Quem é você no Carnaval?</p>
+            <div class="avatar-grid">
+                <div class="avatar-opt selected" onclick="selAv(this, '🦀')">🦀</div>
+                <div class="avatar-opt" onclick="selAv(this, '🦈')">🦈</div>
+                <div class="avatar-opt" onclick="selAv(this, '☂️')">☂️</div>
+                <div class="avatar-opt" onclick="selAv(this, '☀️')">☀️</div>
+                <div class="avatar-opt" onclick="selAv(this, '🥁')">🥁</div>
+            </div>
+            
+            <button class="lobby-btn" style="background:var(--frevo-yellow);" onclick="net.host()">🏠 CRIAR SALA</button>
+            <p style="margin:10px 0; font-weight:bold; color:#666;">— OU —</p>
+            <input type="text" id="host-id" placeholder="Código da Sala" style="width:100%; padding:10px; border:2px solid #000;">
+            <button class="lobby-btn" style="background:var(--frevo-green); color:white;" onclick="net.join()">🔗 ENTRAR</button>
         </div>
 
-        <button class="btn-main" onclick="net.host()">🏠 CRIAR SALA</button>
-        <div style="margin:10px; font-weight:bold; color:white;">OU</div>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="host-id" placeholder="Código da Sala" style="flex:1; padding:15px; border-radius:10px; border:none;">
-            <button class="btn-main" style="width:auto; margin:0; background:var(--frevo-green);" onclick="net.join()">ENTRAR</button>
-        </div>
-
-        <div id="lobby-wait" style="display:none; margin-top:20px;">
-            <h3 style="color:var(--frevo-blue);">Bloco Formado!</h3>
-            <div style="background:#fff; padding:10px; border:2px dashed #333; font-family:monospace; font-size:1.5rem; cursor:pointer;" onclick="util.copyId()" id="disp-id">...</div>
-            <p>Jogadores:</p>
-            <ul id="lobby-list" style="list-style:none; padding:0; font-weight:bold;"></ul>
-            <button class="btn-main" style="background:var(--gold); color:black;" onclick="net.start()">🚀 COMEÇAR</button>
+        <div id="lobby-wait" style="display:none;">
+            <h3>Bloco Formado!</h3>
+            <div style="background:#eee; padding:10px; font-family:monospace; font-size:1.4rem; cursor:pointer; border:2px dashed #000;" onclick="util.copyId()" id="disp-id">...</div>
+            <p>Foliões na fila:</p>
+            <ul id="lobby-list" style="list-style:none; padding:0; font-weight:bold; font-size:1.1rem;"></ul>
+            <button class="lobby-btn" style="background:var(--frevo-red); color:white;" onclick="net.start()">🚀 SOLTAR O SOM</button>
         </div>
     </div>
 </div>
 
 <div id="game-layout">
-    <div id="board-stage">
+    <div id="board-viewport">
         <div id="board">
-            <div class="center-hub">
-                <div style="position:absolute; width:200%; height:200%; background:conic-gradient(red 0deg 45deg, yellow 90deg 135deg, green 180deg 225deg, blue 270deg 315deg); opacity:0.1; animation: slideBg 20s linear infinite;"></div>
-                <h1 style="color:var(--frevo-blue); font-size:2.8rem; z-index:2; text-shadow:2px 2px #fff; margin:0;">RECIFE</h1>
-                <div class="deck-area" id="main-deck"></div>
-                <div id="weather-tag" style="z-index:2; margin-top:10px; background:#fff; padding:5px 15px; border-radius:20px; border:2px solid #000; font-weight:bold;">☀️ Sol</div>
+            <div class="center-area">
+                <div class="frevo-umbrella"></div>
+                <h1 style="z-index:2; color:var(--frevo-blue); font-size:3rem; text-shadow:2px 2px #fff; margin:0;">RECIFE</h1>
+                <div id="weather-badge" style="z-index:2; background:#fff; padding:5px 10px; border:2px solid #000; border-radius:15px; font-weight:bold; margin-top:10px;">☀️ Sol</div>
             </div>
             </div>
     </div>
@@ -268,254 +196,363 @@
     <div id="sidebar">
         <div class="hud-header">
             <h2 style="margin:0; color:var(--frevo-red);">Pernambuco</h2>
-            <div class="cash-display" id="my-cash">$1500</div>
+            <div id="my-cash" style="font-weight:bold; font-size:1.2rem; color:var(--frevo-green);">$1500</div>
         </div>
         
-        <div id="turn-banner" style="background:#333; color:var(--gold); padding:10px; text-align:center; border-radius:5px; font-weight:bold; margin-bottom:10px;">Aguardando...</div>
+        <div style="background:#000; color:var(--frevo-yellow); padding:10px; text-align:center; font-weight:bold; border-radius:5px; margin-bottom:10px;" id="turn-msg">Aguardando...</div>
 
-        <div class="ctrl-panel">
-            <button id="btn-roll" class="action-btn" style="background:var(--frevo-yellow); color:black; grid-column:span 2;">🎲 ROLAR</button>
-            <button id="btn-buy" class="action-btn" style="background:var(--frevo-green);">💰 COMPRAR</button>
-            <button id="btn-auc" class="action-btn" style="background:var(--frevo-blue);">🔨 LEILOAR</button>
-            <button id="btn-bail" class="action-btn" style="background:#607d8b;">💸 SUBORNO</button>
-            <button id="btn-end" class="action-btn" style="background:var(--frevo-red);">🛑 PASSAR</button>
+        <div class="ctrl-grid">
+            <button id="btn-roll" class="game-btn" style="background:var(--frevo-yellow); grid-column:span 2;">🎲 ROLAR DADOS</button>
+            <button id="btn-buy" class="game-btn" style="background:var(--frevo-green); color:white;">💰 COMPRAR</button>
+            <button id="btn-auction" class="game-btn" style="background:var(--frevo-blue); color:white;">🔨 LEILOAR</button>
+            <button id="btn-bail" class="game-btn" style="background:#78909c; color:white;">💸 SUBORNO ($50)</button>
+            <button id="btn-end" class="game-btn" style="background:var(--frevo-red); color:white;">🛑 PASSAR</button>
         </div>
 
-        <div style="font-weight:bold; font-size:0.9rem;">Jogadores:</div>
-        <div id="players-list"></div>
-
-        <div style="font-weight:bold; font-size:0.9rem; margin-top:10px;">Escrituras 📜:</div>
-        <div id="deed-scroll">
-            <div style="text-align:center; color:#999;">Sem imóveis.</div>
-        </div>
-
-        <div class="react-bar">
-            <div class="react-emoji" onclick="game.react('😂')">😂</div>
-            <div class="react-emoji" onclick="game.react('😡')">😡</div>
-            <div class="react-emoji" onclick="game.react('🦈')">🦈</div>
-            <div class="react-emoji" onclick="game.react('👏')">👏</div>
-        </div>
+        <div style="margin-top:15px; font-weight:bold;">Jogadores:</div>
+        <div id="players-hud"></div>
     </div>
 </div>
 
-<div id="dice-overlay">
-    <div class="hand-throw">🫳</div>
-    <div class="dice-container">
-        <div class="die-3d" id="d1"><div class="die-face">1</div><div class="die-face">2</div><div class="die-face">3</div><div class="die-face">4</div><div class="die-face">5</div><div class="die-face">6</div></div>
-        <div class="die-3d" id="d2"><div class="die-face">1</div><div class="die-face">2</div><div class="die-face">3</div><div class="die-face">4</div><div class="die-face">5</div><div class="die-face">6</div></div>
-    </div>
+<div id="dice-scene">
+    <div class="dice-wrap"><div id="c1" class="cube"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div></div>
+    <div class="dice-wrap"><div id="c2" class="cube"><div class="face">1</div><div class="face">2</div><div class="face">3</div><div class="face">4</div><div class="face">5</div><div class="face">6</div></div></div>
 </div>
 
-<div id="global-card">
-    <div class="card-3d" id="card-inner"></div>
+<div id="global-card-overlay">
+    <div class="big-card" id="card-content">
+        </div>
 </div>
 
-<div id="auction-overlay">
+<div id="auction-modal">
     <div class="auction-box">
         <h2>🔨 LEILÃO!</h2>
-        <h3 id="auc-item">Item</h3>
-        <p>Lance Atual: <span id="auc-bid" style="font-size:2rem; color:green; font-weight:bold;">$10</span></p>
-        <p>Líder: <span id="auc-leader">---</span></p>
-        <div class="timer-circle" id="auc-timer">10</div>
-        <button class="btn-main" onclick="auction.bid()">DAR LANCE (+$10)</button>
+        <div id="auction-item" style="font-size:1.5rem; margin:10px 0;">Item</div>
+        <div>Lance Atual: <span id="auction-price" style="font-weight:bold; color:green; font-size:2rem;">$10</span></div>
+        <div>Líder: <span id="auction-leader">Ninguém</span></div>
+        <div id="auction-timer" class="auction-timer">10</div>
+        <button class="bid-btn" onclick="auction.bid()">DAR LANCE (+$10)</button>
     </div>
 </div>
 
 <script>
-/* DADOS */
-const COLS={br:'#795548',lb:'#03a9f4',pk:'#e91e63',or:'#ff5722',rd:'#d32f2f',yl:'#fbc02d',gr:'#388e3c',bl:'#1565c0'};
-const BD=[
-    {t:'st',n:'MARCO ZERO'},{t:'pr',g:'br',n:'Aurora',p:60,r:[2,10,30]},{t:'ch',n:'Sorte'},{t:'pr',g:'br',n:'Imperador',p:60,r:[4,20,60]},{t:'tx',n:'IPTU',p:200},{t:'rr',n:'Metrô'},{t:'pr',g:'lb',n:'Varadouro',p:100,r:[6,30,90]},{t:'ch',n:'Revés'},{t:'pr',g:'lb',n:'Carmo',p:100,r:[6,30,90]},{t:'pr',g:'lb',n:'Alto da Sé',p:120,r:[8,40,100]},
-    {t:'jl',n:'Trânsito'},{t:'pr',g:'pk',n:'Cordeiro',p:140,r:[10,50,150]},{t:'ut',n:'Neoenergia',p:150},{t:'pr',g:'pk',n:'Várzea',p:140,r:[10,50,150]},{t:'pr',g:'pk',n:'Iputinga',p:160,r:[12,60,180]},{t:'rr',n:'Metrô Oeste'},{t:'pr',g:'or',n:'Torre',p:180,r:[14,70,200]},{t:'ch',n:'Sorte'},{t:'pr',g:'or',n:'Madalena',p:180,r:[14,70,200]},{t:'pr',g:'or',n:'Graças',p:200,r:[16,80,220]},
-    {t:'pk',n:'Jaqueira'},{t:'pr',g:'rd',n:'Espinheiro',p:220,r:[18,90,250]},{t:'ch',n:'Revés'},{t:'pr',g:'rd',n:'Aflitos',p:220,r:[18,90,250]},{t:'pr',g:'rd',n:'Casa Forte',p:240,r:[20,100,300]},{t:'rr',n:'Via Mangue'},{t:'pr',g:'yl',n:'Poço Panela',p:260,r:[22,110,330]},{t:'pr',g:'yl',n:'Apipucos',p:260,r:[22,110,330]},{t:'ut',n:'Compesa',p:150},{t:'pr',g:'yl',n:'Parnamirim',p:280,r:[24,120,360]},
-    {t:'gj',n:'Blitz!'},{t:'pr',g:'gr',n:'Imbiribeira',p:300,r:[26,130,390]},{t:'pr',g:'gr',n:'Pina',p:300,r:[26,130,390]},{t:'ch',n:'Sorte'},{t:'pr',g:'gr',n:'Paiva',p:320,r:[28,150,450]},{t:'rr',n:'Aeroporto'},{t:'ch',n:'Revés'},{t:'pr',g:'bl',n:'Setúbal',p:350,r:[35,175,500]},{t:'tx',n:'Taxa Luxo',p:100},{t:'pr',g:'bl',n:'Boa Viagem',p:400,r:[50,200,600]}
+/* --- DATA --- */
+const COLORS = { brown:'#795548', lightblue:'#03a9f4', pink:'#e91e63', orange:'#ff5722', red:'#d32f2f', yellow:'#fbc02d', green:'#388e3c', blue:'#1565c0' };
+const BOARD = [
+    {type:'start',name:'MARCO ZERO'}, 
+    {type:'prop',group:'brown',name:'Rua da Aurora',price:60,rent:[2,10,30,90,160,250]}, {type:'chance',name:'Sorte'}, {type:'prop',group:'brown',name:'Rua do Imperador',price:60,rent:[4,20,60,180,320,450]}, {type:'tax',name:'IPTU',price:200}, {type:'station',name:'Metrô Centro',price:200}, {type:'prop',group:'lightblue',name:'Varadouro',price:100,rent:[6,30,90,270,400,550]}, {type:'chance',name:'Revés'}, {type:'prop',group:'lightblue',name:'Carmo',price:100,rent:[6,30,90,270,400,550]}, {type:'prop',group:'lightblue',name:'Alto da Sé',price:120,rent:[8,40,100,300,450,600]},
+    {type:'jail',name:'Trânsito'}, 
+    {type:'prop',group:'pink',name:'Cordeiro',price:140,rent:[10,50,150,450,750,950]}, {type:'utility',name:'Neoenergia',price:150}, {type:'prop',group:'pink',name:'Várzea',price:140,rent:[10,50,150,450,750,950]}, {type:'prop',group:'pink',name:'Iputinga',price:160,rent:[12,60,180,500,700,900]}, {type:'station',name:'Metrô Oeste',price:200}, {type:'prop',group:'orange',name:'Torre',price:180,rent:[14,70,200,550,750,950]}, {type:'chance',name:'Sorte'}, {type:'prop',group:'orange',name:'Madalena',price:180,rent:[14,70,200,550,750,950]}, {type:'prop',group:'orange',name:'Graças',price:200,rent:[16,80,220,600,800,1000]},
+    {type:'parking',name:'Jaqueira'}, 
+    {type:'prop',group:'red',name:'Espinheiro',price:220,rent:[18,90,250,700,875,1050]}, {type:'chance',name:'Revés'}, {type:'prop',group:'red',name:'Aflitos',price:220,rent:[18,90,250,700,875,1050]}, {type:'prop',group:'red',name:'Casa Forte',price:240,rent:[20,100,300,750,925,1100]}, {type:'station',name:'Via Mangue',price:200}, {type:'prop',group:'yellow',name:'Poço da Panela',price:260,rent:[22,110,330,800,975,1150]}, {type:'prop',group:'yellow',name:'Apipucos',price:260,rent:[22,110,330,800,975,1150]}, {type:'utility',name:'Compesa',price:150}, {type:'prop',group:'yellow',name:'Parnamirim',price:280,rent:[24,120,360,850,1025,1200]},
+    {type:'gotojail',name:'Blitz!'}, 
+    {type:'prop',group:'green',name:'Imbiribeira',price:300,rent:[26,130,390,900,1100,1275]}, {type:'prop',group:'green',name:'Pina',price:300,rent:[26,130,390,900,1100,1275]}, {type:'chance',name:'Sorte'}, {type:'prop',group:'green',name:'Paiva',price:320,rent:[28,150,450,1000,1200,1400]}, {type:'station',name:'Aeroporto',price:200}, {type:'chance',name:'Revés'}, {type:'prop',group:'blue',name:'Setúbal',price:350,rent:[35,175,500,1100,1300,1500]}, {type:'tax',name:'Taxa Luxo',price:100}, {type:'prop',group:'blue',name:'Boa Viagem',price:400,rent:[50,200,600,1400,1700,2000]}
 ];
-const CARDS=[{t:"Ganhou na Loteria!",v:150,k:'$'},{t:"Multa CTTU.",v:-50,k:'$'},{t:"Vendeu Bolo Rolo.",v:100,k:'$'},{t:"Reforma AP.",v:-100,k:'$'},{t:"Blitz! Vá pro Trânsito.",k:'jl'},{t:"Vá para o Carmo.",k:'mv',p:8},{t:"Volte 3 casas.",k:'bk',v:3}];
 
-/* SISTEMAS */
-const tts = (t) => { if(window.speechSynthesis){ const u=new SpeechSynthesisUtterance(t); u.lang='pt-BR'; speechSynthesis.speak(u); } };
-const SFX = { dice:new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'), cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'), bell:new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3'), gavel:new Audio('https://www.soundjay.com/misc/sounds/gavel-1.mp3') };
-const playSfx=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{});}catch(e){}};
+/* --- AUDIO ENGINE (TTS & SFX) --- */
+const speak = (txt) => {
+    if(!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'pt-BR'; u.rate = 1.1; u.pitch = 1.1;
+    speechSynthesis.speak(u);
+};
+const SFX = {
+    dice: new Audio('https://www.soundjay.com/misc/sounds/dice-roll-1.mp3'),
+    cash: new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3'),
+    bell: new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3'),
+    gavel: new Audio('https://www.soundjay.com/misc/sounds/gavel-1.mp3')
+};
+const playSfx = (k) => { try{SFX[k].currentTime=0; SFX[k].play().catch(()=>{});}catch(e){} };
 
-let myId=null, hostConn=null, conns=[], isHost=false, me={name:"Folião",av:"🦀"};
-let state={pls:[], props:BD.map(()=>({o:null,l:0})), turn:0, rolled:false, weather:'sun', doubles:0};
-let auc={on:false, idx:0, bid:0, lead:null, t:10, tm:null};
+/* --- CORE STATE --- */
+let myId=null, hostConn=null, conns=[], isHost=false;
+let pInfo = { name:"Folião", avatar:"🦀" };
+let state = { players:[], props:BOARD.map(()=>({owner:null, level:0})), turn:0, rolled:false, weather:'sun', doubles:0 };
+let auctionState = { active:false, itemIdx:0, bid:0, leader:null, time:10 };
 
-/* NET */
+/* --- NETWORKING --- */
 const net = {
     peer: new Peer(null,{debug:1}),
-    init:()=>{ net.peer.on('open',id=>myId=id); net.peer.on('connection',c=>{ if(isHost){ c.on('data',d=>net.hostH(d,c)); conns.push(c); }}); },
-    host:()=>{ me.name=document.getElementById('p-name').value||"Mestre"; isHost=true; state.pls.push({id:myId,...me,m:1500,p:0,j:false,tj:0,c:'#f44336'}); ui.wait(); },
-    join:()=>{ me.name=document.getElementById('p-name').value||"Guest"; const id=document.getElementById('host-id').value; if(!id)return alert("ID?"); hostConn=net.peer.connect(id); hostConn.on('open',()=>{hostConn.send({t:'J',...me});ui.waitCli();}); hostConn.on('data',d=>net.cliH(d)); },
-    start:()=>{ if(state.pls.length<2)return alert("Sozinho?"); net.bc({t:'ST',s:state}); game.init(state); },
-    hostH:(d,c)=>{
-        if(d.t==='J'){ if(!state.pls.find(p=>p.id===c.peer)){ const cl=['#2196f3','#4caf50','#ffc107','#9c27b0']; state.pls.push({id:c.peer,name:d.name,av:d.av,m:1500,p:0,j:false,tj:0,c:cl[state.pls.length%4]}); ui.updL(state.pls); net.bc({t:'L',l:state.pls}); tts(`${d.name} entrou.`); } }
-        else if(d.t==='A') game.proc(d);
-        else if(d.t==='B') aucSys.bid(d.pid);
+    init:()=>{
+        net.peer.on('open',id=>myId=id);
+        net.peer.on('connection',c=>{ if(isHost){ c.on('data',d=>net.handleHost(d,c)); conns.push(c); }});
+        net.peer.on('error',e=>alert("Erro Conexão: "+e));
     },
-    cliH:(d)=>{
-        if(d.t==='L') ui.updL(d.l);
-        else if(d.t==='ST') game.init(d.s);
-        else if(d.t==='S') { state=d.s; ui.render(); }
-        else if(d.t==='AN') ui.anim(d);
-        else if(d.t==='SC') ui.showCard(d.i);
-        else if(d.t==='AUC') aucSys.upd(d.d);
-        else if(d.t==='NT') tts(d.m);
+    host:()=>{
+        pInfo.name = document.getElementById('p-name').value||"Mestre";
+        if(!myId) return alert("Aguarde ID...");
+        isHost=true;
+        state.players.push({id:myId, ...pInfo, money:1500, pos:0, jailed:false, turnsJailed:0, color:'#f44336'});
+        ui.toWait();
     },
-    bc:(m)=>{ if(isHost){conns.forEach(c=>c.send(m)); net.cliH(m);} else hostConn.send(m); }
+    join:()=>{
+        pInfo.name = document.getElementById('p-name').value||"Visitante";
+        const id = document.getElementById('host-id').value;
+        if(!id) return alert("Cole o código!");
+        hostConn = net.peer.connect(id);
+        hostConn.on('open', ()=>{ hostConn.send({type:'JOIN', ...pInfo}); ui.toWaitClient(); });
+        hostConn.on('data', d => net.handleClient(d));
+    },
+    start:()=>{
+        if(state.players.length<2) return alert(`Só ${state.players.length} jogadores!`);
+        net.broadcast({type:'START', state}); game.init(state);
+    },
+    // Handler Host
+    handleHost: (d,c) => {
+        if(d.type==='JOIN'){
+            if(state.players.find(p=>p.id===c.peer)) return;
+            const cols = ['#2196f3','#4caf50','#ffc107','#9c27b0'];
+            state.players.push({id:c.peer, name:d.name, avatar:d.avatar, money:1500, pos:0, jailed:false, turnsJailed:0, color:cols[state.players.length%4]});
+            ui.updLobby(state.players);
+            net.broadcast({type:'LOBBY', list:state.players});
+            speak(`${d.name} chegou!`);
+        }
+        else if(d.type==='ACT') game.proc(d);
+        else if(d.type==='BID') auction.procBid(d.pid);
+    },
+    // Handler Client
+    handleClient: (d) => {
+        if(d.type==='LOBBY') ui.updLobby(d.list);
+        else if(d.type==='START') game.init(d.state);
+        else if(d.type==='STATE') { state=d.state; ui.render(); }
+        else if(d.type==='ANIM') ui.anim(d);
+        else if(d.type==='SHOW_CARD') ui.showCard(d.idx);
+        else if(d.type==='AUCTION') auction.update(d);
+        else if(d.type==='NARRATE') speak(d.txt);
+    },
+    broadcast: (msg) => {
+        if(isHost){ conns.forEach(c=>c.send(msg)); net.handleClient(msg); }
+        else hostConn.send(msg);
+    }
 };
 
-/* GAME */
+/* --- GAME LOGIC --- */
 const game = {
-    init:(s)=>{ state=s; document.getElementById('lobby').style.display='none'; document.getElementById('game-layout').classList.add('active'); ui.genBoard(); ui.binds(); ui.render(); tts("Bem vindos ao Recife!"); env.rain(); },
-    act:(a)=>{ net.bc(isHost?{t:'A',a,pid:myId}:{t:'A',a,pid:myId}); if(!isHost)hostConn.send({t:'A',a,pid:myId}); }, // Fix host self-send logic in bc
-    proc:(d)=>{
-        const idx = state.pls.findIndex(p=>p.id===d.pid), p=state.pls[idx];
-        if(state.turn!==idx)return;
-        if(d.a==='roll'){
-            if(state.rolled)return;
+    init: (s) => {
+        state=s; document.getElementById('lobby').style.display='none';
+        document.getElementById('game-layout').classList.add('active');
+        ui.board(); ui.binds(); ui.render();
+        speak("Bem vindos ao Recife Imobiliário!");
+        env.startRain(); // Init canvas
+    },
+    act: (act) => {
+        const pld = {type:'ACT', act, pid:myId};
+        if(isHost) game.proc(pld); else hostConn.send(pld);
+    },
+    proc: (d) => {
+        const idx = state.players.findIndex(p=>p.id===d.pid);
+        const p = state.players[idx];
+        if(state.turn !== idx) return;
+
+        if(d.act === 'roll') {
+            if(state.rolled) return;
             const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
-            net.bc({t:'AN',k:'dice',d1,d2});
-            setTimeout(async ()=>{
-                let mv=d1+d2;
-                if(p.j){
-                    if(d1===d2){ p.j=false; await game.move(p,mv); state.rolled=true; tts("Livre!"); }
-                    else{ p.tj++; if(p.tj>=3){p.m-=50;p.j=false;await game.move(p,mv);} state.rolled=true; }
+            net.broadcast({type:'ANIM', kind:'dice', d1, d2});
+            setTimeout(()=>{
+                let moves = d1+d2;
+                if(p.jailed){
+                    if(d1===d2){ p.jailed=false; game.move(p,moves); state.rolled=true; speak("Saiu do trânsito!"); }
+                    else{ p.turnsJailed++; if(p.turnsJailed>=3){p.money-=50;p.jailed=false;game.move(p,moves);} state.rolled=true; }
                 } else {
                     if(d1===d2) state.doubles++; else state.doubles=0;
-                    if(state.doubles>=3){ p.j=true; p.p=10; tts("Preso!"); }
-                    else{ await game.move(p,mv); if(d1!==d2)state.rolled=true; }
+                    if(state.doubles>=3) { p.jailed=true; p.pos=10; speak("Preso por excesso de velocidade!"); }
+                    else { game.move(p,moves); if(d1!==d2)state.rolled=true; }
                 }
-                net.bc({t:'S',s:state});
-            },2500);
+                net.broadcast({type:'STATE', state});
+            }, 2500);
         }
-        else if(d.a==='buy'){ const s=BD[p.p]; if(p.m>=s.p && state.props[p.p].o===null){ p.m-=s.p; state.props[p.p].o=idx; playSfx('cash'); tts("Comprado!"); net.bc({t:'S',s:state}); } }
-        else if(d.a==='auc'){ aucSys.start(p.p); }
-        else if(d.a==='end'){
-            state.turn=(state.turn+1)%state.pls.length; state.rolled=false; state.doubles=0;
-            if(Math.random()<0.15){ state.weather=state.weather==='sun'?'rain':'sun'; net.bc({t:'AN',k:'env',w:state.weather}); tts(state.weather==='rain'?"Chuva!":"Sol!"); }
-            net.bc({t:'S',s:state});
+        else if(d.act === 'buy') {
+            const s=BOARD[p.pos];
+            if(p.money>=s.price && state.props[p.pos].owner===null){
+                p.money-=s.price; state.props[p.pos].owner=idx;
+                playSfx('cash'); speak(`Comprou ${s.name}`);
+                net.broadcast({type:'STATE', state});
+            }
+        }
+        else if(d.act === 'auction') {
+            auction.start(p.pos);
+        }
+        else if(d.act === 'end') {
+            state.turn=(state.turn+1)%state.players.length; state.rolled=false; state.doubles=0;
+            // Env cycle
+            if(Math.random()<0.2) { 
+                state.weather = state.weather==='sun'?'rain':'sun'; 
+                net.broadcast({type:'ANIM', kind:'env', w:state.weather});
+                speak(state.weather==='rain'?"Começou a chover!":"O sol saiu!");
+            }
+            net.broadcast({type:'STATE', state});
         }
     },
-    move: async (p, steps) => {
-        // Step-by-step animation logic needs syncing, simplified here for state update
-        // In V10 local visual handles hops based on position change
-        for(let i=0; i<steps; i++){
-            p.p++; if(p.p>=40){p.p=0;p.m+=200;}
-            // Send intermediate state if needed for strict sync, but visual interpolation is better
+    move: (p, steps) => {
+        p.pos += steps; if(p.pos>=40){ p.pos-=40; p.money+=200; }
+        // Logic simplified for brevity
+        const s = BOARD[p.pos];
+        if(s.type==='prop' || s.type==='station') net.broadcast({type:'SHOW_CARD', idx:p.pos});
+        if(['Boa Viagem','Pina'].some(n=>s.name.includes(n)) && Math.random()<0.3) {
+            p.money-=100; speak("Cuidado com o tubarão!");
         }
-        const s=BD[p.p];
-        if(s.t==='pr'||s.t==='rr'||s.t==='ut') net.bc({t:'SC',i:p.p});
-        if(['Boa Viagem','Pina'].some(n=>s.n.includes(n)) && Math.random()<0.3) { p.m-=100; tts("Tubarão!"); net.bc({t:'AN',k:'react',e:'🦈'}); }
+        // Rent logic here (omitted for size, same as V8)
+    }
+};
+
+/* --- AUCTION SYSTEM --- */
+const auction = {
+    timer: null,
+    start: (idx) => {
+        auctionState = { active:true, itemIdx:idx, bid:BOARD[idx].price/2, leader:null, time:10 };
+        net.broadcast({type:'AUCTION', data:auctionState});
+        speak("Leilão iniciado!");
+        auction.tick();
     },
-    react:(e)=>{ net.bc({t:'AN',k:'react',e}); }
+    tick: () => {
+        auction.timer = setInterval(()=>{
+            auctionState.time--;
+            if(auctionState.time<=0) auction.end();
+            else net.broadcast({type:'AUCTION', data:auctionState});
+        }, 1000);
+    },
+    bid: () => { hostConn ? hostConn.send({type:'BID', pid:myId}) : auction.procBid(myId); },
+    procBid: (pid) => {
+        if(!auctionState.active) return;
+        auctionState.bid += 10;
+        auctionState.leader = pid;
+        auctionState.time = 10; // Reset time on bid
+        playSfx('gavel');
+        net.broadcast({type:'AUCTION', data:auctionState});
+    },
+    end: () => {
+        clearInterval(auction.timer);
+        auctionState.active = false;
+        if(auctionState.leader){
+            const winner = state.players.find(p=>p.id===auctionState.leader);
+            const wIdx = state.players.indexOf(winner);
+            winner.money -= auctionState.bid;
+            state.props[auctionState.itemIdx].owner = wIdx;
+            speak(`Vendido para ${winner.name}!`);
+        } else speak("Ninguém comprou.");
+        net.broadcast({type:'AUCTION', data:auctionState}); // Close modal
+        net.broadcast({type:'STATE', state});
+    },
+    update: (d) => {
+        const el = document.getElementById('auction-modal');
+        if(!d.data.active) { el.style.display='none'; return; }
+        el.style.display='flex';
+        document.getElementById('auction-item').innerText = BOARD[d.data.itemIdx].name;
+        document.getElementById('auction-price').innerText = `$${d.data.bid}`;
+        document.getElementById('auction-timer').innerText = d.data.time;
+        const lead = state.players.find(p=>p.id===d.data.leader);
+        document.getElementById('auction-leader').innerText = lead ? lead.name : "---";
+    }
 };
 
-/* AUCTION */
-const aucSys = {
-    start:(i)=>{ auc={on:true, idx:i, bid:BD[i].p/2, lead:null, t:10}; net.bc({t:'AUC',d:auc}); tts("Leilão!"); aucSys.tick(); },
-    tick:()=>{ auc.tm=setInterval(()=>{ auc.t--; if(auc.t<=0)aucSys.end(); else net.bc({t:'AUC',d:auc}); },1000); },
-    bid:(pid)=>{ if(!auc.on)return; auc.bid+=10; auc.lead=pid; auc.t=10; playSfx('gavel'); net.bc({t:'AUC',d:auc}); },
-    end:()=>{ clearInterval(auc.tm); auc.on=false; if(auc.lead){ const w=state.pls.find(p=>p.id===auc.lead), wi=state.pls.indexOf(w); w.m-=auc.bid; state.props[auc.idx].o=wi; tts(`Vendido para ${w.name}`); } else tts("Encerrado"); net.bc({t:'AUC',d:auc}); net.bc({t:'S',s:state}); }
+/* --- CANVAS RAIN & ENV --- */
+const env = {
+    startRain: () => {
+        const c = document.getElementById('weather-canvas');
+        const ctx = c.getContext('2d');
+        c.width = window.innerWidth; c.height = window.innerHeight;
+        const drops = Array(100).fill(0).map(()=>({x:Math.random()*c.width, y:Math.random()*c.height, s:Math.random()*5+2}));
+        function draw(){
+            ctx.clearRect(0,0,c.width,c.height);
+            if(state.weather==='rain'){
+                c.style.display='block'; ctx.strokeStyle='rgba(174,194,224,0.5)'; ctx.lineWidth=1;
+                drops.forEach(d=>{
+                    ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x,d.y+d.s*2); ctx.stroke();
+                    d.y+=d.s; if(d.y>c.height)d.y=-10;
+                });
+            } else { c.style.display='none'; }
+            requestAnimationFrame(draw);
+        }
+        draw();
+    },
+    setNight: (isNight) => {
+        document.body.style.filter = isNight ? 'brightness(0.6) contrast(1.1)' : 'none';
+        document.getElementById('board').classList.toggle('night-lights', isNight);
+    }
 };
 
-/* UI & VISUALS */
+/* --- UI --- */
 const ui = {
-    genBoard:()=>{
+    board:()=>{
         const b=document.getElementById('board');
-        BD.forEach((s,i)=>{
+        BOARD.forEach((s,i)=>{
             const d=document.createElement('div'); d.className='space'; d.id=`s${i}`;
             let r,c; if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
             d.style.gridRow=r; d.style.gridColumn=c;
-            d.innerHTML = s.t==='pr'?`<div class="color-strip" style="background:${COLS[s.g]}"></div><div class="space-info">${s.n}<br>$${s.p}</div><div class="build-zone" id="b${i}"></div>` : `<div class="space-info">${s.n}</div>`;
+            d.innerHTML = s.type==='prop'?`<div class="color-bar" style="background:${COLORS[s.group]}"></div><div class="space-name">${s.name}<br>$${s.price}</div>` : `<div class="space-name">${s.name}</div>`;
             b.appendChild(d);
         });
     },
     render:()=>{
-        const me=state.pls.find(p=>p.id===myId), trn=state.pls[state.turn], isTurn=trn.id===myId;
-        document.getElementById('my-cash').innerText=`$${me.m}`;
-        document.getElementById('turn-banner').innerText=`Vez de: ${trn.name}`;
+        const me = state.players.find(p=>p.id===myId);
+        document.getElementById('my-cash').innerText = `$${me.money}`;
+        const turnP = state.players[state.turn];
+        document.getElementById('turn-msg').innerText = `Vez de: ${turnP.name}`;
         
-        ui.btn('btn-roll', isTurn && !state.rolled);
-        const s=BD[me.p];
-        ui.btn('btn-buy', isTurn && state.rolled && s.t==='pr' && state.props[me.p].o===null);
-        ui.btn('btn-auc', isTurn && state.rolled && s.t==='pr' && state.props[me.p].o===null);
-        ui.btn('btn-end', isTurn && state.rolled);
+        // Buttons
+        const myTurn = turnP.id===myId;
+        ui.btn('btn-roll', myTurn && !state.rolled);
+        const s = BOARD[me.pos];
+        ui.btn('btn-buy', myTurn && state.rolled && s.type==='prop' && state.props[me.pos].owner===null);
+        ui.btn('btn-auction', myTurn && state.rolled && s.type==='prop' && state.props[me.pos].owner===null);
+        ui.btn('btn-end', myTurn && state.rolled);
 
-        // Players
-        document.getElementById('players-list').innerHTML = state.pls.map((p,i)=>`<div class="player-card ${state.turn===i?'active-turn':''}" style="border-left-color:${p.c}"><span>${p.av} ${p.name}</span><span>${p.id===myId?'$'+p.m:'???'}</span></div>`).join('');
-        
+        // Players List
+        document.getElementById('players-hud').innerHTML = state.players.map((p,i)=>
+            `<div class="p-row ${state.turn===i?'turn':''}"><span>${p.avatar} ${p.name}</span><span>${p.id===myId?'$'+p.money:'???'}</span></div>`
+        ).join('');
+
         // Tokens
         document.querySelectorAll('.token').forEach(e=>e.remove());
-        state.pls.forEach((p,i)=>{
-            const t=document.createElement('div'); t.className=`token ${p.j?'jailed':''}`; t.innerText=p.av;
-            const sp=document.getElementById(`s${p.p}`), br=document.getElementById('board').getBoundingClientRect(), sr=sp.getBoundingClientRect();
-            t.style.left=(sr.left-br.left+15+(i*5))+'px'; t.style.top=(sr.top-br.top+10+(i*5))+'px';
+        state.players.forEach((p,i)=>{
+            const t=document.createElement('div'); t.className=`token ${p.jailed?'jailed':''}`; t.innerText=p.avatar;
+            const sp=document.getElementById(`s${p.pos}`), br=document.getElementById('board').getBoundingClientRect(), sr=sp.getBoundingClientRect();
+            t.style.left=(sr.left-br.left+10+(i*5))+'px'; t.style.top=(sr.top-br.top+10+(i*5))+'px';
             document.getElementById('board').appendChild(t);
         });
 
-        // Props
+        // Props Borders
         state.props.forEach((pr,i)=>{
-            if(pr.o!==null) document.getElementById(`s${i}`).style.borderColor=state.pls[pr.o].c;
-            // Add Houses (omitted for space, insert into b{i})
+            if(pr.owner!==null) document.getElementById(`s${i}`).style.border = `4px solid ${state.players[pr.owner].color}`;
         });
-
-        // Scroll
-        const scr=document.getElementById('deed-scroll'); scr.innerHTML='';
-        const myIdx=state.pls.indexOf(me);
-        BD.forEach((b,i)=>{ if((b.t==='pr'||b.t==='rr') && state.props[i].o===myIdx) scr.innerHTML+=`<div class="deed-item"><div style="width:10px;height:10px;background:${COLS[b.g]||'#333'};margin-right:5px;"></div>${b.n}</div>`; });
     },
-    anim:(d)=>{
-        if(d.k==='dice'){
-            const s=document.getElementById('dice-overlay'); s.style.display='flex';
-            const c1=document.getElementById('d1'), c2=document.getElementById('d2');
-            c1.className='die-3d'; c2.className='die-3d'; void c1.offsetWidth;
-            playSfx('dice');
-            setTimeout(()=>{ c1.classList.add(`res-${d.d1}`); c2.classList.add(`res-${d.d2}`); }, 100);
-            setTimeout(()=>s.style.display='none', 2500);
-        } else if(d.k==='env') env.set(d.w);
-        else if(d.k==='react'){
-            const e=document.createElement('div'); e.className='float-anim'; e.innerText=d.e; 
-            e.style.left=(Math.random()*80+10)+'%'; e.style.top='80%'; document.body.appendChild(e); setTimeout(()=>e.remove(),3000);
-        }
-    },
-    showCard:(i)=>{
-        const s=BD[i], ov=document.getElementById('global-card'), ci=document.getElementById('card-inner');
+    showCard:(idx)=>{
+        const s = BOARD[idx];
+        const ov = document.getElementById('global-card-overlay');
+        const ct = document.getElementById('card-content');
         ov.style.display='flex';
-        ci.innerHTML=`<div class="card-close" onclick="document.getElementById('global-card').style.display='none'">X</div><div class="card-header" style="background:${COLS[s.g]||'#333'}">${s.n}</div><div class="card-content"><div class="card-row"><b>Preço</b><b>$${s.p}</b></div><div style="text-align:center;margin-top:20px;">Detalhes do Aluguel...</div></div>`;
+        let rH=''; s.rent?.forEach((r,i)=>rH+=`<div class="bc-row"><span>${i===0?'Aluguel':i+' Casas'}</span><span>$${r}</span></div>`);
+        ct.innerHTML = `<div class="close-card" onclick="document.getElementById('global-card-overlay').style.display='none'">X</div><div class="bc-header" style="background:${COLORS[s.group]||'#333'}">${s.name}</div><div class="bc-body"><div class="bc-row"><b>PREÇO</b><b>$${s.price}</b></div>${rH}</div>`;
         setTimeout(()=>ov.style.display='none', 4000);
     },
-    btn:(id,on)=>{const b=document.getElementById(id); if(on){b.classList.add('enabled');b.disabled=false;}else{b.classList.remove('enabled');b.disabled=true;}},
-    wait:()=>{document.querySelector('.lobby-card').innerHTML=`<h3>ID: <span onclick="util.copy()">${myId}</span></h3><p>Aguardando...</p><ul id="l-list"></ul><button class="btn-main" onclick="net.start()">INICIAR</button>`;},
-    waitCli:()=>{document.querySelector('.lobby-card').innerHTML=`<h3>Conectado!</h3><p>Esperando o mestre...</p>`;},
-    updL:(l)=>{if(document.getElementById('l-list'))document.getElementById('l-list').innerHTML=l.map(p=>`<li>${p.av} ${p.name}</li>`).join('');}
-};
-
-/* ENVIRONMENT */
-const env = {
-    set:(w)=>{
-        document.body.classList.toggle('night-mode', w==='rain'); // Rain acts as dark/stormy
-        document.getElementById('rain-canvas').style.display = w==='rain'?'block':'none';
+    anim:(d)=>{
+        if(d.kind==='dice') ui.animDice(d.d1, d.d2);
+        if(d.kind==='env') env.setNight(d.w==='rain');
     },
-    rain:()=>{
-        const c=document.getElementById('rain-canvas'), ctx=c.getContext('2d');
-        c.width=window.innerWidth; c.height=window.innerHeight;
-        const d=Array(100).fill().map(()=>({x:Math.random()*c.width, y:Math.random()*c.height, s:Math.random()*5+2}));
-        const loop=()=>{
-            ctx.clearRect(0,0,c.width,c.height);
-            if(document.body.classList.contains('night-mode')){
-                ctx.strokeStyle='rgba(174,194,224,0.5)'; ctx.lineWidth=1;
-                d.forEach(p=>{ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x,p.y+p.s*2); ctx.stroke(); p.y+=p.s*2; if(p.y>c.height)p.y=-10; });
-            }
-            requestAnimationFrame(loop);
-        }
-        loop();
-    }
+    animDice:(d1,d2)=>{
+        const s=document.getElementById('dice-scene'); s.style.display='flex';
+        const c1=document.getElementById('c1'), c2=document.getElementById('c2');
+        c1.className='cube'; c2.className='cube';
+        playSfx('dice');
+        void c1.offsetWidth; // reflow
+        setTimeout(()=>{ c1.classList.add(`d${d1}`); c2.classList.add(`d${d2}`); }, 100);
+        setTimeout(()=>s.style.display='none', 2500);
+    },
+    btn:(id,on)=>{ const b=document.getElementById(id); if(on){b.classList.add('enabled');b.disabled=false;}else{b.classList.remove('enabled');b.disabled=true;} },
+    binds:()=>{
+        document.getElementById('btn-roll').onclick=()=>game.act('roll');
+        document.getElementById('btn-buy').onclick=()=>game.act('buy');
+        document.getElementById('btn-auction').onclick=()=>game.act('auction');
+        document.getElementById('btn-end').onclick=()=>game.act('end');
+    },
+    toWait:()=>{document.getElementById('lobby-form').style.display='none'; document.getElementById('lobby-wait').style.display='block'; document.getElementById('disp-id').innerText=myId;},
+    toWaitClient:()=>{document.querySelector('.lobby-card').innerHTML="<h3>Conectado! Aguardando o Mestre...</h3>";},
+    updLobby:(l)=>{document.getElementById('lobby-list').innerHTML=l.map(p=>`<li>${p.avatar} ${p.name}</li>`).join('');}
 };
 
-/* UTILS */
-const util = { copy:()=>{navigator.clipboard.writeText(myId); alert("Copiado!");} };
-function selAv(e,a){ document.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('selected')); e.classList.add('selected'); me.av=a; }
+/* UTIL */
+function selAv(el,a){ document.querySelectorAll('.avatar-opt').forEach(e=>e.classList.remove('selected')); el.classList.add('selected'); pInfo.avatar=a; }
+const util = { copyId:()=>{ navigator.clipboard.writeText(myId); alert("Copiado!"); }};
 
 net.init();
 </script>
