@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V65.1</title>
+    <title>Recife Imobiliário: V65.1 (Mecânicas Ajustadas)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -11,7 +11,7 @@
             --wood: #5d4037; --paper: #fff8e1;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
             --c-dark: #263238;
-            --board-bg: #c5e1a5;
+            --board-bg: #c5e1a5; 
             --space-bg: #ffffff;
             --border-col: #1a1a1a;
         }
@@ -34,8 +34,11 @@
         .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
-        
-        /* --- UI --- */
+        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
+        .traffic-anim.active { display: flex; }
+        @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
+
+        /* --- UI: START --- */
         #screen-start, #screen-char, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
         #screen-end { display: none; }
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
@@ -50,11 +53,12 @@
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; }
         #game-layout.active { display: flex; }
 
+        /* ÁREA DO TABULEIRO */
         #board-area { 
             position: relative; overflow: auto; 
             display: flex; align-items: center; justify-content: center;
             background: rgba(0,0,0,0.2);
-            flex: 1; min-height: 0; padding: 10px;
+            flex: 1; min-height: 0; padding: 20px;
         }
         
         #board-container { 
@@ -65,23 +69,22 @@
         #board { 
             width: 100%; height: 100%; 
             display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            background: var(--board-bg); 
+            background: var(--board-bg);
             border: 4px solid var(--border-col); 
             box-shadow: 0 0 50px rgba(0,0,0,0.5); 
         }
 
+        /* PAINEL HUD */
         #hud-panel { 
             background: #fff; display: flex; flex-direction: column; z-index: 5000; 
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
             flex-shrink: 0; 
         }
 
-        /* --- MEDIA QUERIES OTIMIZADAS PARA LARGURA --- */
+        /* --- MEDIA QUERIES --- */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
-            /* Mobile: 97% da largura disponível */
-            #board-container { width: 97vw; height: 130vw; max-height: 1200px; } 
-            
+            #board-container { width: 900px; height: 1250px; }
             #hud-panel { 
                 width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));
                 gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark);
@@ -94,15 +97,12 @@
             #players-scroll { display: none; }
             #desktop-props-container { display: none; }
             #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-            .sp-name { font-size: 0.65rem !important; } /* Texto menor no mobile */
         }
 
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
-            /* Desktop: 97% da área disponível no container */
-            #board-container { width: 1400px; height: 950px; transform: scale(0.95); } 
-            
+            #board-container { width: 1300px; height: 1000px; }
             #mobile-controls-wrapper { display: contents; }
             .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; display: flex; justify-content: space-between; align-items: center; }
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
@@ -113,40 +113,55 @@
             .btn-inv { display: none; }
         }
 
+        /* SPACE DESIGN */
         .space { 
             background: var(--space-bg); 
             border: 1px solid var(--border-col);
             position: relative; display: flex; flex-direction: column; 
             font-size: 0.75rem; font-weight: 800; color: #000;
-            overflow: hidden; /* Evita vazar */
         }
         
-        .rot-bottom { }
         .rot-left { transform: rotate(90deg); }
         .rot-top { transform: rotate(180deg); }
         .rot-right { transform: rotate(-90deg); }
-
         .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 2px; }
-        
+
         .color-strip { height: 20%; width: 100%; border-bottom: 2px solid #000; }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; line-height: 1; font-weight: 900; padding:0 2px; word-break: break-word; }
-        .sp-price { font-family: 'Nunito'; font-weight: 700; padding-bottom: 5px; font-size: 0.8rem; }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; line-height: 1.1; font-weight: 900; padding:0 2px; }
+        .sp-price { font-family: 'Nunito'; font-weight: 700; padding-bottom: 5px; font-size: 0.85rem; }
         .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
         
         .space.owned { border: 4px solid !important; z-index: 5; }
 
+        /* CENTER HUB */
         .center-hub { 
             grid-column: 2/11; grid-row: 2/11; position: relative; 
-            background: transparent; display: flex; justify-content: center; align-items: center; 
+            background: transparent;
+            display: flex; justify-content: center; align-items: center; 
             flex-direction: column; pointer-events: none;
         }
-        
-        .brennand-tower { position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(10px 10px 20px rgba(0,0,0,0.5)); transform: scale(1.5); }
+        .brennand-tower {
+            position: relative; display: flex; flex-direction: column; align-items: center;
+            filter: drop-shadow(10px 10px 20px rgba(0,0,0,0.5));
+            transform: scale(1.5);
+        }
         .bt-head { font-size: 5rem; line-height: 0.6; z-index: 2; color: #546e7a; text-shadow: 2px 2px 0 #000; }
-        .bt-body { width: 40px; height: 180px; background: linear-gradient(90deg, #37474f, #78909c, #37474f); border: 2px solid #000; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-around; z-index: 1; margin-top: -10px; }
+        .bt-body { 
+            width: 40px; height: 180px; 
+            background: linear-gradient(90deg, #37474f, #78909c, #37474f);
+            border: 2px solid #000; border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-around;
+            z-index: 1; margin-top: -10px;
+        }
         .bt-ring { width: 100%; height: 5px; background: #000; }
-        .bt-base { width: 100px; height: 40px; background: #5d4037; border: 3px solid #000; border-radius: 5px; margin-top: -5px; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 0.6rem; font-family:'Titan One'; }
+        .bt-base { 
+            width: 100px; height: 40px; background: #5d4037; 
+            border: 3px solid #000; border-radius: 5px; margin-top: -5px; 
+            display: flex; justify-content: center; align-items: center;
+            color: #fff; font-size: 0.6rem; font-family:'Titan One';
+        }
 
+        /* DECKS */
         .deck { 
             position: absolute; width: 110px; height: 150px; 
             border-radius: 15px; cursor: pointer; 
@@ -154,26 +169,29 @@
             z-index: 10; display: flex; align-items: center; justify-content: center; 
             text-align: center; font-family: 'Titan One'; font-size: 1.5rem; 
             color: #fff; -webkit-text-stroke: 1px rgba(0,0,0,0.3); pointer-events: auto;
-            border: 2px solid rgba(255,255,255,0.4); transition: transform 0.1s;
+            border: 2px solid rgba(255,255,255,0.4);
+            transition: transform 0.1s;
         }
         .deck:active { transform: translateY(4px); box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
         .deck.chance { top: 20%; left: 15%; background: linear-gradient(135deg, #ab47bc, #7b1fa2); transform: rotate(-5deg); }
         .deck.reves { bottom: 20%; right: 15%; background: linear-gradient(135deg, #ffa726, #f57c00); transform: rotate(5deg); }
         .deck-label { font-size: 3rem; opacity: 0.8; }
 
+        /* TOKENS */
         .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: all 0.4s; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
+        .token-shield { position: absolute; top:-5px; right:-5px; font-size: 1rem; background: blue; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid #fff; }
+
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
-        .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
         
-        /* Shield Indicator */
-        .shield-badge { position:absolute; bottom:-10px; right:-10px; font-size:1.5rem; background:#fff; border-radius:50%; padding:2px; box-shadow:0 2px 5px rgba(0,0,0,0.3); display:none; z-index:55; }
+        .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
 
+        /* UI ELEMENTS */
         .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
         .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
-        .money-display.debt { color: var(--c-red); animation: pulseRed 1s infinite; }
-        @keyframes pulseRed { 0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;} }
+        .money-display.debt { color: #d32f2f; animation: pulseRed 1s infinite; }
+        @keyframes pulseRed { 0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1} }
         
         .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
         .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
@@ -187,6 +205,7 @@
         .btn-pass { background: var(--c-red); }
         .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 15px; }
         @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
+        
         .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
 
         .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
@@ -444,8 +463,8 @@ const ui = {
         play('slide');
         const cpuCount = parseInt(document.getElementById('cpu-count').value);
         gameMode = document.getElementById('game-mode').value;
-        players = [{name:"Você", icon:"", pos:0, money:500, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false, sharkShield:false}];
-        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:500, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false, sharkShield:false});
+        players = [{name:"Você", icon:"", pos:0, money:500, jailed:false, protection:false, jailTurns:0, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false}];
+        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:500, jailed:false, protection:false, jailTurns:0, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false});
         document.getElementById('screen-start').style.display='none'; document.getElementById('screen-char').style.display='flex';
         CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
     },
@@ -461,22 +480,38 @@ const ui = {
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
             let r,c, rotClass;
+            
             if(i<=10){ r=11; c=11-i; rotClass = 'rot-bottom'; } 
             else if(i<=20){ r=11-(i-10); c=1; rotClass = 'rot-left'; } 
             else if(i<=30){ r=1; c=1+(i-20); rotClass = 'rot-top'; } 
             else { r=1+(i-30); c=11; rotClass = 'rot-right'; }
-            if(i===0 || i===10 || i===20 || i===30) rotClass = ''; 
+            if(i===0 || i===10 || i===20 || i===30) rotClass = '';
+
             d.style.gridRow=r; d.style.gridColumn=c;
+            
             const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
+            
             let contentHTML = '';
             if(s.t==='pr') {
-                contentHTML = `<div class="space-content ${rotClass}"><div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>`;
+                contentHTML = `
+                <div class="space-content ${rotClass}">
+                    <div class="color-strip" style="background:${s.g}"></div>
+                    <div class="sp-name">${s.n}</div>
+                    <div class="sp-price">$${s.p}</div>
+                </div>
+                <div class="build-area" id="b${i}"></div>`;
             } else {
-                 contentHTML = `<div class="space-content ${rotClass}"><div class="sp-icon">${s.i}</div><div class="sp-name">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}</div>`;
+                 contentHTML = `
+                 <div class="space-content ${rotClass}">
+                    <div class="sp-icon">${s.i}</div>
+                    <div class="sp-name" style="font-size:0.6rem">${s.n}</div>
+                    ${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}
+                 </div>`;
             }
-            d.innerHTML = contentHTML; b.appendChild(d);
+            d.innerHTML = contentHTML;
+            b.appendChild(d);
         });
-        players.forEach((p,i)=>{ const t=document.createElement('div');t.className='token';t.id=`tok${i}`;t.innerHTML=p.icon+'<div class="shield-badge" id="sh'+i+'">🛡️</div>'; b.appendChild(t); });
+        players.forEach((p,i)=>{ const t=document.createElement('div');t.className='token';t.id=`tok${i}`;t.innerHTML=`${p.icon}<div class="token-shield" style="display:none" id="sh${i}">🛡️</div>`; b.appendChild(t); });
         ui.updatePositions();
     },
     updatePositions: () => {
@@ -501,16 +536,17 @@ const ui = {
         if(!players[turn]) return;
         const p = players[turn];
         document.getElementById('turn-display').innerText = `VEZ DE: ${p.name}`;
+        
         const mDisp = document.getElementById('p-money');
         mDisp.innerText = `$${players[0].money}`;
-        // LÓGICA DE DÍVIDA
-        const inDebt = players[0].money < 0 && players[0].active;
-        if(inDebt) { mDisp.classList.add('debt'); } else { mDisp.classList.remove('debt'); }
+        if(players[0].money < 0) mDisp.classList.add('debt'); else mDisp.classList.remove('debt');
 
-        document.getElementById('players-scroll').innerHTML = players.map((pl,i) => `<div class="p-stat ${turn===i?'active':''} ${!pl.active?'bankrupt':''}"><div>${pl.icon} ${pl.name} ${pl.sharkShield?'🛡️':''}</div><div>${pl.active ? (i===0 ? '$'+pl.money : (pl.jailed?'🔒':'?')) : '💀'}</div></div>`).join('');
+        document.getElementById('players-scroll').innerHTML = players.map((pl,i) => {
+            const shield = pl.protection ? '🛡️' : '';
+            return `<div class="p-stat ${turn===i?'active':''} ${!pl.active?'bankrupt':''}"><div>${pl.icon} ${shield} ${pl.name}</div><div>${pl.active ? (i===0 ? '$'+pl.money : (pl.jailed?'🔒':'?')) : '💀'}</div></div>`;
+        }).join('');
         
-        // Atualiza Escudo Visual
-        players.forEach((pl, i) => { const sh = document.getElementById(`sh${i}`); if(sh) sh.style.display = pl.sharkShield ? 'block' : 'none'; });
+        players.forEach((pl, i) => { const sh = document.getElementById(`sh${i}`); if(sh) sh.style.display = pl.protection ? 'flex' : 'none'; });
 
         let propsHTML = '';
         props.forEach((pr,i)=>{
@@ -554,8 +590,22 @@ const ui = {
         
         if(!jailed && hum) {
             const doubles = players[0].lastD1 === players[0].lastD2 && players[0].lastD1 !== undefined;
-            const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles)) && !inDebt; // Não rola se deve
+            const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
             document.getElementById('b-roll').disabled = !canRoll;
+            
+            // DEBT LOCK
+            if(players[0].money < 0) {
+                document.getElementById('b-roll').disabled = true;
+                document.getElementById('b-buy').disabled = true;
+                document.getElementById('b-pass').disabled = true;
+                document.getElementById('b-pass').innerText = "HIPOTEQUE!";
+                if(document.getElementById('inv-modal').style.display !== 'flex') {
+                    ui.toggleInv();
+                    ui.toast("DÍVIDA! HIPOTEQUE BENS!");
+                }
+            } else {
+                document.getElementById('b-pass').innerText = "PASSAR";
+            }
             
             const btnCard = document.getElementById('b-card');
             if(pendingCardType) {
@@ -563,13 +613,16 @@ const ui = {
             } else {
                 btnCard.style.display = 'none'; document.getElementById('normal-btns').style.display = 'flex';
             }
-            let canBuy = rolled && (BD[players[0].pos].t==='pr' || BD[players[0].pos].t==='rr' || BD[players[0].pos].t==='ut') && !props[players[0].pos] && !pendingCardType && !inDebt;
-            if(gameMode === 'hardcore' && players[0].boughtRound) canBuy = false;
-            document.getElementById('b-buy').disabled = !canBuy;
             
-            // TRAVA O BOTÃO PASSAR SE ESTIVER DEVENDO
-            document.getElementById('b-pass').disabled = (!(rolled && !pendingCardType && !doubles)) || inDebt;
-            if(inDebt) ui.toast("DÍVIDA! HIPOTEQUE BENS!");
+            let canBuy = rolled && (BD[players[0].pos].t==='pr' || BD[players[0].pos].t==='rr' || BD[players[0].pos].t==='ut') && !props[players[0].pos] && !pendingCardType && players[0].money >= BD[players[0].pos].p;
+            if(gameMode === 'hardcore' && players[0].boughtRound) canBuy = false;
+            if(players[0].money < 0) canBuy = false;
+
+            document.getElementById('b-buy').disabled = !canBuy;
+            // Só libera passar se não tiver dívida
+            if(players[0].money >= 0) {
+                document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
+            }
         }
     },
     openProp: (idx, forBuy=false) => {
@@ -637,41 +690,11 @@ const game = {
         }
     },
     forceDrawCard: () => { if(pendingCardType) game.clickDeck(pendingCardType); },
-    checkDebt: (pid) => {
-        const p = players[pid];
-        if(p.money < 0) {
-            // Conta assets
-            const assets = props.filter(pr => pr && pr.owner === pid && !pr.loan).length;
-            if(assets === 0 && p.money < 0) {
-                game.bankrupt(pid);
-            } else if (pid === 0) {
-                // Jogador tem bens e deve vender
-                ui.hud(); // Atualiza UI para travar botões
-                ui.toast("SALDO NEGATIVO! HIPOTEQUE!");
-            } else {
-                // CPU deve hipotecar
-                game.aiMortgage(pid);
-            }
-        }
-        ui.hud();
-    },
-    aiMortgage: (pid) => {
-        const p = players[pid];
-        const owned = props.map((pr,i) => ({pr, i})).filter(o => o.pr && o.pr.owner === pid && !o.pr.loan);
-        // Hipoteca até pagar
-        for(let o of owned) {
-            if(p.money >= 0) break;
-            const s = BD[o.i];
-            const val = Math.floor(s.p * 0.8);
-            p.money += val;
-            o.pr.loan = { val: val, turns: 5 };
-            ui.toast(`${p.name} hipotecou ${s.n}`);
-        }
-        if(p.money < 0) game.bankrupt(pid);
-    },
     roll: async () => {
         if(animating || pendingCardType) return;
         const p = players[turn];
+        if(p.money < 0) return; // Block actions if debt
+
         if(p.skippedTurn) { ui.toast(`${p.name} NO ENGARRAFAMENTO!`); p.skippedTurn = false; await sleep(1500); game.pass(); return; }
         animating=true; ui.hud();
         const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
@@ -679,23 +702,27 @@ const game = {
         ui.dice(d1,d2); await sleep(1500);
         
         if(p.jailed){
+             p.jailTurns++; // Contagem de turnos na cadeia
+             if(p.jailTurns > 3) {
+                 // 4ª tentativa (após 3 falhas) = Solto de graça
+                 p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
+                 ui.toast("PENA CUMPRIDA! LIVRE!");
+                 play('good');
+                 await game.move(turn, d1+d2);
+                 rolled=true;
+                 setTimeout(game.pass, 1500);
+                 return;
+             }
              if(d1===d2){ 
-                 p.jailed=false; p.jailAttempts=0; 
+                 p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
                  ui.toast("SOLTO (DUPLOS)!"); play('good'); 
                  await game.move(turn, d1+d2); 
                  rolled = true; 
                  setTimeout(game.pass, 1500);
                  return;
              } else { 
-                 p.jailAttempts++; 
-                 if(p.jailAttempts >= 3) {
-                     // CORREÇÃO: Solto na 4ª tentativa sem pagar (após 3 falhas)
-                     p.jailed = false; p.jailAttempts = 0;
-                     ui.toast("PENA CUMPRIDA! LIVRE!");
-                     await game.move(turn, d1+d2); // Move com o dado que acabou de tirar
-                 } else {
-                     ui.toast(`AINDA PRESO! ${p.jailAttempts}/3`); play('bad');
-                 }
+                 p.jailAttempts++; ui.toast(`AINDA PRESO! TENTATIVA ${p.jailAttempts}/3`); play('bad');
+                 // Se falhou 3 vezes, na próxima (4ª) ele sai de graça pela lógica acima
                  rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; 
              }
         } else {
@@ -717,48 +744,44 @@ const game = {
         }
         if(p.active) game.land(pid);
     },
-    land: async (pid) => {
+    land: (pid) => {
         const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
         if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
         totalTurns++;
         if(totalTurns%20 === 0) { ui.toast(`O GALO PASSOU!`); p.money+=200; p.pos=0; ui.updatePositions(); return; }
         
-        // --- AGAMENON ---
-        if(s.n === "Agamenon") {
-            ui.toast("AGAMENON! ROLANDO...");
-            await sleep(1000);
-            const ad1=Math.ceil(Math.random()*6), ad2=Math.ceil(Math.random()*6);
-            ui.dice(ad1,ad2); await sleep(1500);
-            if((ad1+ad2) > 6) {
-                ui.toast("CUPOM BK! +$50"); p.money+=50; play('cash');
-            } else {
-                ui.toast("MULTA! -$50"); p.money-=50; play('bad');
+        // AGAMENON LOGIC
+        if(s.n === "Agamenon" && (!pr || pr.owner!==pid)) {
+            const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
+            if(check > 6) { ui.toast(`CUPOM BK! +$50 (Dado: ${check})`); p.money += 50; play('cash'); }
+            else { 
+                document.querySelector('.traffic-anim').classList.add('active'); 
+                setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); 
+                ui.toast(`ENGARRAFAMENTO! -$50 (Dado: ${check})`); p.money -= 50; play('bad'); 
             }
         }
-
-        // --- TUBARÃO ---
-        if(s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina"){ 
-             ui.toast("ALERTA TUBARÃO! ROLANDO...");
-             await sleep(1000);
-             const sd1=Math.ceil(Math.random()*6), sd2=Math.ceil(Math.random()*6);
-             ui.dice(sd1,sd2); await sleep(1500);
-             if((sd1+sd2) > 6) {
-                 ui.toast("TUBARÃO RATÃO TE PROTEGEU!");
-                 p.sharkShield = true;
+        
+        // TUBARÃO LOGIC (Boa Viagem, Paiva, Pina)
+        if((s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina")){ 
+             const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
+             if(check > 6) {
+                 ui.toast(`TUBARÃO RATÃO TE PROTEGEU! (Dado: ${check})`);
+                 p.protection = true;
                  play('good');
              } else {
-                 if(p.sharkShield) {
-                     ui.toast("ESCUDO USADO! SALVO!");
-                     p.sharkShield = false;
-                     play('slide');
-                 } else {
-                     ui.toast("NHAC! -$100");
-                     p.money -= 100;
+                 document.querySelector('.shark-anim').classList.add('active'); 
+                 setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); 
+                 if(p.protection) {
+                     ui.toast(`ESCUDO QUEBROU, MAS VIVEU! (Dado: ${check})`);
+                     p.protection = false;
                      play('bad');
+                 } else {
+                     ui.toast(`NHAC! MORDIDA! -$100 (Dado: ${check})`); 
+                     p.money-=100; play('bad'); 
                  }
              }
         }
-        
+
         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
             if(!pr){
                 if(pid===0 && p.money >= s.p) ui.openProp(p.pos, true); 
@@ -769,27 +792,65 @@ const game = {
                 else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
                 else if(s.t==='ut') { rent = (players[pid].lastD1+players[pid].lastD2)*4; }
                 p.money -= rent; players[pr.owner].money += rent; ui.toast(`ALUGUEL $${rent}`); play('cash');
+                game.checkDebt(pid); // Check if negative
             }
         } else if(s.t==='ch' || s.t==='rev'){
             if(pid===0) { pendingCardType = s.t==='ch'?'ch':'rev'; ui.hud(); ui.toast("PEGUE UMA CARTA!"); }
             else { const deck = s.t==='ch' ? CARDS_SORTE : CARDS_REVES; ui.pendingCard = deck[Math.floor(Math.random()*deck.length)]; ui.showEvent(s.t==='ch'?'sorte':'vixe', ui.pendingCard.txt); setTimeout(()=>ui.closeEvent(), 3000); }
-        } else if(s.t==='tx'){ const tax = Math.floor(p.money * 0.10); p.money -= tax; ui.toast(`IMPOSTO! -${tax}`); play('bad'); }
-        
-        game.checkDebt(pid);
+        } else if(s.t==='tx'){ 
+            const tax = Math.floor(p.money > 0 ? p.money * 0.10 : 0); 
+            p.money -= tax; ui.toast(`IMPOSTO! -${tax}`); play('bad'); 
+            game.checkDebt(pid);
+        }
         ui.hud(); 
+    },
+    checkDebt: (pid) => {
+        const p = players[pid];
+        if(p.money < 0) {
+            // Verifica se tem bens para hipotecar
+            const assets = props.filter(pr => pr && pr.owner === pid && !pr.loan);
+            if(assets.length === 0) {
+                // Sem bens e sem grana = Game Over
+                game.bankrupt(pid);
+            } else {
+                // Tem bens, força hipoteca
+                if(pid === 0) {
+                    ui.hud(); // Atualiza UI para travar botões
+                } else {
+                    // AI Logic para dívida
+                    game.aiHandleDebt(pid);
+                }
+            }
+        }
+    },
+    aiHandleDebt: (pid) => {
+        const p = players[pid];
+        // Hipoteca até ficar positivo
+        const assets = props.map((pr, i) => ({pr, i})).filter(o => o.pr && o.pr.owner === pid && !o.pr.loan);
+        // Ordena pelos mais baratos (hipotecar o que dói menos primeiro) ou caros? Vamos aleatório
+        for(let a of assets) {
+            if(p.money >= 0) break;
+            const val = Math.floor(BD[a.i].p * 0.8);
+            p.money += val;
+            a.pr.loan = { val: val, turns: 5 };
+            ui.toast(`${p.name} hipotecou ${BD[a.i].n}`);
+        }
+        if(p.money < 0) game.bankrupt(pid); // Ainda negativo? Tchau
     },
     applyCard: () => {
         const c = ui.pendingCard; const p = players[turn];
         if(c.val > 0) play('cash'); else play('bad');
         if(c.val) p.money += c.val; if(c.act==='jail') game.jail(turn);
+        
         game.checkDebt(turn);
+
         if(p.active) {
             ui.hud(); rolled=true; 
             if(turn!==0) { if(players[turn].lastD1 === players[turn].lastD2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500); }
         }
     },
     jail: (pid) => { 
-        players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].pos = 10; 
+        players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].jailTurns = 0; players[pid].pos = 10; 
         ui.updatePositions(); ui.toast("PRESO! PASSANDO A VEZ..."); 
         play('jail'); animating = false; rolled = true; 
         setTimeout(game.pass, 2000); 
@@ -814,18 +875,29 @@ const game = {
     pass: () => {
         play('slide');
         players[turn].doubles = 0; 
+        
         if(turn !== 0) game.aiTurn();
 
         props.forEach((pr, i) => {
             if(pr && pr.owner === turn && pr.loan) {
                 pr.loan.turns--;
                 if(pr.loan.turns <= 0) { 
-                    pr.loan = null; props[i] = null; // Perde o bem
-                    ui.toast(`PRAZO ESGOTADO! PERDEU ${BD[i].n}`);
+                    // Perdeu a propriedade
+                    props[i] = null; 
+                    ui.toast(`Prazo venceu! ${players[turn].name} perdeu ${BD[i].n}`);
                 }
             }
         });
 
+        // Verificar Dívida antes de passar
+        if(players[turn].active && players[turn].money < 0) {
+             game.checkDebt(turn);
+             if(players[turn].active && players[turn].money < 0) {
+                 // Se ainda assim for negativo (humano não pagou), não passa
+                 if(turn === 0) { ui.toast("RESOLVA SUA DÍVIDA!"); return; }
+             }
+        }
+        
         // Verifica Vitoria
         const actives = players.filter(p=>p.active);
         if(actives.length === 1) {
@@ -858,7 +930,7 @@ const game = {
             pr.loan = { val: val, turns: 5 };
             ui.toast(`RECEBEU $${val}`);
             play('cash');
-            ui.closeCard(); ui.hud();
+            ui.closeCard(); ui.hud(); // Atualiza HUD para liberar botão PASSAR se saldo > 0
         }
     },
     payLoan: () => {
