@@ -2,22 +2,21 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V63</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Recife Imobiliário: V71 Stable</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --wood: #5d4037; --paper: #fff8e1;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
             --c-dark: #263238;
         }
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
             background: linear-gradient(135deg, #212121, #1a237e);
-            /* dvh ajusta automaticamente para as barras do navegador mobile */
             height: 100dvh; 
             overflow: hidden; display: flex; flex-direction: column;
         }
@@ -49,148 +48,126 @@
 
         /* ÁREA DO TABULEIRO */
         #board-area { 
-            position: relative; overflow: hidden; 
+            position: relative; overflow: auto; 
             display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle, #424242 0%, #000000 100%);
-            flex: 1; min-height: 0; 
-            padding: 5px; /* Margem de segurança */
+            flex: 1; min-height: 0; padding: 20px;
         }
         
-        /* Container flexível */
         #board-container { 
             position: relative; 
             transform-origin: center center;
-            width: 950px; 
-            height: 950px; 
         }
 
         #board { 
             width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            background: #fff; border: 25px solid var(--c-dark); border-radius: 20px; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+            display: grid; 
+            grid-template-columns: repeat(11, 1fr); 
+            grid-template-rows: repeat(11, 1fr); 
+            background: #fff; border: 25px solid var(--c-dark); border-radius: 15px; 
+            box-shadow: 0 0 80px rgba(0,0,0,0.8); 
             background-image: url('https://www.transparenttextures.com/patterns/cardboard.png'); 
         }
 
-        /* PAINEL HUD */
+        /* HUD */
         #hud-panel { 
             background: #fff; display: flex; flex-direction: column; z-index: 5000; 
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5); 
             flex-shrink: 0; 
         }
 
         /* --- MEDIA QUERIES --- */
-        
-        /* MOBILE (Retrato - Vertical) */
-        @media (max-width: 899px) {
+        @media (max-width: 899px) { /* Mobile */
             #game-layout { flex-direction: column; }
             
-            /* Ajuste para Tabuleiro Vertical no Mobile da V63 */
-            #board-container {
-                height: 1050px; /* Levemente retangular vertical */
-            }
-
+            /* TABULEIRO MOBILE: Dimensões da V63 */
+            #board-container { width: 950px; height: 1050px; } 
+            
             #hud-panel { 
-                width: 100%; 
-                padding: 10px;
-                padding-bottom: calc(10px + env(safe-area-inset-bottom));
-                gap: 8px;
-                background: #f5f5f5;
-                border-top: 4px solid var(--c-dark);
+                width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+                gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark); 
             }
-
             #action-btns { display: flex; gap: 5px; width: 100%; height: 60px; }
             #b-roll { flex: 1.5; font-size: 1.3rem; }
             #b-buy, #b-pass { flex: 1; font-size: 0.9rem; line-height: 1.1; }
-            
-            .hud-top-bar { 
-                background: #fff; border: 2px solid #ccc; border-radius: 10px; 
-                padding: 8px 15px; display: flex; justify-content: space-between; align-items: center;
-            }
+            .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
             .btn-inv { height: 45px; font-size: 1rem; }
-
-            /* Esconde Desktop */
-            #players-scroll { display: none; }
-            #desktop-props-container { display: none; }
+            #players-scroll, #desktop-props-container { display: none; }
             #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
         }
 
-        /* DESKTOP (Paisagem - Horizontal) */
-        @media (min-width: 900px) {
+        @media (min-width: 900px) { /* Desktop */
             #game-layout { flex-direction: row; }
+            #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
             
-            #hud-panel { 
-                width: 380px; 
-                height: 100%; border-left: 6px solid var(--c-dark); padding: 0; 
-            }
-            
-            /* Tabuleiro mais Horizontal */
-            #board-container {
-                width: 1100px; /* Levemente retangular horizontal */
-                height: 900px;
-            }
+            /* TABULEIRO DESKTOP: Largo para caber texto */
+            #board-container { width: 1400px; height: 900px; }
 
             #mobile-controls-wrapper { display: contents; }
             .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; display: flex; justify-content: space-between; align-items: center; }
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; }
-            
             #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
             .btn-game { padding: 18px; font-size: 1.3rem; } 
-            
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
             .btn-inv { display: none; }
         }
 
-        /* UI ELEMENTS */
-        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
-        .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        /* --- ESPAÇOS DO TABULEIRO --- */
+        .space { 
+            border: 1px solid rgba(0,0,0,0.15); background: #fff; 
+            font-size: 0.75rem; text-align: center; position: relative; 
+            display: flex; flex-direction: column; font-weight: 800; 
+            overflow: hidden; justify-content: space-between;
+        }
         
-        .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
-        .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
-        .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
+        .color-strip { height: 20%; border-bottom: 2px solid var(--c-dark); flex-shrink: 0; }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.8rem; word-wrap: break-word; }
         
-        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
-        .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
-        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
-        .btn-buy { background: var(--c-green); }
-        .btn-pass { background: var(--c-red); }
-        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 15px; }
-        @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
+        /* Preço sempre visível */
+        .sp-price { 
+            font-size: 0.8rem; color: #fff; background: var(--c-dark); 
+            font-family: 'Titan One'; padding: 2px 0; 
+            flex-shrink: 0; width: 100%;
+        }
         
-        .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
-
-        .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
-        .prop-item:hover { background: #f5f5f5; }
-        .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
-        .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
-
-        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.75rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; }
-        .color-strip { height: 25%; border-bottom: 2px solid var(--c-dark); }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.85rem; }
-        .sp-price { font-size: 0.9rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 2px 0; }
-        .sp-icon { font-size: 3rem; display: flex; align-items: center; justify-content: center; height: 100%; }
+        /* Ícone */
+        .sp-icon { 
+            font-size: 2rem; 
+            display: flex; align-items: center; justify-content: center; 
+            flex: 1; min-height: 0; 
+        }
+        
         .space.owned { border-width: 4px !important; }
+        
+        /* Centro */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
         .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
-        .deck { position: absolute; width: 120px; height: 160px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
+        
+        /* Decks */
+        .deck { position: absolute; width: 130px; height: 160px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
         .deck:active { transform: scale(0.95); }
         .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: rotate(-10deg); }
         .deck.reves { top: 45%; left: 50%; background: var(--c-red); transform: rotate(10deg); }
         .deck.active { animation: pulseDeck 1s infinite; border-color: #ffeb3b; z-index: 100; }
+        
         .token { width: 60px; height: 60px; position: absolute; z-index: 50; font-size: 3.5rem; text-align: center; line-height: 60px; transition: all 0.4s; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none; }
         .build-area { position: absolute; top: -12px; width: 100%; display: flex; justify-content: center; gap: 2px; }
         .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; }
         .hotel-3d { width: 20px; height: 20px; background: var(--c-red); border: 1px solid #000; }
         .loan-badge { position: absolute; top: 0; right: 0; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; font-weight: bold; border-bottom-left-radius: 5px; z-index: 10; display:none; }
 
-        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
+        /* MODAIS CORRIGIDOS */
+        #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
+        #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
+
+        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; display: flex; justify-content: center; align-items: center; }
+        
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
         .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
-        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; width: 85%; height: 60vh; max-height: 500px; }
+        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 9500; width: 85%; height: 60vh; max-height: 500px; }
         .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
         .card-flip.flipped { transform: rotateY(180deg); }
         .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -204,8 +181,26 @@
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
-        #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
-        #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
+        
+        /* UI Elements Comuns */
+        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
+        .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
+        .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
+        .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
+        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+        .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
+        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
+        .btn-buy { background: var(--c-green); }
+        .btn-pass { background: var(--c-red); }
+        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 15px; }
+        @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
+        .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
+        .prop-item:hover { background: #f5f5f5; }
+        .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
+        .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
     </style>
 </head>
 <body>
@@ -252,24 +247,20 @@
         <div id="mobile-controls-wrapper">
             <div id="action-btns">
                 <button id="b-card" class="btn-game btn-card" onclick="game.forceDrawCard()">🎴 PEGAR CARTA</button>
-                
                 <div id="jail-btns" style="display:none; gap:5px; width:100%; height:100%;">
                      <button class="btn-game btn-buy" style="flex:1" onclick="game.payJail()">Pagar $50</button>
                      <button class="btn-game btn-roll" style="flex:1" onclick="game.roll()">Tentar Sorte</button>
                 </div>
-                
                 <div id="normal-btns" style="display:flex; gap:5px; width:100%; height:100%;">
                     <button id="b-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 ROLAR</button>
                     <button id="b-buy" class="btn-game btn-buy" disabled onclick="game.buy()">COMPRAR</button>
                     <button id="b-pass" class="btn-game btn-pass" disabled onclick="game.pass()">PASSAR</button>
                 </div>
             </div>
-
             <div class="hud-top-bar">
                 <div class="turn-badge" id="turn-display">Sua Vez</div>
                 <div class="money-display" id="p-money">$500</div>
             </div>
-
             <button class="btn-inv" onclick="ui.toggleInv()">💼 ESCRITURAS</button>
         </div>
 
@@ -277,12 +268,7 @@
             <div id="players-scroll"></div>
             <div id="desktop-props-container"></div>
         </div>
-        
-        <style>
-            @media (min-width: 900px) {
-                .hud-content { display: flex !important; }
-            }
-        </style>
+        <style> @media (min-width: 900px) { .hud-content { display: flex !important; } } </style>
     </div>
 </div>
 
@@ -316,14 +302,11 @@
                     <div class="brand" style="font-size:2rem; color:var(--c-green);" id="pc-price">$200</div>
                 </div>
             </div>
-            
             <table class="rent-table" id="rent-table-body"></table>
-
             <div id="act-buy" style="display:none; margin-top:10px;">
                 <button class="btn-game btn-buy" onclick="game.confirmBuy()">COMPRAR</button>
                 <button class="btn-game" style="background:#546E7A; color:#fff; margin-top:5px;" onclick="ui.closeCard()">NÃO QUERO</button>
             </div>
-
             <div id="act-manage" style="display:none; margin-top:10px;">
                 <div style="background:#ffebee; padding:10px; border-radius:5px; margin-bottom:10px; display:none;" id="loan-info">
                     <b style="color:#d32f2f">EMPRÉSTIMO ATIVO</b><br>
@@ -364,11 +347,11 @@ const BD=[
     {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:300,r:[10,50,150,450,750,950]}, 
     {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:300,r:[12,60,180,500,700,900]}, 
     {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:300,r:[14,70,200,550,750,950]}, 
+    {t:'pr',g:'#ff5722',n:'Rosarinho',p:180,h:300,r:[14,70,200,550,750,950]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:300,r:[14,70,200,550,750,950]}, 
     {t:'pr',g:'#ff5722',n:'Torre',p:200,h:300,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Boa Vista',i:'🛍️'}, 
+    {t:'pk',n:'Pq. Jaqueira',i:'🌳'}, 
     {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:450,r:[18,90,250,700,875,1050]}, 
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:450,r:[18,90,250,700,875,1050]}, 
@@ -387,7 +370,7 @@ const BD=[
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:600,r:[35,175,500,1100,1300,1500]}, 
     {t:'tx',n:'Taxa',i:'🧾'}, 
-    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:600,r:[50,200,600,1400,1700,2000]}
+    {t:'pr',g:'#1565c0',n:'Pina',p:400,h:600,r:[50,200,600,1400,1700,2000]}
 ];
 
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Vó deu dinheiro. +100", val:100}];
@@ -395,16 +378,16 @@ const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a car
 
 let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, gameMode='normal', pendingCardType=null, totalTurns=0;
 
-// SISTEMA DE SOM COMPLETO
+// SISTEMA DE SOM
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
     cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
-    slide: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'), // Passar vez
-    card: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'), // Flip carta
-    jail: new Audio('https://assets.mixkit.co/active_storage/sfx/1393/1393-preview.mp3'), // Cadeia
-    bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'), // Revés
-    good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'), // Sorte
-    win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3') // Vitória
+    slide: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'),
+    card: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+    jail: new Audio('https://assets.mixkit.co/active_storage/sfx/1393/1393-preview.mp3'),
+    bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'),
+    good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+    win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3')
 };
 const play = (k) => { try { SFX[k].volume = 0.5; SFX[k].currentTime = 0; SFX[k].play().catch(() => {}); } catch (e) {} };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -460,13 +443,13 @@ const ui = {
             const pids = map[pos]; const s = document.getElementById(`s${pos}`); if(!s) return;
             if(pids.length === 1) {
                 const t = document.getElementById(`tok${pids[0]}`);
-                t.style.left = (s.offsetLeft + 12) + 'px'; t.style.top = (s.offsetTop + 12) + 'px'; t.style.transform = 'scale(1)';
+                t.style.left = (s.offsetLeft + 10) + 'px'; t.style.top = (s.offsetTop + 10) + 'px'; t.style.transform = 'scale(1)';
             } else {
                 pids.forEach((pid, idx) => {
                     const angle = (idx / pids.length) * 2 * Math.PI;
-                    const ox = Math.cos(angle) * 15; const oy = Math.sin(angle) * 15;
+                    const ox = Math.cos(angle) * 10; const oy = Math.sin(angle) * 10;
                     const t = document.getElementById(`tok${pid}`);
-                    t.style.left = (s.offsetLeft + 12 + ox) + 'px'; t.style.top = (s.offsetTop + 12 + oy) + 'px'; t.style.transform = 'scale(0.8)';
+                    t.style.left = (s.offsetLeft + 10 + ox) + 'px'; t.style.top = (s.offsetTop + 10 + oy) + 'px'; t.style.transform = 'scale(0.8)';
                 });
             }
         });
@@ -612,17 +595,28 @@ const game = {
         ui.dice(d1,d2); await sleep(1500);
         
         if(p.jailed){
-             if(d1===d2){ p.jailed=false; p.jailAttempts=0; ui.toast("SOLTO!"); play('good'); await game.move(turn, d1+d2); }
-             else { 
+             if(d1===d2){ 
+                 p.jailed=false; p.jailAttempts=0; 
+                 ui.toast("SOLTO (DUPLOS)!"); play('good'); 
+                 await game.move(turn, d1+d2); 
+                 rolled = true; 
+                 setTimeout(game.pass, 1500);
+                 return;
+             } else { 
                  p.jailAttempts++; ui.toast(`AINDA PRESO! ${p.jailAttempts}/3`); play('bad');
-                 if(p.jailAttempts >= 3) { p.jailed = false; p.jailAttempts = 0; p.money -= 50; ui.toast("PAGOU $50 E SAIU!"); await game.move(turn, d1+d2); }
-                 else { rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; }
+                 if(p.jailAttempts >= 3) { 
+                     p.jailed = false; p.jailAttempts = 0; p.money -= 50; 
+                     ui.toast("PAGOU $50 E SAIU!"); 
+                     await game.move(turn, d1+d2); 
+                 }
+                 rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; 
              }
         } else {
             if(d1===d2) { p.doubles++; ui.toast("DUPLOS!"); play('good'); } else p.doubles=0;
             if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); return; }
             await game.move(turn, d1+d2);
         }
+        
         rolled = true; animating=false; ui.hud();
         if(turn!==0 && !pendingCardType) { if(d1===d2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500); }
     },
@@ -644,7 +638,7 @@ const game = {
             if(Math.random() < 0.5) { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); p.skippedTurn = true; ui.toast("ENGARRAFAMENTO!"); play('bad'); }
             else { ui.toast("BÔNUS! +$50"); p.money += 50; play('cash'); }
         }
-        if((s.n === "Boa Viagem" || s.n === "Paiva") && Math.random() > 0.7){ document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); ui.toast("TUBARÃO! -$50"); p.money-=50; play('bad'); }
+        if((s.n === "Boa Viagem" || s.n === "Pina" || s.n === "Paiva") && Math.random() > 0.7){ document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); ui.toast("TUBARÃO! -$50"); p.money-=50; play('bad'); }
         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
             if(!pr){
                 if(pid===0 && p.money >= s.p) ui.openProp(p.pos, true); 
@@ -681,7 +675,6 @@ const game = {
     pass: () => {
         play('slide');
         players[turn].doubles = 0; 
-        
         props.forEach((pr, i) => {
             if(pr && pr.owner === turn && pr.loan) {
                 pr.loan.turns--;
@@ -689,9 +682,7 @@ const game = {
                 if(pr.loan.turns <= 0) { game.bankrupt(turn); }
             }
         });
-
         if(players[turn].active && players[turn].money < 0) { game.bankrupt(turn); }
-        
         let loop = 0; do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
         rolled=false; animating=false; ui.hud();
         if(turn!==0) setTimeout(game.roll, 1500);
