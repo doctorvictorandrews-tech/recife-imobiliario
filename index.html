@@ -1,327 +1,322 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário V56 - Hardmode</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --wood: #5d4037; --paper: #fff8e1;
-            --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
-            --c-dark: #263238;
-        }
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            margin: 0; font-family: 'Nunito', sans-serif; 
-            background: linear-gradient(135deg, #1a237e, #004d40); /* Mais escuro para dar tom sério/difícil */
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Recife Imobiliário V55</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wood: #5d4037; --paper: #fff8e1;
+            --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
+            --c-dark: #263238;
+        }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; font-family: 'Nunito', sans-serif; 
+            background: linear-gradient(135deg, #0d47a1, #006064);
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
 
-        h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
+        h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
-        /* --- FX LAYERS --- */
-        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
-        
-        .shark-anim {
-            position: absolute; bottom: -20vh; right: -50vw; font-size: 40vh; 
-            filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none;
-        }
-        .shark-anim.active { display: block; animation: sharkPass 3s linear forwards; }
-        @keyframes sharkPass { 0% {right: -50vw; bottom: 10vh;} 100% {right: 150vw; bottom: 30vh;} }
-        
-        /* Efeito de Trânsito da Agamenon */
-        .traffic-anim {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.6);
-            display: none; align-items: center; justify-content: center;
-            font-family: 'Titan One'; color: red; font-size: 3rem; text-align: center;
-            animation: pulseTraffic 0.5s infinite;
-        }
-        .traffic-anim.active { display: flex; }
-        @keyframes pulseTraffic { 0%{opacity:0.8;} 100%{opacity:1;} }
+        /* --- FX LAYERS --- */
+        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
+        
+        .shark-anim {
+            position: absolute; bottom: -20vh; right: -50vw; font-size: 40vh; 
+            filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none;
+        }
+        .shark-anim.active { display: block; animation: sharkPass 3s linear forwards; }
+        @keyframes sharkPass { 0% {right: -50vw; bottom: 10vh;} 100% {right: 150vw; bottom: 30vh;} }
+        body.shark-alert { animation: flashRed 0.5s infinite; }
+        @keyframes flashRed { 0%,100%{background:#300;} 50%{background:#500;} }
 
-        /* --- UI --- */
-        #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 40px; text-align: center; width: 95%; max-width: 500px; box-shadow: 0 20px 0 var(--c-yel); transform: rotate(-1deg); }
-        .sel-box { margin: 20px 0; text-align: left; }
-        select { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1.1rem; border-radius: 10px; cursor: pointer; }
-        .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 2rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 8px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
-        .btn-main:active { transform: translateY(4px); box-shadow: 0 4px 0 #1b5e20; }
+        .rain-anim {
+            position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/diagmonds-light.png');
+            opacity: 0.5; display: none; animation: rainFall 0.5s linear infinite; background-color: rgba(0,0,50,0.4);
+        }
+        .rain-anim.active { display: block; }
+        @keyframes rainFall { from{background-position:0 0;} to{background-position:20px 40px;} }
 
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
-        .char-opt { border: 2px solid #ccc; border-radius: 15px; padding: 10px; cursor: pointer; background: #fff; transition: 0.2s; font-size: 2.5rem; text-align: center; }
-        .char-opt:hover { border-color: var(--c-blue); transform: scale(1.1); background: #e1f5fe; }
+        /* --- UI --- */
+        #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 40px; text-align: center; width: 95%; max-width: 500px; box-shadow: 0 20px 0 var(--c-yel); transform: rotate(-1deg); }
+        .sel-box { margin: 20px 0; text-align: left; }
+        select { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1.1rem; border-radius: 10px; cursor: pointer; }
+        .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 2rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 8px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
+        .btn-main:active { transform: translateY(4px); box-shadow: 0 4px 0 #1b5e20; }
 
-        /* --- JOGO --- */
-        #game-layout { display: none; width: 100%; height: 100%; }
-        #game-layout.active { display: flex; }
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+        .char-opt { border: 2px solid #ccc; border-radius: 15px; padding: 10px; cursor: pointer; background: #fff; transition: 0.2s; font-size: 2.5rem; text-align: center; }
+        .char-opt:hover { border-color: var(--c-blue); transform: scale(1.1); background: #e1f5fe; }
 
-        #board-area { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1200px; overflow: hidden; }
-        
-        #board {
-            width: 950px; height: 950px; 
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
-            background: #fff; border: 25px solid var(--c-dark); border-radius: 20px;
-            box-shadow: 0 60px 120px rgba(0,0,0,0.6); position: relative;
-            transform: rotateX(25deg) scale(0.9); transform-style: preserve-3d;
-            background-image: url('https://www.transparenttextures.com/patterns/cardboard.png');
-        }
+        /* --- JOGO --- */
+        #game-layout { display: none; width: 100%; height: 100%; }
+        #game-layout.active { display: flex; }
 
-        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.75rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; box-shadow: inset 0 0 15px rgba(0,0,0,0.03); }
-        .color-strip { height: 25%; border-bottom: 3px solid var(--c-dark); }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1.1; font-weight: 900; }
-        .sp-price { font-size: 0.8rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 3px 0; }
-        .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
+        #board-area { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1200px; overflow: hidden; }
+        
+        #board {
+            width: 950px; height: 950px; 
+            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
+            background: #fff; border: 25px solid var(--c-dark); border-radius: 20px;
+            box-shadow: 0 60px 120px rgba(0,0,0,0.6); position: relative;
+            transform: rotateX(25deg) scale(0.9); transform-style: preserve-3d;
+            background-image: url('https://www.transparenttextures.com/patterns/cardboard.png');
+        }
 
-        .center-hub { 
-            grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; 
-            border: 6px solid var(--c-dark); overflow: hidden;
-            display: flex; justify-content: center; align-items: center; pointer-events: none;
-        }
-        .center-logo { font-family: 'Titan One'; font-size: 5rem; color: rgba(255,255,255,0.1); transform: rotate(-45deg); text-align: center; line-height: 1; }
+        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.75rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; box-shadow: inset 0 0 15px rgba(0,0,0,0.03); }
+        .color-strip { height: 25%; border-bottom: 3px solid var(--c-dark); }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1.1; font-weight: 900; }
+        .sp-price { font-size: 0.8rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 3px 0; }
+        .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
 
-        .deck { 
-            position: absolute; width: 90px; height: 130px; background: #fff; 
-            border: 4px solid #000; border-radius: 10px; cursor: pointer; transition: 0.2s; 
-            transform: translateZ(2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.4); z-index: 50; 
-            display: flex; align-items: center; justify-content: center; text-align: center;
-            font-family: 'Titan One'; font-size: 1.3rem; color: #fff; -webkit-text-stroke: 1.5px #000; pointer-events: auto;
-        }
-        .deck:hover { transform: translateZ(15px) scale(1.1); }
-        .deck.chance { top: 15%; left: 15%; background: var(--c-green); transform: rotate(-10deg); }
-        .deck.reves { bottom: 15%; right: 15%; background: var(--c-red); transform: rotate(10deg); }
-        .deck.active { animation: pulseGlow 0.8s infinite alternate; border-color: #fff; box-shadow: 0 0 40px #fff; z-index: 100; }
-        @keyframes pulseGlow { from{transform:scale(1) translateZ(5px)} to{transform:scale(1.2) translateZ(20px)} }
+        .center-hub { 
+            grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; 
+            border: 6px solid var(--c-dark); overflow: hidden;
+            display: flex; justify-content: center; align-items: center; pointer-events: none;
+        }
+        .center-logo { font-family: 'Titan One'; font-size: 5rem; color: rgba(255,255,255,0.1); transform: rotate(-45deg); text-align: center; line-height: 1; }
 
-        #sidebar { 
-            width: 380px; background: #fff; border-left: 8px solid var(--c-dark); 
-            display: flex; flex-direction: column; padding: 20px; z-index: 200; box-shadow: -10px 0 60px rgba(0,0,0,0.3);
-        }
-        .hud-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px; }
-        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 20px; border-radius: 20px; display: inline-block; font-family: 'Titan One'; font-size: 1.2rem; }
-        .money-display { font-size: 2.8rem; color: var(--c-green); font-family: 'Titan One'; margin-top: 5px; }
-        
-        .p-stat { 
-            display: flex; justify-content: space-between; padding: 12px; background: #f5f5f5; 
-            border-radius: 12px; margin-bottom: 8px; align-items: center; font-weight: 800; border: 2px solid transparent;
-        }
-        .p-stat.active { background: #e3f2fd; border-color: var(--c-blue); transform: scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
-        .p-stat.skipped { background: #ffebee; border-color: red; opacity: 0.8; }
+        .deck { 
+            position: absolute; width: 90px; height: 130px; background: #fff; 
+            border: 4px solid #000; border-radius: 10px; cursor: pointer; transition: 0.2s; 
+            transform: translateZ(2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.4); z-index: 50; 
+            display: flex; align-items: center; justify-content: center; text-align: center;
+            font-family: 'Titan One'; font-size: 1.3rem; color: #fff; -webkit-text-stroke: 1.5px #000; pointer-events: auto;
+        }
+        .deck:hover { transform: translateZ(15px) scale(1.1); }
+        .deck.chance { top: 15%; left: 15%; background: var(--c-green); transform: rotate(-10deg); }
+        .deck.reves { bottom: 15%; right: 15%; background: var(--c-red); transform: rotate(10deg); }
+        .deck.active { animation: pulseGlow 0.8s infinite alternate; border-color: #fff; box-shadow: 0 0 40px #fff; z-index: 100; }
+        @keyframes pulseGlow { from{transform:scale(1) translateZ(5px)} to{transform:scale(1.2) translateZ(20px)} }
 
-        .btn-game { 
-            width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 15px; 
-            font-family: 'Titan One'; font-size: 1.3rem; cursor: pointer; color: #fff; 
-            box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: 0.1s; text-transform: uppercase;
-        }
-        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
-        .btn-buy { background: var(--c-green); }
-        .btn-pass { background: var(--c-red); }
-        .btn-game:disabled { background: #cfd8dc !important; color: #90a4ae !important; cursor: not-allowed; box-shadow: none; transform: translateY(5px); }
-        .btn-game:active { transform: translateY(5px); box-shadow: none; }
+        #sidebar { 
+            width: 380px; background: #fff; border-left: 8px solid var(--c-dark); 
+            display: flex; flex-direction: column; padding: 20px; z-index: 200; box-shadow: -10px 0 60px rgba(0,0,0,0.3);
+        }
+        .hud-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px; }
+        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 20px; border-radius: 20px; display: inline-block; font-family: 'Titan One'; font-size: 1.2rem; }
+        .money-display { font-size: 2.8rem; color: var(--c-green); font-family: 'Titan One'; margin-top: 5px; }
+        
+        .p-stat { 
+            display: flex; justify-content: space-between; padding: 12px; background: #f5f5f5; 
+            border-radius: 12px; margin-bottom: 8px; align-items: center; font-weight: 800; border: 2px solid transparent;
+        }
+        .p-stat.active { background: #e3f2fd; border-color: var(--c-blue); transform: scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
 
-        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
-        
-        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; }
-        .card-flip { width: 320px; height: 480px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
-        .card-flip.flipped { transform: rotateY(180deg); }
-        .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 8px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 4rem; transform: rotateY(0deg); -webkit-text-stroke: 2px var(--c-dark); }
-        .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
+        .btn-game { 
+            width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 15px; 
+            font-family: 'Titan One'; font-size: 1.3rem; cursor: pointer; color: #fff; 
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: 0.1s; text-transform: uppercase;
+        }
+        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
+        .btn-buy { background: var(--c-green); }
+        .btn-pass { background: var(--c-red); }
+        .btn-game:disabled { background: #cfd8dc !important; color: #90a4ae !important; cursor: not-allowed; box-shadow: none; transform: translateY(5px); }
+        .btn-game:active { transform: translateY(5px); box-shadow: none; }
 
-        .prop-card { 
-            width: 350px; background: #fff; border-radius: 20px; overflow: hidden; 
-            box-shadow: 0 40px 100px rgba(0,0,0,0.6); pointer-events: auto; display: none; 
-            animation: popIn 0.3s; z-index: 7000;
-        }
-        .pc-head { padding: 20px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.5rem; text-align: center; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-        .rent-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 1rem; }
-        .rent-table td { padding: 8px 15px; border-bottom: 1px dashed #ddd; font-weight: 800; }
-        .rent-table td:last-child { text-align: right; color: var(--c-red); }
+        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
+        
+        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; }
+        .card-flip { width: 320px; height: 480px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+        .card-flip.flipped { transform: rotateY(180deg); }
+        .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 8px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 4rem; transform: rotateY(0deg); -webkit-text-stroke: 2px var(--c-dark); }
+        .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
 
-        .token { width: 55px; height: 55px; position: absolute; z-index: 100; font-size: 3.5rem; text-align: center; line-height: 55px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; filter: drop-shadow(0 8px 5px rgba(0,0,0,0.4)); transform-origin: bottom center; }
-        .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; transform: translateZ(5px); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-        .hotel-3d { width: 22px; height: 28px; background: var(--c-red); border: 1px solid #000; transform: translateZ(10px); box-shadow: 3px 3px 0 rgba(0,0,0,0.2); }
-        .build-area { position: absolute; top: -15px; width: 100%; display: flex; justify-content: center; gap: 3px; transform-style: preserve-3d; }
+        .prop-card { 
+            width: 350px; background: #fff; border-radius: 20px; overflow: hidden; 
+            box-shadow: 0 40px 100px rgba(0,0,0,0.6); pointer-events: auto; display: none; 
+            animation: popIn 0.3s; z-index: 7000;
+        }
+        .pc-head { padding: 20px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.5rem; text-align: center; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+        .rent-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 1rem; }
+        .rent-table td { padding: 8px 15px; border-bottom: 1px dashed #ddd; font-weight: 800; }
+        .rent-table td:last-child { text-align: right; color: var(--c-red); }
 
-        .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 20px 50px; border-radius: 50px; border: 5px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.8rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
-        @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
-        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+        .token { width: 55px; height: 55px; position: absolute; z-index: 100; font-size: 3.5rem; text-align: center; line-height: 55px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; filter: drop-shadow(0 8px 5px rgba(0,0,0,0.4)); transform-origin: bottom center; }
+        .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; transform: translateZ(5px); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+        .hotel-3d { width: 22px; height: 28px; background: var(--c-red); border: 1px solid #000; transform: translateZ(10px); box-shadow: 3px 3px 0 rgba(0,0,0,0.2); }
+        .build-area { position: absolute; top: -15px; width: 100%; display: flex; justify-content: center; gap: 3px; transform-style: preserve-3d; }
 
-        .dice-stage { position: absolute; display: flex; gap: 40px; pointer-events: none; opacity: 0; top: 40%; transition: 0.2s; z-index: 7000; }
-        .dice-stage.active { opacity: 1; }
-        .cube { width: 100px; height: 100px; background: #fff; border-radius: 20px; display: grid; place-items: center; font-size: 3.5rem; font-weight: bold; border: 5px solid var(--c-dark); box-shadow: 0 15px 30px rgba(0,0,0,0.4); font-family: 'Titan One'; }
-        .cube.shake { animation: shake 0.1s infinite; }
-        @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
+        .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 20px 50px; border-radius: 50px; border: 5px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.8rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
+        @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
+        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
-        @media (max-width: 900px) { body { flex-direction: column; } #sidebar { width: 100%; height: auto; order: 2; border-left: none; border-top: 8px solid var(--c-dark); } #board { transform: rotateX(20deg) scale(0.6); } }
-    </style>
+        .dice-stage { position: absolute; display: flex; gap: 40px; pointer-events: none; opacity: 0; top: 40%; transition: 0.2s; z-index: 7000; }
+        .dice-stage.active { opacity: 1; }
+        .cube { width: 100px; height: 100px; background: #fff; border-radius: 20px; display: grid; place-items: center; font-size: 3.5rem; font-weight: bold; border: 5px solid var(--c-dark); box-shadow: 0 15px 30px rgba(0,0,0,0.4); font-family: 'Titan One'; }
+        .cube.shake { animation: shake 0.1s infinite; }
+        @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
+
+        @media (max-width: 900px) { body { flex-direction: column; } #sidebar { width: 100%; height: auto; order: 2; border-left: none; border-top: 8px solid var(--c-dark); } #board { transform: rotateX(20deg) scale(0.6); } }
+    </style>
 </head>
 <body>
 
 <div id="fx-layer">
-    <div class="shark-anim">🦈</div>
-    <div class="traffic-anim">ENGARRAFAMENTO!<br>🛑 PERDEU A VEZ</div>
+    <div class="shark-anim">🦈</div>
+    <div class="rain-anim"></div>
 </div>
 
 <div id="screen-start">
-    <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:4.5rem; margin:0; line-height:1;">RECIFE<br><span style="font-size:2rem; color:#000;">IMOBILIÁRIO</span></h1>
-        <div class="sel-box">
-            <label>DIFICULDADE</label>
-            <select id="game-mode">
-                <option value="hardcore">Difícil (Salário Baixo)</option>
-                <option value="normal">Normal (Passeio)</option>
-            </select>
-        </div>
-        <div class="sel-box">
-            <label>ADVERSÁRIOS (CPU)</label>
-            <select id="cpu-count"><option value="1">1 (Duelo)</option><option value="2">2 (Roda)</option><option value="3">3 (Bagunça)</option><option value="7">7 (Caos)</option></select>
-        </div>
-        <button class="btn-main" onclick="ui.toChar()">JOGAR AGORA</button>
-    </div>
+    <div class="card-menu">
+        <h1 style="color:var(--c-blue); font-size:4.5rem; margin:0; line-height:1;">RECIFE<br><span style="font-size:2rem; color:#000;">IMOBILIÁRIO</span></h1>
+        <div class="sel-box">
+            <label>MODO DE JOGO</label>
+            <select id="game-mode"><option value="normal">Normal (Resenha)</option><option value="hardcore">Hardcore (1 Compra)</option></select>
+        </div>
+        <div class="sel-box">
+            <label>ADVERSÁRIOS (CPU)</label>
+            <select id="cpu-count"><option value="1">1 (Duelo)</option><option value="2">2 (Roda)</option><option value="3">3 (Bagunça)</option><option value="7">7 (Caos)</option></select>
+        </div>
+        <button class="btn-main" onclick="ui.toChar()">JOGAR AGORA</button>
+    </div>
 </div>
 
 <div id="screen-char" style="display:none;">
-    <div class="card-menu">
-        <h2 class="brand" style="font-size:2rem; color:var(--c-dark);">ESCOLHA SEU VULGO</h2>
-        <div class="char-grid" id="char-grid"></div>
-    </div>
+    <div class="card-menu">
+        <h2 class="brand" style="font-size:2rem; color:var(--c-dark);">ESCOLHA SEU VULGO</h2>
+        <div class="char-grid" id="char-grid"></div>
+    </div>
 </div>
 
 <div id="game-layout">
-    <div id="board-area">
-        <div id="board">
-            <div class="center-hub">
-                <div class="center-logo">RECIFE<br>IMOBILIÁRIO</div>
-                <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')">SORTE<br>🍀</div>
-                <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')">REVÉS<br>⚠️</div>
-            </div>
-        </div>
-    </div>
+    <div id="board-area">
+        <div id="board">
+            <div class="center-hub">
+                <div class="center-logo">RECIFE<br>IMOBILIÁRIO</div>
+                <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')">SORTE<br>🍀</div>
+                <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')">REVÉS<br>⚠️</div>
+            </div>
+        </div>
+    </div>
 
-    <div id="sidebar">
-        <div class="hud-header">
-            <div class="turn-badge" id="turn-display">Sua Vez</div>
-            <div class="money-display" id="p-money">$1000</div>
-        </div>
-        <div id="players-list" style="display:flex; flex-direction:column; gap:5px;"></div>
-        <div style="flex:1; background:#f5f5f5; border:2px solid #ccc; margin:15px 0; border-radius:10px; overflow-y:auto; padding:10px;" id="inventory">
-            <div style="text-align:center; color:#999; margin-top:20px;">Tuas Escrituras</div>
-        </div>
-        
-        <div id="jail-controls" style="display:none; background:#ffcdd2; padding:15px; border-radius:15px; border:3px dashed #b71c1c; text-align:center; margin-bottom:10px;">
-            <b style="color:#b71c1c; display:block; margin-bottom:10px; font-size:1.2rem;">TÁ NO XILINDRÓ!</b>
-            <button class="btn-game btn-buy" onclick="game.payJail()">Pagar Fiança ($50)</button>
-            <button class="btn-game btn-roll" onclick="game.roll()">Tentar Sorte (Dados)</button>
-        </div>
-        <div id="normal-controls">
-            <button id="b-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 Rolar Dados</button>
-            <button id="b-buy" class="btn-game btn-buy" disabled onclick="game.buy()">💰 Comprar</button>
-            <button id="b-pass" class="btn-game btn-pass" disabled onclick="game.pass()">🛑 Passar</button>
-        </div>
-    </div>
+    <div id="sidebar">
+        <div class="hud-header">
+            <div class="turn-badge" id="turn-display">Sua Vez</div>
+            <div class="money-display" id="p-money">$1500</div>
+        </div>
+        <div id="players-list" style="display:flex; flex-direction:column; gap:5px;"></div>
+        <div style="flex:1; background:#f5f5f5; border:2px solid #ccc; margin:15px 0; border-radius:10px; overflow-y:auto; padding:10px;" id="inventory">
+            <div style="text-align:center; color:#999; margin-top:20px;">Tuas Escrituras</div>
+        </div>
+        
+        <div id="jail-controls" style="display:none; background:#ffcdd2; padding:15px; border-radius:15px; border:3px dashed #b71c1c; text-align:center; margin-bottom:10px;">
+            <b style="color:#b71c1c; display:block; margin-bottom:10px; font-size:1.2rem;">TÁ NO XILINDRÓ!</b>
+            <button class="btn-game btn-buy" onclick="game.payJail()">Pagar Fiança ($50)</button>
+            <button class="btn-game btn-roll" onclick="game.roll()">Tentar Sorte</button>
+        </div>
+        <div id="normal-controls">
+            <button id="b-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 Rolar Dados</button>
+            <button id="b-buy" class="btn-game btn-buy" disabled onclick="game.buy()">💰 Comprar</button>
+            <button id="b-pass" class="btn-game btn-pass" disabled onclick="game.pass()">🛑 Passar</button>
+        </div>
+    </div>
 </div>
 
 <div id="overlay-layer">
-    <div id="dice-visual" class="dice-stage"><div id="d1" class="cube">1</div><div id="d2" class="cube">1</div></div>
-    
-    <div class="card-flip-container" id="card-event">
-        <div class="card-flip" id="card-flipper">
-            <div class="cf-face cf-back" id="cf-back-style">?</div>
-            <div class="cf-face cf-front">
-                <h2 class="brand" id="ev-title" style="font-size:3rem; margin-bottom:20px;">SORTE</h2>
-                <p id="ev-desc" style="font-size:1.8rem; font-weight:bold;">Texto...</p>
-                <button class="btn-game btn-roll" style="width:auto; padding:15px 50px; margin-top:30px; color:#000;" onclick="ui.closeEvent()">BELEZA</button>
-            </div>
-        </div>
-    </div>
+    <div id="dice-visual" class="dice-stage"><div id="d1" class="cube">1</div><div id="d2" class="cube">1</div></div>
+    
+    <div class="card-flip-container" id="card-event">
+        <div class="card-flip" id="card-flipper">
+            <div class="cf-face cf-back" id="cf-back-style">?</div>
+            <div class="cf-face cf-front">
+                <h2 class="brand" id="ev-title" style="font-size:3rem; margin-bottom:20px;">SORTE</h2>
+                <p id="ev-desc" style="font-size:1.8rem; font-weight:bold;">Texto...</p>
+                <button class="btn-game btn-roll" style="width:auto; padding:15px 50px; margin-top:30px; color:#000;" onclick="ui.closeEvent()">BELEZA</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="prop-card" class="prop-card">
-        <div class="pc-head" id="pc-name">NOME DA RUA</div>
-        <div style="padding:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:3.5rem;">🏠</div>
-                <div style="text-align:right;">
-                    <div style="font-size:0.9rem; color:#666; font-weight:bold;">VALOR</div>
-                    <div class="brand" style="font-size:2.2rem; color:var(--c-green);" id="pc-price">$200</div>
-                </div>
-            </div>
-            
-            <table class="rent-table" id="rent-table-body"></table>
+    <div id="prop-card" class="prop-card">
+        <div class="pc-head" id="pc-name">NOME DA RUA</div>
+        <div style="padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:3.5rem;">🏠</div>
+                <div style="text-align:right;">
+                    <div style="font-size:0.9rem; color:#666; font-weight:bold;">VALOR</div>
+                    <div class="brand" style="font-size:2.2rem; color:var(--c-green);" id="pc-price">$200</div>
+                </div>
+            </div>
+            
+            <table class="rent-table" id="rent-table-body"></table>
 
-            <div id="act-buy" style="display:none; margin-top:15px;">
-                <button class="btn-game btn-buy" onclick="game.confirmBuy()">COMPRAR ISSO</button>
-                <button class="btn-game" style="background:#546E7A; color:#fff;" onclick="ui.closeCard()">NÃO QUERO</button>
-            </div>
+            <div id="act-buy" style="display:none; margin-top:15px;">
+                <button class="btn-game btn-buy" onclick="game.confirmBuy()">COMPRAR ISSO</button>
+                <button class="btn-game" style="background:#546E7A; color:#fff;" onclick="ui.closeCard()">NÃO QUERO</button>
+            </div>
 
-            <div id="act-manage" style="display:none; margin-top:15px;">
-                <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <button id="btn-mtg" class="btn-game btn-roll" style="font-size:0.9rem; padding:10px;" onclick="game.mortgage()">HIPOTECAR</button>
-                    <button id="btn-bld" class="btn-game btn-buy" style="font-size:0.9rem; padding:10px;" onclick="game.build()">CONSTRUIR</button>
-                </div>
-                <button class="btn-game" style="background:#37474F; color:#fff; font-size:0.9rem; padding:10px;" onclick="ui.closeCard()">FECHAR</button>
-            </div>
-        </div>
-    </div>
+            <div id="act-manage" style="display:none; margin-top:15px;">
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <button id="btn-mtg" class="btn-game btn-roll" style="font-size:0.9rem; padding:10px;" onclick="game.mortgage()">HIPOTECAR</button>
+                    <button id="btn-bld" class="btn-game btn-buy" style="font-size:0.9rem; padding:10px;" onclick="game.build()">CONSTRUIR</button>
+                </div>
+                <button class="btn-game" style="background:#37474F; color:#fff; font-size:0.9rem; padding:10px;" onclick="ui.closeCard()">FECHAR</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-/* DADOS & PERSONAGENS (NOVOS 8) */
+/* DADOS & PERSONAGENS */
 const CHARS=[
-    {id:'galo', i:'🐔', n:'Galo da Madrugada'},
-    {id:'brt', i:'🚌', n:'BRT Quebrado'},
-    {id:'bolo', i:'🍥', n:'Bolo de Rolo'},
-    {id:'laursa', i:'🐻', n:'A La Ursa'},
-    {id:'hmn', i:'🎩', n:'Homem da Meia-Noite'},
-    {id:'tub', i:'🦈', n:'Tubarão'},
-    {id:'sururu', i:'🐚', n:'Sururu'},
-    {id:'juliet', i:'😎', n:'Anderson do Passinho'}
+    {id:'rt',i:'💅',n:'A Ratona'},
+    {id:'as',i:'🗿',n:'Bilola de Brennand'},
+    {id:'bt',i:'🛶',n:'Celta Boiando'},
+    {id:'c',i:'🦀',n:'Caranguejo'},
+    {id:'s',i:'🦈',n:'Tubarão'},
+    {id:'u',i:'☂️',n:'Sombrinha de Frevo'},
+    {id:'pd',i:'🐀',n:'Gabiru'},
+    {id:'bb',i:'🌽',n:'Milho'}
 ];
 
 const BD=[
-    {t:'st',n:'MARCO ZERO',i:'🚩'}, 
-    {t:'pr',g:'#795548',n:'Coque',p:60,h:50,m:30,r:[4,20,60,180,320,450]}, 
-    {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#795548',n:'Imbiribeira',p:80,h:50,m:40,r:[6,30,90,270,400,550]}, /* Mantido Imbiribeira */
-    {t:'tx',n:'IPTU',p:200,i:'💸'}, 
-    {t:'rr',n:'Est. Joana Bezerra',p:200,m:100,i:'🚆',r:[25,50,100,200]},
-    {t:'pr',g:'#03a9f4',n:'Av. Agamenon',p:120,h:50,m:60,r:[10,50,150,450,750,950]}, /* Agamenon aqui */
-    {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
-    {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,m:60,r:[8,40,100,300,450,600]},
-    {t:'jl',n:'LEI SECA',i:'👮'}, 
-    {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
-    {t:'ut',n:'Celpe',p:150,m:75,i:'💡'}, 
-    {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
-    {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,m:80,r:[12,60,180,500,700,900]}, 
-    {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#ff5722',n:'Ilha do Leite',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
-    {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
-    {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,m:100,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Shop. Boa Vista',i:'🛍️'}, 
-    {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
-    {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
-    {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,m:120,r:[20,100,300,750,925,1100]}, 
-    {t:'rr',n:'Est. Barro',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
-    {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
-    {t:'ut',n:'Compesa',p:150,m:75,i:'💧'}, 
-    {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,m:140,r:[24,120,360,850,1025,1200]},
-    {t:'gj',n:'CADEIA!',i:'🚓'}, 
-    {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
-    {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
-    {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,m:160,r:[28,150,450,1000,1200,1400]}, 
-    {t:'rr',n:'Est. Afogados',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,m:175,r:[35,175,500,1100,1300,1500]}, 
-    {t:'tx',n:'Taxa',p:100,i:'🧾'}, 
-    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,m:200,r:[50,200,600,1400,1700,2000]}
+    {t:'st',n:'MARCO ZERO',i:'🚩'}, 
+    {t:'pr',g:'#795548',n:'Coque',p:60,h:50,m:30,r:[2,10,30,90,160,250]}, 
+    {t:'ch',n:'Sorte',i:'🍀'}, 
+    {t:'pr',g:'#795548',n:'Ibura',p:60,h:50,m:30,r:[4,20,60,180,320,450]}, 
+    {t:'tx',n:'IPTU',p:200,i:'💸'}, 
+    {t:'rr',n:'Est. Joana Bezerra',p:200,m:100,i:'🚆',r:[25,50,100,200]},
+    {t:'pr',g:'#03a9f4',n:'Sto Amaro',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
+    {t:'rev',n:'Revés',i:'⚠️'}, 
+    {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
+    {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,m:60,r:[8,40,100,300,450,600]},
+    {t:'jl',n:'LEI SECA',i:'👮'}, 
+    {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
+    {t:'ut',n:'Celpe',p:150,m:75,i:'💡'}, 
+    {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
+    {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,m:80,r:[12,60,180,500,700,900]}, 
+    {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
+    {t:'pr',g:'#ff5722',n:'Av. Agamenon',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
+    {t:'ch',n:'Sorte',i:'🍀'}, 
+    {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
+    {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,m:100,r:[16,80,220,600,800,1000]},
+    {t:'pk',n:'Shop. Boa Vista',i:'🛍️'}, 
+    {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
+    {t:'rev',n:'Revés',i:'⚠️'}, 
+    {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
+    {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,m:120,r:[20,100,300,750,925,1100]}, 
+    {t:'rr',n:'Est. Barro',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
+    {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
+    {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
+    {t:'ut',n:'Compesa',p:150,m:75,i:'💧'}, 
+    {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,m:140,r:[24,120,360,850,1025,1200]},
+    {t:'gj',n:'CADEIA!',i:'🚓'}, 
+    {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
+    {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
+    {t:'ch',n:'Sorte',i:'🍀'}, 
+    {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,m:160,r:[28,150,450,1000,1200,1400]}, 
+    {t:'rr',n:'Est. Afogados',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
+    {t:'rev',n:'Revés',i:'⚠️'}, 
+    {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,m:175,r:[35,175,500,1100,1300,1500]}, 
+    {t:'tx',n:'Taxa',p:100,i:'🧾'}, 
+    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,m:200,r:[50,200,600,1400,1700,2000]}
 ];
 
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Tua vó te deu dinheiro. +100", val:100}];
@@ -335,301 +330,205 @@ const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 
 /* UI */
 const ui = {
-    toChar: () => {
-        const cpuCount = parseInt(document.getElementById('cpu-count').value);
-        gameMode = document.getElementById('game-mode').value;
-        // DIFICULDADE: Começa com 1000 em vez de 1500
-        const startMoney = gameMode==='hardcore' ? 1000 : 1500;
-        
-        players = [{name:"Você", icon:"", pos:0, money:startMoney, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn: false}];
-        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:startMoney, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn: false});
-        
-        document.getElementById('screen-start').style.display='none'; document.getElementById('screen-char').style.display='flex';
-        CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
-    },
-    start: (icon) => {
-        players[0].icon = icon;
-        players.slice(1).forEach(p=>{ const av=CHARS.filter(c=>c.i!==icon); if(av.length) p.icon=av[Math.floor(Math.random()*av.length)].i; });
-        document.getElementById('screen-char').style.display='none'; document.getElementById('game-layout').classList.add('active');
-        ui.buildBoard(); ui.hud();
-    },
-    buildBoard: () => {
-        const b = document.getElementById('board');
-        BD.forEach((s,i) => {
-            const d=document.createElement('div');d.className='space';d.id=`s${i}`;
-            let r,c; if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
-            d.style.gridRow=r; d.style.gridColumn=c;
-            const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
-            d.innerHTML = s.t==='pr' ? 
-                `<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div><div class="build-area" id="b${i}"></div>` :
-                `<div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}`;
-            b.appendChild(d);
-        });
-        players.forEach((p,i)=>{ const t=document.createElement('div');t.className='token';t.id=`tok${i}`;t.innerText=p.icon; b.appendChild(t); ui.place(i,0); });
-    },
-    place: (pid, pos) => {
-        const t = document.getElementById(`tok${pid}`); const s = document.getElementById(`s${pos}`);
-        if(t && s) { t.style.left = (s.offsetLeft + 15 + (pid*5)) + 'px'; t.style.top = (s.offsetTop + 10 + (pid*5)) + 'px'; }
-    },
-    hud: () => {
-        if(!players[turn]) return;
-        document.getElementById('turn-display').innerText = `VEZ DE: ${players[turn].name}`;
-        document.getElementById('p-money').innerText = `$${players[0].money}`;
-        document.getElementById('players-list').innerHTML = players.map((p,i) => `<div class="p-stat ${turn===i?'active':''} ${!p.active?'bankrupt':''} ${p.skippedTurn ? 'skipped' : ''}"><div>${p.icon} ${p.name} ${p.skippedTurn?'(🛑)':''}</div><div>${p.active ? (i===0 ? '$'+p.money : (p.jailed?'🔒':'?')) : 'FALIU'}</div></div>`).join('');
-        
-        const inv = document.getElementById('inventory'); inv.innerHTML = '';
-        props.forEach((pr,i)=>{
-            if(pr && pr.owner===0) inv.innerHTML+=`<div style="background:#eee;border-left:5px solid ${BD[i].g||'#333'};padding:10px;margin-bottom:5px;border-radius:5px;cursor:pointer" onclick="ui.openProp(${i})"><b>${BD[i].n} ${pr.mtg?`(⛔)`:''}</b></div>`;
-            const el = document.getElementById(`b${i}`);
-            if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
-        });
+    toChar: () => {
+        const cpuCount = parseInt(document.getElementById('cpu-count').value);
+        gameMode = document.getElementById('game-mode').value;
+        players = [{name:"Você", icon:"", pos:0, money:1500, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0}];
+        for(let i=0; i<cpuCount; i++) players.push({name:`Gabiru ${i+1}`, icon:"🤖", pos:0, money:1500, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0});
+        document.getElementById('screen-start').style.display='none'; document.getElementById('screen-char').style.display='flex';
+        CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
+    },
+    start: (icon) => {
+        players[0].icon = icon;
+        players.slice(1).forEach(p=>{ const av=CHARS.filter(c=>c.i!==icon); if(av.length) p.icon=av[Math.floor(Math.random()*av.length)].i; });
+        document.getElementById('screen-char').style.display='none'; document.getElementById('game-layout').classList.add('active');
+        ui.buildBoard(); ui.hud();
+    },
+    buildBoard: () => {
+        const b = document.getElementById('board');
+        BD.forEach((s,i) => {
+            const d=document.createElement('div');d.className='space';d.id=`s${i}`;
+            let r,c; if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
+            d.style.gridRow=r; d.style.gridColumn=c;
+            const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
+            d.innerHTML = s.t==='pr' ? 
+                `<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div><div class="build-area" id="b${i}"></div>` :
+                `<div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}`;
+            b.appendChild(d);
+        });
+        players.forEach((p,i)=>{ const t=document.createElement('div');t.className='token';t.id=`tok${i}`;t.innerText=p.icon; b.appendChild(t); ui.place(i,0); });
+    },
+    place: (pid, pos) => {
+        const t = document.getElementById(`tok${pid}`); const s = document.getElementById(`s${pos}`);
+        if(t && s) { t.style.left = (s.offsetLeft + 15 + (pid*5)) + 'px'; t.style.top = (s.offsetTop + 10 + (pid*5)) + 'px'; }
+    },
+    hud: () => {
+        if(!players[turn]) return;
+        document.getElementById('turn-display').innerText = `VEZ DE: ${players[turn].name}`;
+        document.getElementById('p-money').innerText = `$${players[0].money}`;
+        document.getElementById('players-list').innerHTML = players.map((p,i) => `<div class="p-stat ${turn===i?'active':''} ${!p.active?'bankrupt':''}"><div>${p.icon} ${p.name}</div><div>${p.active ? (i===0 ? '$'+p.money : (p.jailed?'🔒':'?')) : 'FALIU'}</div></div>`).join('');
+        
+        const inv = document.getElementById('inventory'); inv.innerHTML = '';
+        props.forEach((pr,i)=>{
+            if(pr && pr.owner===0) inv.innerHTML+=`<div style="background:#eee;border-left:5px solid ${BD[i].g||'#333'};padding:10px;margin-bottom:5px;border-radius:5px;cursor:pointer" onclick="ui.openProp(${i})"><b>${BD[i].n} ${pr.mtg?`(⛔)`:''}</b></div>`;
+            const el = document.getElementById(`b${i}`);
+            if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
+        });
 
-        const hum = turn===0;
-        const p = players[0];
-        
-        document.getElementById('jail-controls').style.display = (p.jailed && hum) ? 'block' : 'none';
-        document.getElementById('normal-controls').style.display = (!p.jailed && hum) ? 'block' : 'none';
-        
-        if(!p.jailed && hum) {
-            // Se estiver pulando turno, desativa tudo e auto-passa (no game loop)
-            document.getElementById('b-roll').disabled = !(!rolled && !animating && !pendingCardType && !p.skippedTurn);
-            
-            let canBuy = rolled && (BD[p.pos].t==='pr' || BD[p.pos].t==='rr' || BD[p.pos].t==='ut') && !props[p.pos] && !pendingCardType;
-            if(gameMode === 'hardcore' && p.boughtRound) canBuy = false;
-            document.getElementById('b-buy').disabled = !canBuy;
-            
-            const doubles = players[turn].lastD1 === players[turn].lastD2;
-            document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
-        }
-        
-        document.getElementById('d-chance').classList.toggle('active', pendingCardType==='ch' && hum);
-        document.getElementById('d-reves').classList.toggle('active', pendingCardType==='rev' && hum);
-    },
-    openProp: (idx, forBuy=false) => {
-        activeIdx = idx; const s = BD[idx]; const pr = props[idx];
-        document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g||'#333'; document.getElementById('pc-price').innerText=`$${s.p}`;
-        
-        let html = '';
-        if(s.r) {
-            const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel'];
-            s.r.forEach((val, i) => html += `<tr><td>${labels[i]}</td><td style="text-align:right">$${val}</td></tr>`);
-        } else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
-        else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
-        
-        document.getElementById('rent-table-body').innerHTML = html;
-        document.getElementById('act-buy').style.display = forBuy?'block':'none';
-        document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===0)?'block':'none';
-        if(!forBuy && pr){
-            const bM = document.getElementById('btn-mtg');
-            if(pr.mtg) { bM.innerText="PAGAR DÍVIDA"; bM.onclick=()=>game.toggleMtg(true); } else { bM.innerText="HIPOTECAR"; bM.onclick=()=>game.toggleMtg(false); }
-        }
-        document.getElementById('prop-card').style.display='block';
-    },
-    closeCard: () => document.getElementById('prop-card').style.display='none',
-    
-    showEvent: (type, text) => {
-        const c = document.getElementById('card-event'); const flip = document.getElementById('card-flipper');
-        const back = document.getElementById('cf-back-style');
-        back.style.background = type==='sorte' ? '#2e7d32' : '#c62828'; back.innerText = type==='sorte' ? '?' : '!';
-        document.getElementById('ev-title').innerText = type.toUpperCase(); document.getElementById('ev-desc').innerText = text;
-        c.style.display='flex'; setTimeout(()=>flip.classList.add('flipped'), 100);
-    },
-    closeEvent: () => { document.getElementById('card-event').style.display='none'; document.getElementById('card-flipper').classList.remove('flipped'); game.applyCard(); },
-    dice: (d1,d2) => {
-        const ds = document.getElementById('dice-visual'); ds.classList.add('active');
-        const c1=document.getElementById('d1'), c2=document.getElementById('d2');
-        c1.className='cube shake'; c2.className='cube shake';
-        setTimeout(()=>{
-            c1.className='cube'; c2.className='cube'; void c1.offsetWidth;
-            c1.innerText=d1; c2.innerText=d2; 
-        }, 1000);
-        setTimeout(()=>{ ds.classList.remove('active'); }, 2000);
-    },
-    toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); }
+        const hum = turn===0;
+        const p = players[0];
+        
+        document.getElementById('jail-controls').style.display = (p.jailed && hum) ? 'block' : 'none';
+        document.getElementById('normal-controls').style.display = (!p.jailed && hum) ? 'block' : 'none';
+        
+        if(!p.jailed && hum) {
+            document.getElementById('b-roll').disabled = !(!rolled && !animating && !pendingCardType);
+            
+            // BUY LOGIC: Has to have money, no owner, be a property
+            let canBuy = rolled && (BD[p.pos].t==='pr' || BD[p.pos].t==='rr' || BD[p.pos].t==='ut') && !props[p.pos] && !pendingCardType;
+            if(gameMode === 'hardcore' && p.boughtRound) canBuy = false;
+            document.getElementById('b-buy').disabled = !canBuy;
+            
+            // PASS LOGIC: Enabled if rolled and no pending card
+            // Important: If doubles, disable pass.
+            const doubles = players[turn].lastD1 === players[turn].lastD2;
+            document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
+        }
+        
+        document.getElementById('d-chance').classList.toggle('active', pendingCardType==='ch' && hum);
+        document.getElementById('d-reves').classList.toggle('active', pendingCardType==='rev' && hum);
+    },
+    openProp: (idx, forBuy=false) => {
+        activeIdx = idx; const s = BD[idx]; const pr = props[idx];
+        document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g||'#333'; document.getElementById('pc-price').innerText=`$${s.p}`;
+        
+        let html = '';
+        if(s.r) {
+            const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel'];
+            s.r.forEach((val, i) => html += `<tr><td>${labels[i]}</td><td style="text-align:right">$${val}</td></tr>`);
+        } else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
+        else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
+        
+        document.getElementById('rent-table-body').innerHTML = html;
+        document.getElementById('act-buy').style.display = forBuy?'block':'none';
+        document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===0)?'block':'none';
+        if(!forBuy && pr){
+            const bM = document.getElementById('btn-mtg');
+            if(pr.mtg) { bM.innerText="PAGAR DÍVIDA"; bM.onclick=()=>game.toggleMtg(true); } else { bM.innerText="HIPOTECAR"; bM.onclick=()=>game.toggleMtg(false); }
+        }
+        document.getElementById('prop-card').style.display='block';
+    },
+    closeCard: () => document.getElementById('prop-card').style.display='none',
+    
+    showEvent: (type, text) => {
+        const c = document.getElementById('card-event'); const flip = document.getElementById('card-flipper');
+        const back = document.getElementById('cf-back-style');
+        back.style.background = type==='sorte' ? '#2e7d32' : '#c62828'; back.innerText = type==='sorte' ? '?' : '!';
+        document.getElementById('ev-title').innerText = type.toUpperCase(); document.getElementById('ev-desc').innerText = text;
+        c.style.display='flex'; setTimeout(()=>flip.classList.add('flipped'), 100);
+    },
+    closeEvent: () => { document.getElementById('card-event').style.display='none'; document.getElementById('card-flipper').classList.remove('flipped'); game.applyCard(); },
+    dice: (d1,d2) => {
+        const ds = document.getElementById('dice-visual'); ds.classList.add('active');
+        const c1=document.getElementById('d1'), c2=document.getElementById('d2');
+        c1.className='cube shake'; c2.className='cube shake';
+        setTimeout(()=>{
+            c1.className='cube'; c2.className='cube'; void c1.offsetWidth;
+            c1.innerText=d1; c2.innerText=d2; 
+        }, 1000);
+        setTimeout(()=>{ ds.classList.remove('active'); }, 2000);
+    },
+    toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); }
 };
 
 /* LOGIC */
 const game = {
-    clickDeck: (type) => {
-        if(pendingCardType && turn===0 && type === pendingCardType){
-            const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
-            ui.pendingCard = deck[Math.floor(Math.random()*deck.length)];
-            ui.showEvent(type==='ch'?'sorte':'vixe', ui.pendingCard.txt);
-            pendingCardType = null; ui.hud();
-        }
-    },
-    payJail: () => {
-        const p = players[turn];
-        if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("FIANÇA PAGA! PODE JOGAR."); ui.hud(); }
-        else ui.toast("SEM DINHEIRO!");
-    },
-    roll: async () => {
-        if(animating || pendingCardType) return;
-        
-        const p = players[turn];
-        // Check Traffic Jam Skip
-        if(p.skippedTurn) {
-            ui.toast("PRESO NO TRÂNSITO...");
-            p.skippedTurn = false;
-            await sleep(1500);
-            game.pass();
-            return;
-        }
+    clickDeck: (type) => {
+        if(pendingCardType && turn===0 && type === pendingCardType){
+            const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
+            ui.pendingCard = deck[Math.floor(Math.random()*deck.length)];
+            ui.showEvent(type==='ch'?'sorte':'vixe', ui.pendingCard.txt);
+            pendingCardType = null; ui.hud();
+        }
+    },
+    roll: async () => {
+        if(animating || pendingCardType) return;
+        animating=true; ui.hud();
+        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
+        players[turn].lastD1 = d1; players[turn].lastD2 = d2;
+        ui.dice(d1,d2); await sleep(1500);
+        
+        const p = players[turn];
+        if(p.jailed){
+            if(d1===d2){ p.jailed=false; ui.toast("SOLTOU! DADOS IGUAIS!"); await game.move(turn, d1+d2); }
+            else { ui.toast("PRESO!"); rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; }
+        } else {
+            if(d1===d2) { p.doubles++; ui.toast("JOGA DE NOVO!"); } else p.doubles=0;
+            if(p.doubles===3) { ui.toast("3x IGUAIS! CADEIA!"); game.jail(turn); animating=false; rolled=true; ui.hud(); return; }
+            await game.move(turn, d1+d2);
+        }
+        rolled=true; animating=false; ui.hud();
+        
+        // AUTO PASS FOR CPU
+        if(turn!==0 && !pendingCardType) {
+            if(d1===d2) setTimeout(game.roll, 1500);
+            else setTimeout(game.pass, 1500);
+        }
+    },
+    move: async (pid, steps) => {
+        const p = players[pid];
+        for(let i=0; i<steps; i++){
+            p.pos = (p.pos + 1) % 40;
+            if(p.pos===0 && p.active){ p.money+=200; ui.toast("Início! +$200"); p.boughtRound=false; }
+            ui.place(pid, p.pos); play('step'); await sleep(250);
+        }
+        game.land(pid);
+    },
+    land: (pid) => {
+        const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
+        if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
+        
+        totalTurns++;
+        // Galo: Only current player moves
+        if(totalTurns%20 === 0) { 
+            ui.toast("O GALO PASSOU! +$200"); 
+            p.money+=200; p.pos=0; ui.place(pid,0); 
+            return;
+        }
+        
+        // Rain Agamenon
+        if(s.n.includes("Agamenon")){
+            document.querySelector('.rain-anim').classList.add('active');
+            setTimeout(()=>document.querySelector('.rain-anim').classList.remove('active'), 4000);
+            ui.toast("CARRO AFOGOU! -$100 DE GUINCHO"); p.money-=100;
+            return;
+        }
 
-        animating=true; ui.hud();
-        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
-        p.lastD1 = d1; p.lastD2 = d2;
-        ui.dice(d1,d2); await sleep(1500);
-        
-        if(p.jailed){
-            if(d1===d2){ 
-                p.jailed=false; p.jailAttempts=0; ui.toast("DADOS IGUAIS! SOLTO!"); 
-                await game.move(turn, d1+d2); 
-            } else { 
-                p.jailAttempts++;
-                if(p.jailAttempts >= 3) {
-                    ui.toast("PENA MÁXIMA! SAIRÁ NA PRÓXIMA.");
-                    p.jailed=false; p.jailAttempts=0;
-                } else {
-                    ui.toast(`PRESO! TENTATIVA ${p.jailAttempts}/3`);
-                }
-                rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; 
-            }
-        } else {
-            if(d1===d2) { p.doubles++; ui.toast("JOGA DE NOVO!"); } else p.doubles=0;
-            if(p.doubles===3) { ui.toast("3x IGUAIS! CADEIA!"); game.jail(turn); animating=false; rolled=true; ui.hud(); return; }
-            await game.move(turn, d1+d2);
-        }
-        rolled=true; animating=false; ui.hud();
-        
-        if(turn!==0 && !pendingCardType) {
-            if(d1===d2) setTimeout(game.roll, 1500);
-            else setTimeout(game.pass, 1500);
-        }
-    },
-    move: async (pid, steps) => {
-        const p = players[pid];
-        for(let i=0; i<steps; i++){
-            p.pos = (p.pos + 1) % 40;
-            // Salário Reduzido no Hardcore
-            if(p.pos===0 && p.active){ 
-                const sal = 100; // REDUZIDO DE 200 PARA 100
-                p.money+=sal; ui.toast(`Início! +$${sal}`); p.boughtRound=false; 
-            }
-            ui.place(pid, p.pos); play('step'); await sleep(250);
-        }
-        game.land(pid);
-    },
-    land: (pid) => {
-        const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
-        if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
-        
-        totalTurns++;
-        if(totalTurns%30 === 0) { // Aumentei intervalo do Galo para dificultar
-            ui.toast("O GALO PASSOU! +$200"); p.money+=200; p.pos=0; ui.place(pid,0); return;
-        }
-        
-        // AGAMENON, BOA VIAGEM, PAIVA HAZARDS
-        const isHazardProp = ["Av. Agamenon", "Boa Viagem", "Paiva"].includes(s.n);
-        
-        if (isHazardProp) {
-            // Se for dono, imune.
-            if (pr && pr.owner === pid) {
-                ui.toast("VOCÊ É O DONO! TÁ TRANQUILO.");
-            } else {
-                // Se não for dono (mesmo que não tenha dono ainda), sofre a consequência
-                if(s.n === "Av. Agamenon") {
-                    if(Math.random() > 0.5) {
-                        document.querySelector('.traffic-anim').classList.add('active');
-                        setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000);
-                        p.skippedTurn = true;
-                        ui.toast("ENGARRAFAMENTO! PERDEU 1 VEZ.");
-                    } else {
-                        ui.toast("BÔNUS DO BK! +$50");
-                        p.money += 50;
-                    }
-                } else if(s.n === "Boa Viagem" || s.n === "Paiva") {
-                    // Mantive a lógica original do Tubarão/Chuva para BV/Paiva se quiser, ou remove-se. 
-                    // No código original tinha chuva na Agamenon. Vamos mover a chuva para o Paiva/BV.
-                    if(Math.random() > 0.7) {
-                        document.querySelector('.shark-anim').classList.add('active');
-                        setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000);
-                        ui.toast("TUBARÃO! CORREU E PERDEU $50");
-                        p.money -= 50;
-                    }
-                }
-            }
-        }
-
-        if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
-            if(!pr){
-                // Compra liberada mesmo se sofreu hazard, desde que tenha dinheiro
-                if(pid===0 && p.money >= s.p) ui.openProp(p.pos, true); 
-                else if(pid!==0 && p.money >= s.p) game.aiBuy(p.pos);
-            } else if(pr.owner !== pid && !pr.mtg && players[pr.owner].active){
-                let rent = 0;
-                if(s.t==='pr') rent = s.r[pr.level];
-                else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
-                else if(s.t==='ut') { rent = (players[pid].lastD1+players[pid].lastD2)*4; }
-                p.money -= rent; players[pr.owner].money += rent; ui.toast(`PAGOU ALUGUEL $${rent}`); play('cash');
-            }
-        } else if(s.t==='ch' || s.t==='rev'){
-            if(pid===0) { pendingCardType = s.t==='ch'?'ch':'rev'; ui.hud(); ui.toast("CLICA NO BARALHO!"); }
-            else { 
-                const deck = s.t==='ch' ? CARDS_SORTE : CARDS_REVES; 
-                ui.pendingCard = deck[Math.floor(Math.random()*deck.length)]; 
-                ui.showEvent(s.t==='ch'?'sorte':'vixe', ui.pendingCard.txt);
-                setTimeout(()=>ui.closeEvent(), 3000);
-            }
-        } else if(s.t==='tx'){ p.money-=200; ui.toast("IMPOSTO -$200"); }
-        ui.hud(); 
-    },
-    applyCard: () => {
-        const c = ui.pendingCard; const p = players[turn];
-        if(c.val) p.money += c.val; if(c.act==='jail') game.jail(turn);
-        ui.hud(); rolled=true; 
-        if(turn!==0) {
-            if(players[turn].lastD1===players[turn].lastD2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500);
-        }
-    },
-    jail: (pid) => {
-        players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].pos = 10; ui.place(pid, 10);
-        ui.toast("PRESO!"); play('step');
-    },
-    pass: () => {
-        // Se a pessoa tirou dados iguais, ela não passa, ela rola de novo (tratado no roll).
-        // Se ela passar explicitamente, reseta.
-        players[turn].doubles = 0;
-        
-        // Verifica falência
-        if(players[turn].money < 0 && players[turn].active) {
-            players[turn].active = false;
-            props.forEach((pr, i) => { if(pr && pr.owner===turn) props[i]=null; });
-            ui.toast(`${players[turn].name} FALIU!`);
-            // Se for humano, game over visual? Não, deixa rolar.
-        }
-
-        let loop = 0;
-        do {
-            turn = (turn+1) % players.length;
-            loop++;
-        } while(!players[turn].active && loop < players.length);
-        
-        rolled=false; animating=false; ui.hud();
-        if(turn!==0) setTimeout(game.roll, 1500);
-    },
-    // AI simples
-    aiBuy: (idx) => {
-        if(Math.random() > 0.3) { // 70% chance de comprar
-            const p = players[turn]; const s = BD[idx];
-            p.money -= s.p; props[idx] = {owner:turn, level:0, mtg:false};
-            ui.toast(`${p.name} comprou ${s.n}`);
-            // AI constrói logo se tiver dinheiro
-            if(p.money > 500 && s.t==='pr') {
-                p.money -= s.h; props[idx].level = 1;
-            }
-            ui.hud();
-        }
-    },
-    confirmBuy: () => {
-        const p = players[0]; const
+        if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
+            if(!pr){
+                if(pid===0 && p.money >= s.p) ui.openProp(p.pos, true); 
+                else if(pid!==0 && p.money >= s.p) game.aiBuy(p.pos);
+            } else if(pr.owner !== pid && !pr.mtg && players[pr.owner].active){
+                let rent = 0;
+                if(s.t==='pr') rent = s.r[pr.level];
+                else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
+                else if(s.t==='ut') { rent = (players[pid].lastD1+players[pid].lastD2)*4; }
+                p.money -= rent; players[pr.owner].money += rent; ui.toast(`PAGOU ALUGUEL $${rent}`); play('cash');
+            }
+        } else if(s.t==='ch' || s.t==='rev'){
+            if(pid===0) { pendingCardType = s.t==='ch'?'ch':'rev'; ui.hud(); ui.toast("CLICA NO BARALHO!"); }
+            else { 
+                const deck = s.t==='ch' ? CARDS_SORTE : CARDS_REVES; 
+                ui.pendingCard = deck[Math.floor(Math.random()*deck.length)]; 
+                ui.showEvent(s.t==='ch'?'sorte':'vixe', ui.pendingCard.txt);
+                setTimeout(()=>ui.closeEvent(), 3000);
+            }
+        } else if(s.t==='tx'){ p.money-=200; ui.toast("IMPOSTO -$200"); }
+        ui.hud(); 
+    },
+    applyCard: () => {
+        const c = ui.pendingCard; const p = players[turn];
+        if(c.val) p.money += c.val; if(c.act==='jail') game.jail(turn);
+        ui.hud(); rolled=true; 
+        if(turn!==0) {
+            if(players[turn].last
