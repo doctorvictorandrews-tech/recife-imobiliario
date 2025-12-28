@@ -1,430 +1,238 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recifeopoly - Versão Corrigida</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; text-align: center; padding: 20px; }
-        h1 { color: #2c3e50; }
-        
-        /* Área do Tabuleiro (Visualização Simples) */
-        #tabuleiro {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            max-width: 800px;
-            margin: 20px auto;
-        }
+// ======================================================================
+// 1. CONFIGURAÇÃO DO MAPA (NOMES CORRIGIDOS)
+// ======================================================================
 
-        .casa {
-            border: 2px solid #bdc3c7;
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            min-height: 80px;
-            font-size: 0.9em;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+// Supondo que você tenha um array de objetos para as casas/propriedades
+const casas = [
+    { id: 0, nome: "Marco Zero", tipo: "inicio" },
+    
+    // ... casas 1 a 4 ...
 
-        .casa.propriedade { border-color: #3498db; }
-        .casa.especial { border-color: #f1c40f; background-color: #fffbf0; }
-        .casa.imposto { border-color: #e74c3c; background-color: #fff0f0; }
+    // SUBSTITUIÇÃO 1: Santo Amaro virou Av. Agamenon Magalhães
+    { id: 5, nome: "Av. Agamenon Magalhães", preco: 200, aluguel: 20, dono: null, tipo: "propriedade" },
+    
+    // ... outras casas ...
 
-        /* Pinos dos Jogadores */
-        .pino {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            display: inline-block;
-            margin: 2px;
-            border: 1px solid rgba(0,0,0,0.2);
-        }
+    // IBURA PERMANECE O MESMO
+    { id: 8, nome: "Ibura", preco: 100, aluguel: 6, dono: null, tipo: "propriedade" },
 
-        /* Painel de Controle */
-        #controles {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 20px auto;
-        }
+    // ... outras casas ...
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            margin: 5px;
-            transition: background 0.3s;
-        }
+    // SUBSTITUIÇÃO 2: Antiga Agamenon virou Imbiribeira
+    { id: 10, nome: "Imbiribeira", preco: 220, aluguel: 22, dono: null, tipo: "propriedade" },
 
-        .btn-jogar { background-color: #2ecc71; color: white; }
-        .btn-jogar:hover { background-color: #27ae60; }
-        .btn-jogar:disabled { background-color: #ccc; cursor: not-allowed; }
+    // Exemplo de casa que não compra (para teste do bug)
+    { id: 12, nome: "Lei Seca", valor: 150, tipo: "imposto" }, 
 
-        .btn-sim { background-color: #3498db; color: white; }
-        .btn-nao { background-color: #e74c3c; color: white; }
+    { id: 15, nome: "Galo da Madrugada", tipo: "evento_galo" },
+    
+    { id: 20, nome: "Cadeia", tipo: "prisao" }
+];
 
-        #area-decisao { display: none; background-color: #e8f6f3; padding: 15px; border-radius: 5px; margin-top: 10px; }
+// Variáveis Globais de Controle
+let jogadorAtualIndex = 0;
+let dadosIguais = false; // Controle crucial para o bug de repetição
+let aguardandoDecisao = false; // Para impedir cliques extras
 
-        /* Logs e Status */
-        #status-jogadores { display: flex; justify-content: space-around; margin-bottom: 20px; }
-        .card-jogador { background: #fff; padding: 10px; border-radius: 5px; width: 30%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
-        #log-jogo {
-            height: 150px;
-            overflow-y: auto;
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            max-width: 600px;
-            margin: 0 auto;
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        .log-msg { margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 2px; }
-    </style>
-</head>
-<body>
+// ======================================================================
+// 2. SISTEMA DE DADOS E MOVIMENTO
+// ======================================================================
 
-    <h1>🏰 Recifeopoly</h1>
+function jogarDados() {
+    // Bloqueia botão para evitar clique duplo
+    const btn = document.getElementById("btn-jogar-dados");
+    btn.disabled = true; 
+    btn.style.display = "none"; 
 
-    <div id="status-jogadores">
-        </div>
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    const soma = d1 + d2;
 
-    <div id="tabuleiro">
-        </div>
+    // Verifica e armazena se foi dados iguais
+    dadosIguais = (d1 === d2);
+    
+    console.log(`Dados: ${d1} e ${d2}. Iguais? ${dadosIguais}`);
+    exibirAnimacaoDados(d1, d2); // Sua função visual
 
-    <div id="controles">
-        <h2 id="titulo-vez">Vez de: <span id="nome-jogador-vez">...</span></h2>
-        
-        <div id="dados-display" style="font-size: 24px; margin: 10px; font-weight: bold;">🎲 -- | --</div>
-        
-        <button id="btn-jogar" class="btn-jogar" onclick="jogarDados()">🎲 Jogar Dados</button>
+    // Movimentação
+    let jogador = jogadores[jogadorAtualIndex];
 
-        <div id="area-decisao">
-            <p id="msg-decisao">Deseja comprar esta propriedade?</p>
-            <button class="btn-sim" onclick="responderCompra(true)">Sim</button>
-            <button class="btn-nao" onclick="responderCompra(false)">Não</button>
-        </div>
-    </div>
-
-    <h3>📜 Histórico</h3>
-    <div id="log-jogo"></div>
-
-<script>
-    // ====================================================
-    // 1. CONFIGURAÇÃO E DADOS
-    // ====================================================
-
-    // Configuração do Tabuleiro (Correções de nomes aqui)
-    const casas = [
-        { nome: "Marco Zero", tipo: "inicio", preco: 0 },
-        { nome: "Rua da Aurora", tipo: "propriedade", preco: 100, aluguel: 10, dono: null },
-        { nome: "Av. Agamenon Magalhães", tipo: "propriedade", preco: 200, aluguel: 20, dono: null }, // Antigo Santo Amaro
-        { nome: "Ibura", tipo: "propriedade", preco: 120, aluguel: 12, dono: null }, // Ibura (Mantido)
-        { nome: "Imbiribeira", tipo: "propriedade", preco: 220, aluguel: 22, dono: null }, // Antiga Agamenon
-        { nome: "Galo da Madrugada", tipo: "evento_galo", preco: 0 },
-        { nome: "Boa Viagem", tipo: "propriedade", preco: 300, aluguel: 30, dono: null },
-        { nome: "Lei Seca", tipo: "imposto", valor: 100 }, // Casa que não dá pra comprar
-        { nome: "Olinda", tipo: "propriedade", preco: 280, aluguel: 28, dono: null },
-        { nome: "Cadeia", tipo: "prisao", preco: 0 }
-    ];
-
-    let jogadores = [
-        { id: 0, nome: "Jogador 1", cor: "blue", saldo: 1500, posicao: 0, preso: false },
-        { id: 1, nome: "Jogador 2", cor: "red", saldo: 1500, posicao: 0, preso: false }
-        // Adicione mais jogadores se quiser
-    ];
-
-    let jogadorAtualIndex = 0;
-    let dadosIguais = false; // Controle de dados iguais
-    let aguardandoDecisao = false;
-
-    // ====================================================
-    // 2. INICIALIZAÇÃO VISUAL
-    // ====================================================
-
-    function iniciarJogo() {
-        renderizarTabuleiro();
-        atualizarUI();
-        log("Bem-vindo ao Recifeopoly! O jogo começou.");
-    }
-
-    function renderizarTabuleiro() {
-        const tabuleiroDiv = document.getElementById("tabuleiro");
-        tabuleiroDiv.innerHTML = "";
-        
-        casas.forEach((casa, index) => {
-            const div = document.createElement("div");
-            div.className = `casa ${casa.tipo === 'propriedade' ? 'propriedade' : (casa.tipo === 'imposto' ? 'imposto' : 'especial')}`;
-            div.innerHTML = `<strong>${casa.nome}</strong>`;
-            
-            // Se for propriedade, mostra preço
-            if(casa.tipo === 'propriedade') {
-                div.innerHTML += `<br><small>R$ ${casa.preco}</small>`;
-            }
-            if(casa.tipo === 'imposto') {
-                div.innerHTML += `<br><small>-R$ ${casa.valor}</small>`;
-            }
-
-            // Area para pinos
-            const pinosDiv = document.createElement("div");
-            pinosDiv.id = `casa-${index}-pinos`;
-            div.appendChild(pinosDiv);
-
-            tabuleiroDiv.appendChild(div);
-        });
-        atualizarPinos();
-    }
-
-    function atualizarPinos() {
-        // Limpa todos os pinos anteriores
-        casas.forEach((_, i) => {
-            document.getElementById(`casa-${i}-pinos`).innerHTML = "";
-        });
-
-        // Desenha os novos
-        jogadores.forEach(j => {
-            const pino = document.createElement("span");
-            pino.className = "pino";
-            pino.style.backgroundColor = j.cor;
-            document.getElementById(`casa-${j.posicao}-pinos`).appendChild(pino);
-        });
-    }
-
-    function atualizarUI() {
-        const divStatus = document.getElementById("status-jogadores");
-        divStatus.innerHTML = "";
-        jogadores.forEach(j => {
-            divStatus.innerHTML += `
-                <div class="card-jogador" style="border-top: 4px solid ${j.cor}">
-                    <strong>${j.nome}</strong><br>
-                    Saldo: R$ ${j.saldo}<br>
-                    ${j.preso ? '<span style="color:red">PRESO</span>' : 'Livre'}
-                </div>
-            `;
-        });
-
-        document.getElementById("nome-jogador-vez").innerText = jogadores[jogadorAtualIndex].nome;
-        document.getElementById("nome-jogador-vez").style.color = jogadores[jogadorAtualIndex].cor;
-    }
-
-    function log(msg) {
-        const logDiv = document.getElementById("log-jogo");
-        const linha = document.createElement("div");
-        linha.className = "log-msg";
-        linha.innerText = `> ${msg}`;
-        logDiv.prepend(linha);
-    }
-
-    // ====================================================
-    // 3. LÓGICA DO JOGO (CORRIGIDA)
-    // ====================================================
-
-    function jogarDados() {
-        const btn = document.getElementById("btn-jogar");
-        btn.disabled = true; // Trava botão para evitar clique duplo
-        
-        const d1 = Math.floor(Math.random() * 6) + 1;
-        const d2 = Math.floor(Math.random() * 6) + 1;
-        const soma = d1 + d2;
-
-        // Verifica dados iguais
-        dadosIguais = (d1 === d2);
-
-        document.getElementById("dados-display").innerText = `🎲 ${d1} + ${d2} = ${soma}`;
-        log(`${jogadores[jogadorAtualIndex].nome} tirou ${d1} e ${d2}.`);
-
-        let jogador = jogadores[jogadorAtualIndex];
-
-        // Lógica de Prisão
-        if (jogador.preso) {
-            if (dadosIguais) {
-                jogador.preso = false;
-                log("Sorte! Tirou dados iguais e saiu da prisão!");
-                moverJogador(jogador, soma);
-            } else {
-                log("Continua preso. Passa a vez.");
-                dadosIguais = false; // Preso não joga de novo se falhar
-                finalizarJogada();
-            }
-        } else {
+    // Se estiver preso, lógica de prisão (simplificada aqui)
+    if (jogador.preso) {
+        if (dadosIguais) {
+            jogador.preso = false;
+            exibirMensagem("Sorte! Tirou dados iguais e saiu da prisão!");
             moverJogador(jogador, soma);
-        }
-    }
-
-    function moverJogador(jogador, passos) {
-        jogador.posicao += passos;
-
-        // Volta completa
-        if (jogador.posicao >= casas.length) {
-            jogador.posicao = jogador.posicao % casas.length;
-            jogador.saldo += 200;
-            log("Passou pelo Marco Zero! Ganhou R$ 200.");
-        }
-
-        atualizarPinos();
-        atualizarUI();
-
-        // Delay para "andar" visualmente antes de disparar o evento
-        setTimeout(() => {
-            verificarCasa(jogador);
-        }, 500);
-    }
-
-    function verificarCasa(jogador) {
-        const casa = casas[jogador.posicao];
-        log(`Caiu em: ${casa.nome}`);
-
-        // 1. PROPRIEDADE
-        if (casa.tipo === "propriedade") {
-            if (casa.dono === null) {
-                if (jogador.saldo >= casa.preco) {
-                    mostrarOpcaoCompra(casa);
-                    return; // Retorna para esperar o clique do usuário
-                } else {
-                    log("Sem saldo para comprar.");
-                    finalizarJogada();
-                }
-            } else if (casa.dono !== jogador.id) {
-                // Paga aluguel
-                jogador.saldo -= casa.aluguel;
-                let dono = jogadores.find(j => j.id === casa.dono);
-                if (dono) dono.saldo += casa.aluguel;
-                
-                log(`Pagou R$ ${casa.aluguel} de aluguel para ${dono ? dono.nome : 'banco'}.`);
-                atualizarUI();
-                finalizarJogada();
-            } else {
-                log("Caiu na própria casa. Descanso.");
-                finalizarJogada();
-            }
-        }
-        // 2. IMPOSTO / LEI SECA (Correção do travamento)
-        else if (casa.tipo === "imposto") {
-            jogador.saldo -= casa.valor;
-            log(`Pagou R$ ${casa.valor} de multa.`);
-            atualizarUI();
-            finalizarJogada(); // IMPORTANTE: Chama finalizarJogada
-        }
-        // 3. GALO (Correção: Só teleporta o atual)
-        else if (casa.tipo === "evento_galo") {
-            log("🐔 O GALO PASSOU! Arrastão para o Marco Zero!");
-            jogador.posicao = 0; // Marco Zero é index 0
-            jogador.saldo += 200;
-            atualizarPinos();
-            atualizarUI();
-            finalizarJogada();
-        }
-        // 4. PRISÃO
-        else if (casa.tipo === "prisao") {
-            jogador.preso = true;
-            log("Você foi PRESO! Ficará sem jogar até tirar dados iguais.");
-            dadosIguais = false; // Se foi preso agora, perde o bônus de jogar de novo
-            finalizarJogada();
-        }
-        // 5. INÍCIO
-        else {
-            finalizarJogada();
-        }
-    }
-
-    // ====================================================
-    // 4. SISTEMA DE COMPRA
-    // ====================================================
-
-    function mostrarOpcaoCompra(casa) {
-        aguardandoDecisao = true;
-        document.getElementById("area-decisao").style.display = "block";
-        document.getElementById("msg-decisao").innerText = `Deseja comprar ${casa.nome} por R$ ${casa.preco}?`;
-        // Botão de jogar dados some enquanto decide
-        document.getElementById("btn-jogar").style.display = "none";
-    }
-
-    function responderCompra(querComprar) {
-        if (!aguardandoDecisao) return;
-
-        const casa = casas[jogadores[jogadorAtualIndex].posicao];
-        const jogador = jogadores[jogadorAtualIndex];
-
-        if (querComprar) {
-            jogador.saldo -= casa.preco;
-            casa.dono = jogador.id;
-            log(`Comprou ${casa.nome}!`);
-            
-            // Atualiza visualmente a casa (borda da cor do jogador)
-            const casaDiv = document.querySelectorAll(".casa")[jogador.posicao];
-            casaDiv.style.borderColor = jogador.cor;
-            casaDiv.style.borderWidth = "4px";
-            
-            atualizarUI();
         } else {
-            log("Decidiu não comprar.");
+            exibirMensagem("Continua preso...");
+            // Se não saiu, perde a vez (mesmo dados iguais não joga de novo se falhar na prisão)
+            dadosIguais = false; 
+            finalizarJogada();
         }
+    } else {
+        moverJogador(jogador, soma);
+    }
+}
 
-        // Reseta UI de compra
-        document.getElementById("area-decisao").style.display = "none";
-        aguardandoDecisao = false;
+function moverJogador(jogador, passos) {
+    // Lógica simples de movimento circular
+    jogador.posicao += passos;
+    if (jogador.posicao >= casas.length) {
+        jogador.posicao -= casas.length;
+        jogador.saldo += 200; // Passou pelo início
+    }
 
-        // CORREÇÃO DO BUG: Mesmo recusando a compra, verifica se joga de novo
+    atualizarPosicaoVisual(jogador); // Sua função que move o pino
+    
+    // Após mover, verifica onde caiu
+    setTimeout(() => {
+        verificarCasa(jogador);
+    }, 1000); // Pequeno delay para animação
+}
+
+// ======================================================================
+// 3. LÓGICA DE INTERAÇÃO COM A CASA (CORRIGIDA)
+// ======================================================================
+
+function verificarCasa(jogador) {
+    const casa = casas[jogador.posicao];
+    exibirMensagem(`Você caiu em: ${casa.nome}`);
+
+    // CASO 1: Propriedade Comprável
+    if (casa.tipo === "propriedade") {
+        if (casa.dono === null) {
+            // Se tem dinheiro, oferece compra
+            if (jogador.saldo >= casa.preco) {
+                aguardandoDecisao = true;
+                mostrarBotoesCompra(true); // Exibe Sim/Não
+            } else {
+                exibirMensagem("Saldo insuficiente para comprar.");
+                finalizarJogada(); // CORREÇÃO: Não trava, finaliza
+            }
+        } else if (casa.dono !== jogador.id) {
+            pagarAluguel(jogador, casa);
+            finalizarJogada(); // CORREÇÃO: Pagou, vida que segue
+        } else {
+            exibirMensagem("Esta propriedade já é sua.");
+            finalizarJogada();
+        }
+    } 
+    // CASO 2: Imposto / Lei Seca (Onde travava antes)
+    else if (casa.tipo === "imposto") {
+        jogador.saldo -= casa.valor;
+        exibirMensagem(`Você pagou R$ ${casa.valor} na Lei Seca/Imposto.`);
+        atualizarSaldoVisual();
+        finalizarJogada(); // CORREÇÃO: Chama a função centralizadora
+    }
+    // CASO 3: Galo da Madrugada
+    else if (casa.tipo === "evento_galo") {
+        eventoGaloPassou(); 
+        // A função do Galo chamará finalizarJogada() no final dela
+    }
+    // CASO 4: Prisão / Visitante / Início
+    else {
+        if (casa.tipo === "prisao") {
+            jogador.preso = true;
+            exibirMensagem("Você foi PRESO!");
+            dadosIguais = false; // Se for preso, perde o direito de jogar de novo
+        }
         finalizarJogada();
     }
+}
 
-    // ====================================================
-    // 5. GERENCIAMENTO DE TURNO (CORREÇÃO DE BUGS)
-    // ====================================================
+// ======================================================================
+// 4. CORREÇÃO DO GALO (APENAS JOGADOR DA VEZ)
+// ======================================================================
 
-    function finalizarJogada() {
-        let jogador = jogadores[jogadorAtualIndex];
+function eventoGaloPassou() {
+    // CORREÇÃO: Não usamos loop (for/forEach). Pegamos apenas o atual.
+    let jogador = jogadores[jogadorAtualIndex];
+    
+    exibirMensagem(`O GALO PASSOU! 🐔 ${jogador.nome} foi levado ao Marco Zero!`);
+    
+    // Teleporta
+    jogador.posicao = 0; 
+    atualizarPosicaoVisual(jogador);
 
-        // Se tirou dados iguais e não está preso, joga de novo
-        if (dadosIguais && !jogador.preso) {
-            log(`🎲🎲 DADOS IGUAIS! ${jogador.nome} joga novamente!`);
-            
-            // Destrava o botão para o MESMO jogador
-            const btn = document.getElementById("btn-jogar");
-            btn.disabled = false;
-            btn.style.display = "inline-block";
-            
-        } else {
-            // Passa a vez
-            proximoTurno();
-        }
+    // Bônus
+    jogador.saldo += 200;
+    atualizarSaldoVisual();
+
+    // Segue o fluxo
+    finalizarJogada();
+}
+
+// ======================================================================
+// 5. RESPOSTA DA COMPRA (CORREÇÃO DO TRAVAMENTO "NÃO QUERO")
+// ======================================================================
+
+function responderCompra(querComprar) {
+    if (!aguardandoDecisao) return; // Segurança
+
+    mostrarBotoesCompra(false); // Esconde botões
+    aguardandoDecisao = false;
+
+    const casa = casas[jogadores[jogadorAtualIndex].posicao];
+
+    if (querComprar) {
+        realizarCompra(jogadores[jogadorAtualIndex], casa); // Sua lógica de compra
+        exibirMensagem(`Parabéns! Você comprou ${casa.nome}`);
+    } else {
+        exibirMensagem("Você decidiu não comprar.");
     }
 
-    function proximoTurno() {
-        jogadorAtualIndex++;
-        if (jogadorAtualIndex >= jogadores.length) {
-            jogadorAtualIndex = 0;
-        }
+    // CORREÇÃO CRUCIAL: Independente se comprou ou não,
+    // chamamos finalizarJogada para verificar os dados iguais.
+    finalizarJogada();
+}
 
-        const proximo = jogadores[jogadorAtualIndex];
-        log(`--- Vez de ${proximo.nome} ---`);
+// ======================================================================
+// 6. FINALIZAR JOGADA (O CORAÇÃO DA CORREÇÃO)
+// ======================================================================
+// Esta função decide se passa a vez ou se joga novamente.
+// Ela centraliza tudo para evitar bugs.
+
+function finalizarJogada() {
+    let jogador = jogadores[jogadorAtualIndex];
+
+    // Se tirou dados iguais E não está preso
+    if (dadosIguais && !jogador.preso) {
+        exibirMensagem(`DADOS IGUAIS! 🎲🎲 ${jogador.nome} joga novamente!`);
         
-        atualizarUI(); // Atualiza o nome de quem joga
-
-        // CORREÇÃO: Apenas libera o botão. NUNCA joga automaticamente.
-        const btn = document.getElementById("btn-jogar");
+        // CORREÇÃO: Reabilita o botão para o MESMO jogador
+        // NÃO chama proximoTurno()
+        const btn = document.getElementById("btn-jogar-dados");
         btn.disabled = false;
-        btn.style.display = "inline-block";
+        btn.style.display = "block";
         
-        if(proximo.preso) {
-            log(`${proximo.nome} está preso. Precisa de dados iguais.`);
-        }
+    } else {
+        // Vida normal, passa para o próximo
+        proximoTurno();
+    }
+}
+
+// ======================================================================
+// 7. PRÓXIMO TURNO (CORREÇÃO DO "JOGAR SOZINHO")
+// ======================================================================
+
+function proximoTurno() {
+    // Avança o índice
+    jogadorAtualIndex++;
+    if (jogadorAtualIndex >= jogadores.length) {
+        jogadorAtualIndex = 0;
     }
 
-    // Inicia tudo
-    window.onload = iniciarJogo;
+    let proximoJogador = jogadores[jogadorAtualIndex];
+    
+    // Atualiza interface indicando de quem é a vez
+    document.getElementById("nome-jogador-vez").innerText = proximoJogador.nome;
+    exibirMensagem(`É a vez de ${proximoJogador.nome}`);
 
-</script>
-</body>
-</html>
+    // CORREÇÃO: Apenas libera o botão. O JOGO FICA EM PAUSA AQUI.
+    // O usuário OBRIGATORIAMENTE tem que clicar para jogar.
+    const btn = document.getElementById("btn-jogar-dados");
+    btn.disabled = false;
+    btn.style.display = "block";
+    
+    // NUNCA CHAME jogarDados() AQUI DENTRO!
+}
