@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário V60 - Mobile First</title>
+    <title>Recife Imobiliário: Mobile Gold</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -26,11 +26,11 @@
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
         
         .shark-anim {
-            position: absolute; bottom: 20%; right: -50vw; font-size: 35vh; 
+            position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; 
             filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none;
             transform: scaleX(-1);
         }
-        .shark-anim.active { display: block; animation: sharkPass 3s linear forwards; }
+        .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
         
         .traffic-anim {
@@ -61,19 +61,11 @@
 
         /* ÁREA DO TABULEIRO (Topo) */
         #board-area { 
-            flex: 1; /* Ocupa o espaço que sobrar */
-            position: relative; overflow: hidden; 
+            flex: 1; position: relative; overflow: hidden; 
             display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle, #424242 0%, #000000 100%);
         }
-        
-        #board-container {
-            width: 950px; height: 950px;
-            position: relative;
-            transform-origin: center center;
-            /* Scale set via JS */
-        }
-
+        #board-container { width: 950px; height: 950px; position: relative; transform-origin: center center; }
         #board {
             width: 100%; height: 100%;
             display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
@@ -86,8 +78,9 @@
         #hud-panel { 
             height: auto; min-height: 250px; max-height: 40vh;
             background: #fff; border-top: 6px solid var(--c-dark);
-            display: flex; flex-direction: column; 
-            z-index: 5000; box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; z-index: 5000; 
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .hud-top-bar {
@@ -99,8 +92,7 @@
 
         .hud-content { flex: 1; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
         
-        /* Lista de Players compacta */
-        #players-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        #players-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; padding-right: 5px; }
         .p-stat { 
             display: flex; justify-content: space-between; padding: 8px; background: #fff; border: 1px solid #ddd;
             border-radius: 8px; align-items: center; font-weight: 700; font-size: 0.8rem;
@@ -108,8 +100,7 @@
         .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
         
-        /* Controles (Botões) */
-        #controls-area { width: 50%; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+        #controls-area { width: 45%; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
         
         .btn-game { 
             width: 100%; padding: 12px; border: none; border-radius: 12px; 
@@ -124,16 +115,17 @@
         .btn-pass { background: var(--c-red); }
         .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; }
         @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
-
-        /* Inventory Toggle Button */
-        .btn-inv { background: #607d8b; color: white; font-size: 0.8rem; padding: 8px; border-radius: 5px; margin-top: 5px; cursor: pointer; text-align: center; font-weight: bold; }
+        .btn-inv { background: #607d8b; color: white; font-size: 0.8rem; padding: 8px; border-radius: 5px; margin-top: 5px; cursor: pointer; text-align: center; font-weight: bold; width: 100%; border: none; }
 
         /* TABULEIRO INTERNO */
-        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.75rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; }
+        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.75rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; transition: border 0.3s; }
         .color-strip { height: 25%; border-bottom: 2px solid var(--c-dark); }
         .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.85rem; }
         .sp-price { font-size: 0.9rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 2px 0; }
         .sp-icon { font-size: 3rem; display: flex; align-items: center; justify-content: center; height: 100%; }
+
+        /* DESTAQUE DE PROPRIEDADE (NOVA CLASSE) */
+        .space.owned { border-width: 4px !important; }
 
         .center-hub { 
             grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; 
@@ -141,7 +133,6 @@
         }
         .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); text-align: center; line-height: 1; pointer-events: none; }
 
-        /* CARTAS CENTRAIS */
         .deck { 
             position: absolute; width: 120px; height: 160px; background: #fff; 
             border: 4px solid #000; border-radius: 10px; cursor: pointer; 
@@ -152,27 +143,20 @@
         .deck:active { transform: scale(0.95); }
         .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: rotate(-10deg); }
         .deck.reves { top: 45%; left: 50%; background: var(--c-red); transform: rotate(10deg); }
-        
-        .deck.active { 
-            animation: pulseDeck 1s infinite; border-color: #ffeb3b; z-index: 100;
-        }
+        .deck.active { animation: pulseDeck 1s infinite; border-color: #ffeb3b; z-index: 100; }
         @keyframes pulseDeck { 0%{transform:scale(1) rotate(0);} 50%{transform:scale(1.1) rotate(0);} 100%{transform:scale(1) rotate(0);} }
 
-        /* TOKEN / PEÃO */
         .token { 
             width: 60px; height: 60px; position: absolute; z-index: 50; 
             font-size: 3.5rem; text-align: center; line-height: 60px; 
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); 
-            pointer-events: none;
+            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none;
         }
 
-        /* EDIFÍCIOS */
         .build-area { position: absolute; top: -12px; width: 100%; display: flex; justify-content: center; gap: 2px; }
         .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
         .hotel-3d { width: 20px; height: 20px; background: var(--c-red); border: 1px solid #000; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
-        /* MODAIS E OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
         
         .prop-card { 
@@ -184,7 +168,6 @@
         .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
         .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
         
-        /* CARD FLIP */
         .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; width: 85%; height: 60vh; max-height: 500px; }
         .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
         .card-flip.flipped { transform: rotateY(180deg); }
@@ -192,22 +175,18 @@
         .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 5rem; transform: rotateY(0deg); }
         .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
 
-        /* DICE */
         .dice-stage { position: absolute; display: flex; gap: 20px; pointer-events: none; opacity: 0; top: 30%; transition: 0.2s; z-index: 7000; }
         .dice-stage.active { opacity: 1; }
         .cube { width: 80px; height: 80px; background: #fff; border-radius: 15px; display: grid; place-items: center; font-size: 3rem; font-weight: bold; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-family: 'Titan One'; }
         .cube.shake { animation: shake 0.1s infinite; }
         @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
 
-        /* TOAST */
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
-        /* INVENTORY MODAL */
         #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
         #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
-
     </style>
 </head>
 <body>
@@ -261,9 +240,7 @@
             <div class="money-display" id="p-money">$1500</div>
         </div>
         <div class="hud-content">
-            <div id="players-scroll">
-                </div>
-            
+            <div id="players-scroll"></div>
             <div id="controls-area">
                 <button id="b-card" class="btn-game btn-card" onclick="game.forceDrawCard()">🎴 PEGAR CARTA</button>
                 <div id="jail-btns" style="display:none; flex-direction:column; gap:5px;">
@@ -333,7 +310,6 @@
 </div>
 
 <script>
-/* DADOS & PERSONAGENS */
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, {id:'c',i:'🦀',n:'Caranguejo'},
     {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'},
@@ -341,7 +317,6 @@ const CHARS=[
     {id:'hmn',i:'🎩',n:'Meia-Noite'}, {id:'rp',i:'🚔',n:'Rádio P.'}, {id:'srr',i:'🐚',n:'Sururu'}, {id:'and',i:'😎',n:'Anderson'}
 ];
 
-/* MAPA */
 const BD=[
     {t:'st',n:'MARCO ZERO',i:'🚩'}, 
     {t:'pr',g:'#795548',n:'Coque',p:60,h:150,r:[2,10,30,90,160,250]}, 
@@ -388,32 +363,23 @@ const BD=[
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Vó deu dinheiro. +100", val:100}];
 const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a carteira. -100", val:-100}, {txt:"A Rádio Patrulha te pegou!", act:'jail'}];
 
-/* VARS */
 let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, gameMode='normal', pendingCardType=null, totalTurns=0;
 const SFX={step:new Audio('https://www.soundjay.com/misc/sounds/wood-block-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3')};
 const play=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{})}catch(e){}};
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 
-/* SCALE LOGIC (MOBILE FIT) */
 function resizeBoard() {
     const el = document.getElementById('board-container');
     const area = document.getElementById('board-area');
     if(!el || !area) return;
-    
-    // Calcula o menor lado da área disponível (largura ou altura)
-    // Deixamos uma margem de segurança
     const w = area.offsetWidth;
     const h = area.offsetHeight;
     const minDim = Math.min(w, h) * 0.95; 
-    
-    // O tabuleiro original tem 950px
     const scale = minDim / 950;
-    
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
 
-/* UI CONTROLLER */
 const ui = {
     toChar: () => {
         const cpuCount = parseInt(document.getElementById('cpu-count').value);
@@ -427,9 +393,7 @@ const ui = {
         players[0].icon = icon;
         players.slice(1).forEach(p=>{ const av=CHARS.filter(c=>c.i!==icon); if(av.length) p.icon=av[Math.floor(Math.random()*av.length)].i; });
         document.getElementById('screen-char').style.display='none'; document.getElementById('game-layout').classList.add('active');
-        ui.buildBoard(); 
-        resizeBoard(); // Fit mobile
-        ui.hud();
+        ui.buildBoard(); resizeBoard(); ui.hud();
     },
     buildBoard: () => {
         const b = document.getElementById('board');
@@ -447,34 +411,19 @@ const ui = {
         ui.updatePositions();
     },
     updatePositions: () => {
-        // Cluster logic: if players are on same spot, arrange in circle
         const map = {};
-        players.forEach((p, i) => {
-            if(!map[p.pos]) map[p.pos] = [];
-            map[p.pos].push(i);
-        });
-
+        players.forEach((p, i) => { if(!map[p.pos]) map[p.pos] = []; map[p.pos].push(i); });
         Object.keys(map).forEach(pos => {
-            const pids = map[pos];
-            const s = document.getElementById(`s${pos}`);
-            if(!s) return;
-            
+            const pids = map[pos]; const s = document.getElementById(`s${pos}`); if(!s) return;
             if(pids.length === 1) {
                 const t = document.getElementById(`tok${pids[0]}`);
-                t.style.left = (s.offsetLeft + 12) + 'px';
-                t.style.top = (s.offsetTop + 12) + 'px';
-                t.style.transform = 'scale(1)';
+                t.style.left = (s.offsetLeft + 12) + 'px'; t.style.top = (s.offsetTop + 12) + 'px'; t.style.transform = 'scale(1)';
             } else {
-                // Circular layout for overlapping tokens
-                const radius = 15;
                 pids.forEach((pid, idx) => {
                     const angle = (idx / pids.length) * 2 * Math.PI;
-                    const ox = Math.cos(angle) * radius;
-                    const oy = Math.sin(angle) * radius;
+                    const ox = Math.cos(angle) * 15; const oy = Math.sin(angle) * 15;
                     const t = document.getElementById(`tok${pid}`);
-                    t.style.left = (s.offsetLeft + 12 + ox) + 'px';
-                    t.style.top = (s.offsetTop + 12 + oy) + 'px';
-                    t.style.transform = 'scale(0.8)'; // Shrink slightly to fit
+                    t.style.left = (s.offsetLeft + 12 + ox) + 'px'; t.style.top = (s.offsetTop + 12 + oy) + 'px'; t.style.transform = 'scale(0.8)';
                 });
             }
         });
@@ -488,41 +437,43 @@ const ui = {
         
         const invList = document.getElementById('inv-list'); invList.innerHTML = '';
         props.forEach((pr,i)=>{
+            // ATUALIZAÇÃO VISUAL DAS BORDAS NO TABULEIRO
+            const sp = document.getElementById(`s${i}`);
+            if(sp) {
+                if(pr) {
+                    sp.classList.add('owned');
+                    sp.style.borderColor = players[pr.owner].color;
+                } else {
+                    sp.classList.remove('owned');
+                    sp.style.borderColor = 'rgba(0,0,0,0.15)';
+                }
+            }
+
             if(pr && pr.owner===0) invList.innerHTML+=`<div style="background:#fff;border-left:8px solid ${BD[i].g||'#333'};padding:15px;border-radius:5px;cursor:pointer;font-weight:bold;display:flex;justify-content:space-between;" onclick="ui.toggleInv();ui.openProp(${i})"><span>${BD[i].n}</span> <span>${pr.mtg?'⛔':''} ${pr.level>0?'🏠'+pr.level:''}</span></div>`;
             const el = document.getElementById(`b${i}`);
             if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
         });
 
-        const hum = turn===0;
-        const jailed = players[0].jailed;
-
+        const hum = turn===0; const jailed = players[0].jailed;
         document.getElementById('jail-btns').style.display = (jailed && hum) ? 'flex' : 'none';
         document.getElementById('normal-btns').style.display = (!jailed && hum) ? 'flex' : 'none';
         
         if(!jailed && hum) {
             const doubles = players[0].lastD1 === players[0].lastD2 && players[0].lastD1 !== undefined;
             const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
-            
             document.getElementById('b-roll').disabled = !canRoll;
             
             const btnCard = document.getElementById('b-card');
             if(pendingCardType) {
-                btnCard.style.display = 'block';
-                document.getElementById('b-roll').style.display = 'none';
-                document.getElementById('b-pass').style.display = 'none';
+                btnCard.style.display = 'block'; document.getElementById('b-roll').style.display = 'none'; document.getElementById('b-pass').style.display = 'none';
             } else {
-                btnCard.style.display = 'none';
-                document.getElementById('b-roll').style.display = 'block';
-                document.getElementById('b-pass').style.display = 'block';
+                btnCard.style.display = 'none'; document.getElementById('b-roll').style.display = 'block'; document.getElementById('b-pass').style.display = 'block';
             }
-
             let canBuy = rolled && (BD[players[0].pos].t==='pr' || BD[players[0].pos].t==='rr' || BD[players[0].pos].t==='ut') && !props[players[0].pos] && !pendingCardType;
             if(gameMode === 'hardcore' && players[0].boughtRound) canBuy = false;
             document.getElementById('b-buy').disabled = !canBuy;
-            
             document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
         }
-        
         document.getElementById('d-chance').classList.remove('active');
         document.getElementById('d-reves').classList.remove('active');
         if(hum && pendingCardType === 'ch') document.getElementById('d-chance').classList.add('active');
@@ -531,7 +482,6 @@ const ui = {
     openProp: (idx, forBuy=false) => {
         activeIdx = idx; const s = BD[idx]; const pr = props[idx];
         document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g||'#333'; document.getElementById('pc-price').innerText=`$${s.p}`;
-        
         let html = '';
         if(s.r) {
             const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel'];
@@ -539,7 +489,6 @@ const ui = {
             html += `<tr style="background:#eee; color:#000;"><td>Custo Const.</td><td style="text-align:right">$${s.h}</td></tr>`;
         } else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
         else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
-        
         document.getElementById('rent-table-body').innerHTML = html;
         document.getElementById('act-buy').style.display = forBuy?'block':'none';
         document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===0)?'block':'none';
@@ -551,7 +500,6 @@ const ui = {
     },
     closeCard: () => document.getElementById('prop-card').style.display='none',
     toggleInv: () => { const m = document.getElementById('inv-modal'); m.style.display = m.style.display==='flex'?'none':'flex'; },
-    
     showEvent: (type, text) => {
         const c = document.getElementById('card-event'); const flip = document.getElementById('card-flipper');
         const back = document.getElementById('cf-back-style');
@@ -570,7 +518,6 @@ const ui = {
     toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); }
 };
 
-/* GAME LOGIC */
 const game = {
     clickDeck: (type) => {
         if(pendingCardType && turn===0 && type === pendingCardType){
@@ -585,12 +532,10 @@ const game = {
         if(animating || pendingCardType) return;
         const p = players[turn];
         if(p.skippedTurn) { ui.toast(`${p.name} NO ENGARRAFAMENTO!`); p.skippedTurn = false; await sleep(1500); game.pass(); return; }
-
         animating=true; ui.hud();
         const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
         p.lastD1 = d1; p.lastD2 = d2;
         ui.dice(d1,d2); await sleep(1500);
-        
         if(p.jailed){
             if(p.jailAttempts >= 3) { p.jailed = false; p.jailAttempts = 0; ui.toast("LIVRE!"); await game.move(turn, d1+d2); }
             else {
@@ -617,16 +562,13 @@ const game = {
     land: (pid) => {
         const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
         if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
-        
         totalTurns++;
         if(totalTurns%20 === 0) { ui.toast(`O GALO PASSOU!`); p.money+=200; p.pos=0; ui.updatePositions(); return; }
-        
         if(s.n === "Agamenon" && (!pr || pr.owner!==pid)) {
             if(Math.random() < 0.5) { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); p.skippedTurn = true; ui.toast("ENGARRAFAMENTO!"); }
             else { ui.toast("BÔNUS! +$50"); p.money += 50; }
         }
         if((s.n === "Boa Viagem" || s.n === "Paiva") && Math.random() > 0.7){ document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); ui.toast("TUBARÃO! -$50"); p.money-=50; }
-
         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
             if(!pr){
                 if(pid===0 && p.money >= s.p) ui.openProp(p.pos, true); 
@@ -655,8 +597,7 @@ const game = {
     pass: () => {
         players[turn].doubles = 0; 
         if(players[turn].money < 0) { players[turn].active = false; ui.toast(`${players[turn].name} FALIU!`); props.forEach((pr,i)=>{if(pr && pr.owner===turn) props[i]=null;}); }
-        let loop = 0;
-        do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
+        let loop = 0; do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
         rolled=false; animating=false; ui.hud();
         if(turn!==0) setTimeout(game.roll, 1500);
     },
