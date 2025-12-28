@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V65 (Uniforme)</title>
+    <title>Recife Imobiliário: V66 (Refined)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
@@ -386,6 +386,7 @@ function resizeBoard() {
     if(!el || !area) return;
     const w = area.offsetWidth;
     const h = area.offsetHeight;
+    const minDim = Math.min(w, h) * 0.95; 
     const scale = Math.min(w / el.offsetWidth, h / el.offsetHeight) * 0.95;
     el.style.transform = `scale(${scale})`;
 }
