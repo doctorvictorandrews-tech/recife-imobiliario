@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V64 (Final Mechanics)</title>
+    <title>Recife Imobiliário: V65 (Uniform Grid)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -17,18 +17,18 @@
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
             background: linear-gradient(135deg, #212121, #1a237e);
-            height: 100dvh; /* Altura dinâmica para mobile */
+            height: 100dvh; 
             overflow: hidden; display: flex; flex-direction: column;
         }
 
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
         /* --- FX LAYERS --- */
-        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
+        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; overflow: hidden; }
         .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
-        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
+        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 9500; }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
@@ -48,23 +48,25 @@
 
         /* ÁREA DO TABULEIRO */
         #board-area { 
-            position: relative; overflow: auto; /* Permite rolar se o zoom for grande */
+            position: relative; overflow: auto; 
             display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle, #424242 0%, #000000 100%);
-            flex: 1; min-height: 0; padding: 20px;
+            flex: 1; min-height: 0; padding: 10px;
         }
         
         #board-container { 
             position: relative; 
             transform-origin: center center;
-            /* Dimensões base serão sobrescritas pelas media queries */
         }
 
         #board { 
             width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            background: #fff; border: 25px solid var(--c-dark); border-radius: 20px; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+            display: grid; 
+            /* GRID UNIFORME: Cantos 1.25fr, Meio 1fr */
+            grid-template-columns: 1.25fr repeat(9, 1fr) 1.25fr;
+            grid-template-rows: 1.25fr repeat(9, 1fr) 1.25fr;
+            background: #fff; border: 20px solid var(--c-dark); border-radius: 20px; 
+            box-shadow: 0 0 60px rgba(0,0,0,0.8); 
             background-image: url('https://www.transparenttextures.com/patterns/cardboard.png'); 
         }
 
@@ -75,66 +77,55 @@
             flex-shrink: 0; 
         }
 
-        /* --- MEDIA QUERIES (GEOMETRIA DO TABULEIRO) --- */
+        /* --- MEDIA QUERIES --- */
         
-        /* MOBILE (Retrato - Vertical) */
+        /* MOBILE (Retrato) */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
             
-            /* TABULEIRO MOBILE: Retângulo Vertical */
-            #board-container {
-                width: 900px; 
-                height: 1100px; /* Um pouco mais alto que largo */
-            }
+            /* Tabuleiro Vertical e Grande */
+            #board-container { width: 900px; height: 1250px; }
 
             #hud-panel { 
                 width: 100%; 
-                padding: 10px;
-                padding-bottom: calc(10px + env(safe-area-inset-bottom));
-                gap: 8px;
+                padding: 8px;
+                padding-bottom: calc(5px + env(safe-area-inset-bottom));
+                gap: 5px;
                 background: #f5f5f5;
                 border-top: 4px solid var(--c-dark);
             }
 
-            #action-btns { display: flex; gap: 5px; width: 100%; height: 60px; }
-            #b-roll { flex: 1.5; font-size: 1.3rem; }
+            #action-btns { display: flex; gap: 5px; width: 100%; height: 65px; }
+            #b-roll { flex: 1.5; font-size: 1.4rem; }
             #b-buy, #b-pass { flex: 1; font-size: 0.9rem; line-height: 1.1; }
             
             .hud-top-bar { 
                 background: #fff; border: 2px solid #ccc; border-radius: 10px; 
-                padding: 8px 15px; display: flex; justify-content: space-between; align-items: center;
+                padding: 5px 15px; display: flex; justify-content: space-between; align-items: center;
+                height: 45px;
             }
-            .btn-inv { height: 45px; font-size: 1rem; }
+            .btn-inv { height: 45px; font-size: 1rem; margin-top: 2px; }
 
             #players-scroll { display: none; }
             #desktop-props-container { display: none; }
-            #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+            #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         }
 
-        /* DESKTOP (Paisagem - Horizontal) */
+        /* DESKTOP (Paisagem) */
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             
-            #hud-panel { 
-                width: 380px; 
-                height: 100%; border-left: 6px solid var(--c-dark); padding: 0; 
-            }
+            #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
             
-            /* TABULEIRO DESKTOP: Retângulo Horizontal Largo */
-            /* Isso alarga as colunas laterais (Iputinga, etc) */
-            #board-container {
-                width: 1300px; 
-                height: 900px;
-            }
+            /* Tabuleiro Bem Horizontal */
+            #board-container { width: 1450px; height: 900px; }
 
             #mobile-controls-wrapper { display: contents; }
             .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; display: flex; justify-content: space-between; align-items: center; }
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; }
-            
             #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
             .btn-game { padding: 18px; font-size: 1.3rem; } 
-            
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
             .btn-inv { display: none; }
         }
@@ -163,47 +154,55 @@
         .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
         .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
 
-        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.8rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; }
-        .color-strip { height: 22%; border-bottom: 2px solid var(--c-dark); }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.9rem; }
-        .sp-price { font-size: 0.9rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 2px 0; }
-        .sp-icon { font-size: 3rem; display: flex; align-items: center; justify-content: center; height: 100%; }
-        .space.owned { border-width: 4px !important; }
+        /* ESTILOS DE CASAS NO GRID */
+        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.85rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; overflow: hidden; }
+        .color-strip { height: 20%; border-bottom: 2px solid var(--c-dark); width: 100%; }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.9rem; word-break: break-word; }
+        .sp-price { font-size: 0.85rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 3px 0; width: 100%; }
+        .sp-icon { font-size: 3.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
+        .space.owned { border: 4px solid #000; } /* Borda padrão, cor sobrescrita via JS */
         
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
         .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
         
-        .deck { position: absolute; width: 120px; height: 160px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
+        .deck { position: absolute; width: 140px; height: 190px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.6rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
         .deck:active { transform: scale(0.95); }
         .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: rotate(-10deg); }
         .deck.reves { top: 45%; left: 50%; background: var(--c-red); transform: rotate(10deg); }
         .deck.active { animation: pulseDeck 1s infinite; border-color: #ffeb3b; z-index: 100; }
         
         .token { width: 60px; height: 60px; position: absolute; z-index: 50; font-size: 3.5rem; text-align: center; line-height: 60px; transition: all 0.4s; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none; }
-        .build-area { position: absolute; top: -12px; width: 100%; display: flex; justify-content: center; gap: 2px; }
-        .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; }
-        .hotel-3d { width: 20px; height: 20px; background: var(--c-red); border: 1px solid #000; }
+        .build-area { position: absolute; top: -14px; width: 100%; display: flex; justify-content: center; gap: 2px; }
+        .house-3d { width: 16px; height: 16px; background: var(--c-green); border: 1px solid #000; }
+        .hotel-3d { width: 22px; height: 22px; background: var(--c-red); border: 1px solid #000; }
         .loan-badge { position: absolute; top: 0; right: 0; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; font-weight: bold; border-bottom-left-radius: 5px; z-index: 10; display:none; }
 
-        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
+        /* MODAIS */
+        /* Correção Z-Index: Overlay(8000) > Inv(7000) */
+        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; display: flex; justify-content: center; align-items: center; }
+        
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
         .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
+        
         .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; width: 85%; height: 60vh; max-height: 500px; }
         .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
         .card-flip.flipped { transform: rotateY(180deg); }
         .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 5rem; transform: rotateY(0deg); }
         .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
+        
         .dice-stage { position: absolute; display: flex; gap: 20px; pointer-events: none; opacity: 0; top: 30%; transition: 0.2s; z-index: 7000; }
         .dice-stage.active { opacity: 1; }
         .cube { width: 80px; height: 80px; background: #fff; border-radius: 15px; display: grid; place-items: center; font-size: 3rem; font-weight: bold; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-family: 'Titan One'; }
         .cube.shake { animation: shake 0.1s infinite; }
         @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
+        
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+        
         #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
         #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
     </style>
@@ -352,11 +351,11 @@ const BD=[
     {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:300,r:[10,50,150,450,750,950]}, 
     {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:300,r:[12,60,180,500,700,900]}, 
     {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:300,r:[14,70,200,550,750,950]}, 
+    {t:'pr',g:'#ff5722',n:'Rosarinho',p:180,h:300,r:[14,70,200,550,750,950]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:300,r:[14,70,200,550,750,950]}, 
     {t:'pr',g:'#ff5722',n:'Torre',p:200,h:300,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Boa Vista',i:'🛍️'}, 
+    {t:'pk',n:'Pq. Jaqueira',i:'🌳'}, 
     {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:450,r:[18,90,250,700,875,1050]}, 
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:450,r:[18,90,250,700,875,1050]}, 
@@ -375,7 +374,7 @@ const BD=[
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:600,r:[35,175,500,1100,1300,1500]}, 
     {t:'tx',n:'Taxa',i:'🧾'}, 
-    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:600,r:[50,200,600,1400,1700,2000]}
+    {t:'pr',g:'#1565c0',n:'Pina',p:400,h:600,r:[50,200,600,1400,1700,2000]}
 ];
 
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Vó deu dinheiro. +100", val:100}];
@@ -383,7 +382,6 @@ const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a car
 
 let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, gameMode='normal', pendingCardType=null, totalTurns=0;
 
-// SISTEMA DE SOM
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
     cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
@@ -404,7 +402,7 @@ function resizeBoard() {
     const w = area.offsetWidth;
     const h = area.offsetHeight;
     const minDim = Math.min(w, h) * 0.95; 
-    const scale = minDim / 950; // Base scale reference
+    const scale = minDim / 950; // Base reference, doesn't lock aspect ratio perfectly which is good here
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
@@ -599,14 +597,11 @@ const game = {
         p.lastD1 = d1; p.lastD2 = d2;
         ui.dice(d1,d2); await sleep(1500);
         
-        // --- LÓGICA DE CADEIA CORRIGIDA ---
         if(p.jailed){
-             // Tenta sair com dados
              if(d1===d2){ 
                  p.jailed=false; p.jailAttempts=0; 
                  ui.toast("SOLTO (DUPLOS)!"); play('good'); 
                  await game.move(turn, d1+d2); 
-                 // CORREÇÃO: Saiu com dados = Fim da vez, não joga de novo
                  rolled = true; 
                  setTimeout(game.pass, 1500);
                  return;
@@ -617,11 +612,9 @@ const game = {
                      ui.toast("PAGOU $50 E SAIU!"); 
                      await game.move(turn, d1+d2); 
                  }
-                 // Passa a vez automaticamente se falhou
                  rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; 
              }
         } else {
-            // Jogo Normal
             if(d1===d2) { p.doubles++; ui.toast("DUPLOS!"); play('good'); } else p.doubles=0;
             if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); return; }
             await game.move(turn, d1+d2);
@@ -648,7 +641,7 @@ const game = {
             if(Math.random() < 0.5) { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); p.skippedTurn = true; ui.toast("ENGARRAFAMENTO!"); play('bad'); }
             else { ui.toast("BÔNUS! +$50"); p.money += 50; play('cash'); }
         }
-        if((s.n === "Boa Viagem" || s.n === "Paiva") && Math.random() > 0.7){ document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); ui.toast("TUBARÃO! -$50"); p.money-=50; play('bad'); }
+        if((s.n === "Boa Viagem" || s.n === "Pina" || s.n === "Paiva") && Math.random() > 0.7){ document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); ui.toast("TUBARÃO! -$50"); p.money-=50; play('bad'); }
         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
             if(!pr){
                 if(pid===0 && p.money >= s.p) ui.openProp(p.pos, true); 
@@ -675,18 +668,16 @@ const game = {
             if(turn!==0) { if(players[turn].lastD1 === players[turn].lastD2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500); }
         }
     },
-    // CORREÇÃO: Cadeia encerra o turno imediatamente
     jail: (pid) => { 
         players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].pos = 10; 
         ui.updatePositions(); ui.toast("PRESO! PASSANDO A VEZ..."); 
         play('jail'); animating = false; rolled = true; 
-        setTimeout(game.pass, 2000); // Passa a vez sozinho
+        setTimeout(game.pass, 2000); 
     },
     payJail: () => { const p = players[0]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); play('cash'); ui.hud(); } },
     pass: () => {
         play('slide');
         players[turn].doubles = 0; 
-        
         props.forEach((pr, i) => {
             if(pr && pr.owner === turn && pr.loan) {
                 pr.loan.turns--;
@@ -694,9 +685,7 @@ const game = {
                 if(pr.loan.turns <= 0) { game.bankrupt(turn); }
             }
         });
-
         if(players[turn].active && players[turn].money < 0) { game.bankrupt(turn); }
-        
         let loop = 0; do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
         rolled=false; animating=false; ui.hud();
         if(turn!==0) setTimeout(game.roll, 1500);
