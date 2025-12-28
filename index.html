@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário V57 - Hard & Fixed</title>
+    <title>Recife Imobiliário V58 - Anti-Travamento</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
         
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
-            background: linear-gradient(135deg, #212121, #0d47a1); /* Tom noturno e sério */
+            background: linear-gradient(135deg, #212121, #0d47a1);
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
 
@@ -77,30 +77,33 @@
 
         .center-hub { 
             grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; 
-            border: 6px solid var(--c-dark); overflow: visible; /* Alterado para visible para os decks não ficarem presos */
+            border: 6px solid var(--c-dark); overflow: visible;
             display: flex; justify-content: center; align-items: center; pointer-events: none;
         }
         .center-logo { font-family: 'Titan One'; font-size: 5rem; color: rgba(255,255,255,0.1); transform: rotate(-45deg); text-align: center; line-height: 1; }
 
+        /* Decks movidos para fora do center-hub logicamente, mas posicionados visualmente */
         .deck { 
             position: absolute; width: 90px; height: 130px; background: #fff; 
-            border: 4px solid #000; border-radius: 10px; cursor: pointer; transition: 0.2s; 
-            transform: translateZ(2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.4); z-index: 100; /* Z-index alto */
+            border: 4px solid #000; border-radius: 10px; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            transform: translateZ(2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.4); z-index: 100;
             display: flex; align-items: center; justify-content: center; text-align: center;
-            font-family: 'Titan One'; font-size: 1.3rem; color: #fff; -webkit-text-stroke: 1.5px #000; pointer-events: auto; /* Garante clique */
+            font-family: 'Titan One'; font-size: 1.3rem; color: #fff; -webkit-text-stroke: 1.5px #000; pointer-events: auto;
         }
-        .deck:hover { transform: translateZ(15px) scale(1.1); }
-        .deck.chance { top: 15%; left: 15%; background: var(--c-green); transform: rotate(-10deg); }
-        .deck.reves { bottom: 15%; right: 15%; background: var(--c-red); transform: rotate(10deg); }
+        .deck:hover { transform: translateZ(20px) scale(1.1); }
         
+        /* Posicionamento manual para garantir clique */
+        .deck.chance { top: 38%; left: 38%; background: var(--c-green); transform: rotate(-10deg) translateZ(5px); }
+        .deck.reves { top: 48%; left: 52%; background: var(--c-red); transform: rotate(10deg) translateZ(5px); }
+        
+        /* Quando ativa, ela flutua MUITO alto para garantir que nada bloqueie */
         .deck.active { 
-            animation: pulseGlow 0.8s infinite alternate; 
+            transform: scale(1.5) translateZ(150px) !important; 
             border: 5px solid #fff; 
             box-shadow: 0 0 50px #ffeb3b; 
-            z-index: 200; /* Super alto quando ativo */
-            cursor: pointer;
+            z-index: 9999 !important;
+            pointer-events: auto !important;
         }
-        @keyframes pulseGlow { from{transform:scale(1.1) translateZ(5px)} to{transform:scale(1.3) translateZ(25px)} }
 
         #sidebar { 
             width: 380px; background: #fff; border-left: 8px solid var(--c-dark); 
@@ -126,6 +129,10 @@
         .btn-roll { background: var(--c-yel); color: var(--c-dark); }
         .btn-buy { background: var(--c-green); }
         .btn-pass { background: var(--c-red); }
+        /* Botão de Emergência para Cartas */
+        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; }
+        @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
+
         .btn-game:disabled { background: #cfd8dc !important; color: #90a4ae !important; cursor: not-allowed; box-shadow: none; transform: translateY(5px); }
         .btn-game:active { transform: translateY(5px); box-shadow: none; }
 
@@ -203,9 +210,9 @@
         <div id="board">
             <div class="center-hub">
                 <div class="center-logo">RECIFE<br>IMOBILIÁRIO</div>
-                <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')">SORTE<br>🍀</div>
-                <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')">REVÉS<br>⚠️</div>
             </div>
+            <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')">SORTE<br>🍀</div>
+            <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')">REVÉS<br>⚠️</div>
         </div>
     </div>
 
@@ -225,6 +232,8 @@
             <button class="btn-game btn-roll" onclick="game.roll()">Tentar Sorte</button>
         </div>
         <div id="normal-controls">
+            <button id="b-card" class="btn-game btn-card" onclick="game.forceDrawCard()">🎴 PEGAR CARTA</button>
+            
             <button id="b-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 Rolar Dados</button>
             <button id="b-buy" class="btn-game btn-buy" disabled onclick="game.buy()">💰 Comprar</button>
             <button id="b-pass" class="btn-game btn-pass" disabled onclick="game.pass()">🛑 Passar</button>
@@ -393,6 +402,18 @@ const ui = {
         if(!p.jailed && hum) {
             document.getElementById('b-roll').disabled = !(!rolled && !animating && !pendingCardType && !p.skippedTurn);
             
+            // Controle do Botão de Emergência
+            const btnCard = document.getElementById('b-card');
+            if(pendingCardType) {
+                btnCard.style.display = 'block';
+                document.getElementById('b-roll').style.display = 'none';
+                document.getElementById('b-pass').style.display = 'none';
+            } else {
+                btnCard.style.display = 'none';
+                document.getElementById('b-roll').style.display = 'block';
+                document.getElementById('b-pass').style.display = 'block';
+            }
+
             let canBuy = rolled && (BD[p.pos].t==='pr' || BD[p.pos].t==='rr' || BD[p.pos].t==='ut') && !props[p.pos] && !pendingCardType;
             if(gameMode === 'hardcore' && p.boughtRound) canBuy = false;
             document.getElementById('b-buy').disabled = !canBuy;
@@ -401,8 +422,11 @@ const ui = {
             document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
         }
         
-        document.getElementById('d-chance').classList.toggle('active', pendingCardType==='ch' && hum);
-        document.getElementById('d-reves').classList.toggle('active', pendingCardType==='rev' && hum);
+        // Controle da Classe Active nos Decks (para pular na tela)
+        document.getElementById('d-chance').classList.remove('active');
+        document.getElementById('d-reves').classList.remove('active');
+        if(hum && pendingCardType === 'ch') document.getElementById('d-chance').classList.add('active');
+        if(hum && pendingCardType === 'rev') document.getElementById('d-reves').classList.add('active');
     },
     openProp: (idx, forBuy=false) => {
         activeIdx = idx; const s = BD[idx]; const pr = props[idx];
@@ -458,6 +482,9 @@ const game = {
             ui.showEvent(type==='ch'?'sorte':'vixe', ui.pendingCard.txt);
             pendingCardType = null; ui.hud();
         }
+    },
+    forceDrawCard: () => {
+        if(pendingCardType) game.clickDeck(pendingCardType);
     },
     roll: async () => {
         if(animating || pendingCardType) return;
@@ -630,15 +657,12 @@ const game = {
             ui.toast("COMPRADO!"); play('cash'); ui.closeCard(); ui.hud();
         }
     },
-    /* NOVO SISTEMA DE CONSTRUÇÃO COM REGRAS RÍGIDAS */
     build: () => {
         const p = players[0]; const idx = activeIdx; const s = BD[idx]; const pr = props[idx];
         
         // 1. Verificar Monopólio
         const groupColor = s.g;
-        // Pega todos os índices que tem essa cor
         const groupIndices = BD.map((b, i) => b.g === groupColor ? i : -1).filter(i => i !== -1);
-        // Verifica se eu sou dono de TODOS eles
         const hasMonopoly = groupIndices.every(i => props[i] && props[i].owner === 0);
 
         if(!hasMonopoly) {
@@ -647,11 +671,7 @@ const game = {
         }
 
         // 2. Verificar Regra do Hotel
-        // Nivel 0-3 = Casas. Nivel 4 = 4 Casas. Nivel 5 = Hotel.
-        // Só constrói hotel se tiver 4 casas (nivel 4)
-        
         if(pr.level === 4) {
-            // Construir Hotel
             if(p.money >= s.h) {
                 p.money -= s.h; pr.level = 5;
                 ui.toast("HOTEL CONSTRUÍDO!"); play('cash'); ui.closeCard(); ui.hud();
@@ -659,7 +679,6 @@ const game = {
                 ui.toast("SEM GRANA PRO HOTEL!");
             }
         } else if (pr.level < 4) {
-            // Construir Casa
             if(p.money >= s.h) {
                 p.money -= s.h; pr.level++;
                 ui.toast("CASA CONSTRUÍDA!"); play('cash'); ui.closeCard(); ui.hud();
