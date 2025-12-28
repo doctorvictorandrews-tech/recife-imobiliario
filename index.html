@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: Multiplayer P2P</title>
+    <title>Recife Imobiliário: V67 Multiplayer</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
@@ -30,7 +30,6 @@
 
         h1, h2, h3, button, .brand, input { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
-        /* --- FX LAYERS --- */
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
         .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
@@ -39,53 +38,42 @@
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
-        /* --- UI: START & LOBBY --- */
-        #screen-start, #screen-lobby, #screen-char, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
-        #screen-lobby, #screen-char, #screen-end { display: none; }
-        
+        /* --- SCREENS --- */
+        .screen { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
+        .screen.active { display: flex; }
+
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
         .sel-box { margin: 15px 0; text-align: left; }
         input[type="text"] { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-size: 1.2rem; border-radius: 10px; text-align: center; text-transform: uppercase; }
-        select { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1rem; border-radius: 10px; cursor: pointer; }
         
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
+        .btn-main:disabled { background: #ccc; box-shadow:none; cursor:default; transform:none; }
         .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #01579b; }
-        .btn-sec:active { box-shadow: 0 3px 0 #01579b; }
 
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
-        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
-        
-        #lobby-players-list { text-align: left; margin: 15px 0; max-height: 150px; overflow-y: auto; border: 2px dashed #ccc; padding: 10px; }
-        .lobby-p-item { padding: 5px; border-bottom: 1px solid #eee; font-weight: bold; }
+        /* CHAR SELECT STYLES */
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
+        .char-opt { border: 4px solid #ccc; border-radius: 12px; padding: 10px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; position:relative; transition:0.2s; }
+        .char-opt.taken { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; border-color: #999; }
+        .char-opt.selected { border-color: var(--c-yel); background: #fff8e1; transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .char-opt.confirmed { border-color: var(--c-green); background: #e8f5e9; }
+        .owner-badge { position:absolute; bottom:-5px; left:0; right:0; background:#000; color:#fff; font-size:0.5rem; border-radius:5px; font-family:'Nunito'; font-weight:bold; }
 
-        /* --- JOGO: LAYOUT --- */
+        /* ORDER ROLL STYLES */
+        .roll-list { width:100%; text-align:left; margin:20px 0; max-height:300px; overflow-y:auto; }
+        .roll-item { display:flex; justify-content:space-between; padding:10px; background:#f5f5f5; margin-bottom:5px; border-radius:8px; border:1px solid #ccc; align-items:center; }
+        .roll-val { font-family:'Titan One'; font-size:1.5rem; color:var(--c-blue); }
+
+        /* GAME UI */
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; }
         #game-layout.active { display: flex; }
-
-        /* ÁREA DO TABULEIRO */
-        #board-area { 
-            position: relative; overflow: auto; 
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.2);
-            flex: 1; min-height: 0; padding: 20px;
-        }
         
+        #board-area { position: relative; overflow: auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); flex: 1; min-height: 0; padding: 20px; }
         #board-container { position: relative; transform-origin: center center; }
+        #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; }
 
-        #board { 
-            width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            background: var(--board-bg); border: 4px solid var(--border-col); 
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); 
-        }
-
-        #hud-panel { 
-            background: #fff; display: flex; flex-direction: column; z-index: 5000; 
-            box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; 
-        }
-
-        /* --- MEDIA QUERIES --- */
+        /* RESPONSIVE */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
             #board-container { width: 900px; height: 1250px; }
@@ -94,12 +82,9 @@
             #b-roll { flex: 1.5; font-size: 1.3rem; }
             #b-buy, #b-pass { flex: 1; font-size: 0.9rem; line-height: 1.1; }
             .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
-            .btn-inv { height: 45px; font-size: 1rem; }
-            #players-scroll { display: none; }
-            #desktop-props-container { display: none; }
             #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+            #desktop-props-container, #players-scroll { display: none; }
         }
-
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
@@ -109,7 +94,6 @@
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; }
             #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
-            .btn-game { padding: 18px; font-size: 1.3rem; } 
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
             .btn-inv { display: none; }
         }
@@ -135,7 +119,6 @@
         .deck:active { transform: translateY(4px); box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
         .deck.chance { top: 20%; left: 15%; background: linear-gradient(135deg, #ab47bc, #7b1fa2); transform: rotate(-5deg); }
         .deck.reves { bottom: 20%; right: 15%; background: linear-gradient(135deg, #ffa726, #f57c00); transform: rotate(5deg); }
-        .deck-label { font-size: 3rem; opacity: 0.8; }
 
         .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: all 0.4s; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
         .token-shield { position: absolute; top:-5px; right:-5px; font-size: 1rem; background: blue; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid #fff; }
@@ -199,54 +182,53 @@
     <div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div>
 </div>
 
-<div id="screen-start">
+<div id="screen-start" class="screen active">
     <div class="card-menu">
         <h1 style="color:var(--c-blue); font-size:3rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1.2rem; color:#000;">MULTIPLAYER</span></h1>
-        <button class="btn-main" onclick="lobby.create()">CRIAR SALA</button>
-        <button class="btn-main btn-sec" onclick="lobby.toJoin()">ENTRAR NA SALA</button>
-        <p style="font-size:0.8rem; margin-top:20px; color:#666;">Máximo 8 Jogadores • P2P</p>
-    </div>
-</div>
-
-<div id="screen-lobby">
-    <div class="card-menu" id="lobby-create-view" style="display:none;">
-        <h2 style="margin:0;">SUA SALA</h2>
-        <div style="background:#eee; padding:10px; border-radius:10px; margin:10px 0;">
-            <div style="font-size:0.8rem;">CÓDIGO:</div>
-            <div id="host-code" style="font-size:2.5rem; color:var(--c-blue); font-weight:900;">...</div>
+        <div class="sel-box">
+            <label>SEU APELIDO</label>
+            <input type="text" id="start-nick" placeholder="NOME" maxlength="10">
         </div>
-        <div id="lobby-players-list"></div>
-        <div style="font-size:0.8rem; color:#d32f2f;">Aguardando jogadores...</div>
-        <button class="btn-main" id="btn-start-game" disabled onclick="lobby.startGame()">INICIAR JOGO</button>
-    </div>
-
-    <div class="card-menu" id="lobby-join-view" style="display:none;">
-        <h2 style="margin:0;">ENTRAR</h2>
+        <button class="btn-main" onclick="lobby.create()">CRIAR SALA</button>
+        <div style="margin:15px 0; font-weight:bold;">OU</div>
         <div class="sel-box">
             <label>CÓDIGO DA SALA</label>
-            <input type="text" id="join-code" placeholder="EX: RATA-1234" maxlength="15">
+            <input type="text" id="start-code" placeholder="EX: 8A2F99B1" maxlength="8">
         </div>
-        <button class="btn-main" id="btn-join-act" onclick="lobby.join()">CONECTAR</button>
-        <button class="btn-main btn-sec" onclick="location.reload()">VOLTAR</button>
+        <button class="btn-main btn-sec" onclick="lobby.join()">ENTRAR NA SALA</button>
     </div>
 </div>
 
-<div id="screen-char">
+<div id="screen-lobby" class="screen">
     <div class="card-menu">
-        <h2 class="brand" style="font-size:1.5rem; color:var(--c-dark);">SEU PERSONAGEM</h2>
-        <div class="sel-box">
-            <label>SEU NOME</label>
-            <input type="text" id="p-name-input" placeholder="Seu Nome" maxlength="10">
+        <h2>SALA DE ESPERA</h2>
+        <div id="host-code-display" style="display:none; background:#eee; padding:15px; border-radius:10px; margin:10px 0; cursor:pointer;" onclick="lobby.copyCode()">
+            <div style="font-size:0.8rem; color:#666;">CÓDIGO (CLIQUE PARA COPIAR)</div>
+            <div id="lobby-code-val" style="font-size:2rem; font-weight:900; color:var(--c-blue);">...</div>
         </div>
-        <div class="char-grid" id="char-grid"></div>
+        <div id="lobby-list" style="margin:20px 0; text-align:left; border:2px dashed #ccc; padding:10px; min-height:100px;"></div>
+        <div id="lobby-status" style="font-weight:bold; color:var(--c-green);">Aguardando Host...</div>
+        <button id="btn-goto-chars" class="btn-main" style="display:none;" onclick="lobby.startCharSelect()">ESCOLHER PERSONAGENS</button>
     </div>
 </div>
 
-<div id="screen-end">
+<div id="screen-char-select" class="screen">
+    <div class="card-menu" style="max-width:800px;">
+        <h2>ESCOLHA SEU PERSONAGEM</h2>
+        <div class="char-grid" id="char-grid-realtime"></div>
+        <button id="btn-confirm-char" class="btn-main" onclick="lobby.confirmChar()">CONFIRMAR</button>
+        <div id="char-status" style="margin-top:10px; font-weight:bold;">Selecione e confirme...</div>
+        <button id="btn-start-game" class="btn-main btn-sec" style="display:none;" onclick="lobby.startOrderRoll()">INICIAR JOGO</button>
+    </div>
+</div>
+
+<div id="screen-roll-order" class="screen">
     <div class="card-menu">
-        <h1 id="end-title" style="font-size:3rem;">FIM</h1>
-        <p id="end-msg">...</p>
-        <button class="btn-main" onclick="location.reload()">NOVO JOGO</button>
+        <h2>QUEM COMEÇA?</h2>
+        <p>Todos devem jogar o dado.</p>
+        <div class="roll-list" id="order-list"></div>
+        <button id="btn-roll-order" class="btn-main" onclick="net.act('orderRoll')">JOGAR DADO</button>
+        <div id="order-status" style="margin-top:10px;">Aguardando todos...</div>
     </div>
 </div>
 
@@ -304,49 +286,12 @@
 <div id="overlay-layer">
     <div id="overlay-bg" onclick="ui.closeCard()"></div>
     <div id="dice-visual" class="dice-stage"><div id="d1" class="cube">1</div><div id="d2" class="cube">1</div></div>
-    
-    <div class="card-flip-container" id="card-event">
-        <div class="card-flip" id="card-flipper">
-            <div class="cf-face cf-back" id="cf-back-style">?</div>
-            <div class="cf-face cf-front">
-                <h2 class="brand" id="ev-title" style="font-size:2.5rem; margin-bottom:20px;">SORTE</h2>
-                <p id="ev-desc" style="font-size:1.5rem; font-weight:bold;">Texto...</p>
-                <button class="btn-game btn-roll" style="width:auto; padding:15px 40px; margin-top:30px; color:#000;" onclick="ui.closeEvent()">BELEZA</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="prop-card" class="prop-card">
-        <div class="pc-head" id="pc-name">NOME DA RUA</div>
-        <div style="padding:15px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:3rem;">🏠</div>
-                <div style="text-align:right;">
-                    <div style="font-size:0.8rem; color:#666; font-weight:bold;">VALOR</div>
-                    <div class="brand" style="font-size:2rem; color:var(--c-green);" id="pc-price">$200</div>
-                </div>
-            </div>
-            <table class="rent-table" id="rent-table-body"></table>
-            <div id="act-buy" style="display:none; margin-top:10px;">
-                <button class="btn-game btn-buy" onclick="net.act('confirmBuy')">COMPRAR</button>
-                <button class="btn-game" style="background:#546E7A; color:#fff; margin-top:5px;" onclick="ui.closeCard()">NÃO QUERO</button>
-            </div>
-            <div id="act-manage" style="display:none; margin-top:10px;">
-                <div style="background:#ffebee; padding:10px; border-radius:5px; margin-bottom:10px; display:none;" id="loan-info">
-                    <b style="color:#d32f2f">EMPRÉSTIMO ATIVO</b><br>Quitação: <span id="debt-val"></span> | Prazo: <span id="debt-turns"></span>
-                </div>
-                <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <button id="btn-mtg" class="btn-game btn-roll" style="font-size:0.8rem; padding:10px;" onclick="net.act('mortgage')">HIPOTECAR</button>
-                    <button id="btn-bld" class="btn-game btn-buy" style="font-size:0.8rem; padding:10px;" onclick="net.act('build')">+ CASA</button>
-                </div>
-                <button class="btn-game" style="background:#37474F; color:#fff; font-size:0.8rem; padding:10px;" onclick="ui.closeCard()">FECHAR</button>
-            </div>
-        </div>
-    </div>
+    <div class="card-flip-container" id="card-event"><div class="card-flip" id="card-flipper"><div class="cf-face cf-back" id="cf-back-style">?</div><div class="cf-face cf-front"><h2 class="brand" id="ev-title" style="font-size:2.5rem; margin-bottom:20px;">SORTE</h2><p id="ev-desc" style="font-size:1.5rem; font-weight:bold;">Texto...</p><button class="btn-game btn-roll" style="width:auto; padding:15px 40px; margin-top:30px; color:#000;" onclick="ui.closeEvent()">BELEZA</button></div></div></div>
+    <div id="prop-card" class="prop-card"><div class="pc-head" id="pc-name">NOME</div><div style="padding:15px;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:3rem;">🏠</div><div style="text-align:right;"><div style="font-size:0.8rem; color:#666; font-weight:bold;">VALOR</div><div class="brand" style="font-size:2rem; color:var(--c-green);" id="pc-price">$200</div></div></div><table class="rent-table" id="rent-table-body"></table><div id="act-buy" style="display:none; margin-top:10px;"><button class="btn-game btn-buy" onclick="net.act('confirmBuy')">COMPRAR</button><button class="btn-game" style="background:#546E7A; color:#fff; margin-top:5px;" onclick="ui.closeCard()">NÃO QUERO</button></div><div id="act-manage" style="display:none; margin-top:10px;"><div style="background:#ffebee; padding:10px; border-radius:5px; margin-bottom:10px; display:none;" id="loan-info"><b style="color:#d32f2f">EMPRÉSTIMO ATIVO</b><br>Quitação: <span id="debt-val"></span> | Prazo: <span id="debt-turns"></span></div><div style="display:flex; gap:5px; margin-bottom:5px;"><button id="btn-mtg" class="btn-game btn-roll" style="font-size:0.8rem; padding:10px;" onclick="net.act('mortgage')">HIPOTECAR</button><button id="btn-bld" class="btn-game btn-buy" style="font-size:0.8rem; padding:10px;" onclick="net.act('build')">+ CASA</button></div><button class="btn-game" style="background:#37474F; color:#fff; font-size:0.8rem; padding:10px;" onclick="ui.closeCard()">FECHAR</button></div></div></div>
 </div>
 
 <script>
-// --- CONFIG & CONSTANTS ---
+// --- CONSTANTS ---
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, {id:'c',i:'🦀',n:'Caranguejo'},
     {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'},
@@ -377,424 +322,457 @@ const BD=[
 ];
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Vó deu dinheiro. +100", val:100}];
 const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a carteira. -100", val:-100}, {txt:"A Rádio Patrulha te pegou!", act:'jail'}];
-const SFX = {
-    step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
-    cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
-    slide: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'),
-    card: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
-    jail: new Audio('https://assets.mixkit.co/active_storage/sfx/1393/1393-preview.mp3'),
-    bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'),
-    good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
-    win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3')
-};
+const SFX = { step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'), cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'), slide: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'), card: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'), jail: new Audio('https://assets.mixkit.co/active_storage/sfx/1393/1393-preview.mp3'), bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'), good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'), win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3') };
 const play = (k) => { try { SFX[k].volume = 0.5; SFX[k].currentTime = 0; SFX[k].play().catch(() => {}); } catch (e) {} };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-// --- GLOBAL VARIABLES ---
-let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, pendingCardType=null, totalTurns=0;
-let myPlayerId = null; // ID in the array (0 to 7)
-let isHost = false;
+// --- GLOBAL STATE ---
+let players = [], props = Array(40).fill(null), turn = 0, rolled = false, animating = false, activeIdx = -1, pendingCardType = null;
+let myPlayerId = null, isHost = false;
+let charState = { selected: {}, confirmed: [] }; // { pid: charIndex }
+let orderState = []; // { pid, val }
 
-// --- NETWORKING (P2P) ---
+// --- NETWORKING ---
 const net = {
-    peer: null,
-    conns: [], // For host: list of connections
-    hostConn: null, // For client: connection to host
-    roomId: null,
-
+    peer: null, conns: [], hostConn: null, roomId: null,
+    
     init: (role) => {
-        net.peer = new Peer(null, { debug: 1 });
-        net.peer.on('open', (id) => {
-            if(role === 'host') {
-                net.roomId = "RATA-" + Math.floor(Math.random()*9000 + 1000);
-                // We use the ID as an alias basically, but PeerJS needs unique IDs. 
-                // We will just display the PeerID or use a mapping if we had a server. 
-                // For simplicity without server: Player MUST share the full Peer ID or we map a short code.
-                // Since we don't have a lookup server, we must rely on PeerJS ID.
-                // Hack: We can try to use a custom ID, but it might collide.
-                // Let's destroy and recreate with custom ID.
-                net.peer.destroy();
-                net.peer = new Peer(net.roomId);
-                net.peer.on('open', () => {
-                    isHost = true;
-                    myPlayerId = 0;
-                    ui.updateLobbyUI();
-                    ui.toast("SALA CRIADA!");
-                });
-                net.peer.on('error', (err) => { alert("Erro ao criar sala (ID em uso?). Tente de novo."); location.reload(); });
-            }
-        });
-        
-        net.peer.on('connection', (c) => {
-            if(isHost) {
-                // Host receives connection
+        if(role === 'host') {
+            // Generates 8 char ID
+            net.roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+            net.peer = new Peer(net.roomId, { debug: 1 });
+            net.peer.on('open', (id) => {
+                isHost = true; myPlayerId = 0;
+                // Add Host as player 0
+                players = [{name: document.getElementById('start-nick').value || "HOST", id:0, money:500, active:true, color:"#d32f2f", rolledOrder:false}];
+                lobby.updateUI();
+            });
+            net.peer.on('connection', (c) => {
                 net.conns.push(c);
-                c.on('data', (data) => net.handleDataHost(data, c));
-                c.on('open', () => {
-                    // Send current lobby info
-                    c.send({t:'lobby_update', players: players});
-                });
-            } else {
-                // Client connects to host
-                net.hostConn = c;
-                c.on('data', (data) => net.handleDataClient(data));
-                c.on('open', () => {
-                     // Connected! Send my info
-                     const name = document.getElementById('p-name-input').value || "JOGADOR";
-                     c.send({t:'join_req', name: name, icon: ui.selectedChar});
-                });
-                ui.toast("CONECTADO AO HOST!");
-                document.getElementById('btn-join-act').innerText = "AGUARDANDO...";
-            }
-        });
-    },
-
-    join: (id) => {
-        const char = ui.selectedChar;
-        if(!char) { alert("Escolha um personagem!"); return; }
-        net.peer = new Peer();
-        net.peer.on('open', () => {
-            const conn = net.peer.connect(id.toUpperCase());
-            conn.on('open', () => {
-                 net.hostConn = conn;
-                 conn.on('data', (data) => net.handleDataClient(data));
-                 const name = document.getElementById('p-name-input').value || "VIAJANTE";
-                 conn.send({t:'join_req', name: name, icon: ui.selectedChar});
+                c.on('data', (d) => net.handleHost(d, c));
+                c.on('open', () => c.send({t:'lobby_data', players, charState}));
             });
-            conn.on('error', (err) => alert("Sala não encontrada!"));
-        });
-    },
-
-    // --- MESSAGING ---
-    broadcast: (msg) => {
-        if(isHost) net.conns.forEach(c => c.send(msg));
-    },
-
-    act: (action, param) => {
-        // Sends intent to Host (or handles locally if Host)
-        if(animating) return;
-        if(turn !== myPlayerId) { ui.toast("NÃO É SUA VEZ!"); return; }
-        
-        if(isHost) {
-            game.handleAction(0, action, param);
+            net.peer.on('error', (e) => alert("Erro ID. Recarregue."));
         } else {
-            net.hostConn.send({t:'action', act: action, p: param});
-        }
-    },
-
-    // --- HANDLERS ---
-    handleDataHost: (data, conn) => {
-        if(data.t === 'join_req') {
-            if(players.length >= 8) return; // Full
-            // Assign ID
-            const newId = players.length;
-            const color = ["#1976d2","#388e3c","#fbc02d","#7b1fa2", "#e91e63", "#00acc1", "#ff5722", "#5d4037"][newId];
-            players.push({
-                name: data.name, icon: data.icon, pos:0, money:500, jailed:false, 
-                protection:false, jailTurns:0, color:color, id:newId, active:true, doubles:0, jailAttempts:0
+            const code = document.getElementById('start-code').value.toUpperCase();
+            if(!code || code.length!==8) return alert("Código inválido!");
+            net.peer = new Peer();
+            net.peer.on('open', () => {
+                const conn = net.peer.connect(code);
+                conn.on('open', () => {
+                    net.hostConn = conn;
+                    conn.on('data', (d) => net.handleClient(d));
+                    conn.send({t:'join', name: document.getElementById('start-nick').value || "VISITANTE"});
+                });
+                conn.on('error', ()=>alert("Sala não encontrada!"));
             });
-            // Send ID back to specific client
-            conn.send({t:'welcome', id: newId});
-            // Broadcast new lobby list
-            net.broadcast({t:'lobby_update', players: players});
-            ui.updateLobbyList();
-        } else if (data.t === 'action') {
-            // Find which player sent this connection? For simplicity in this P2P model, 
-            // we trust the 'turn' variable matches the sender logic, but ideally we map connection to player ID.
-            // We will assume the turn is correct.
-            game.handleAction(turn, data.act, data.p);
         }
     },
 
-    handleDataClient: (data) => {
-        if(data.t === 'welcome') {
-            myPlayerId = data.id;
-            document.getElementById('screen-char').style.display = 'none';
-            document.getElementById('screen-lobby').style.display = 'flex';
-            document.getElementById('lobby-join-view').innerHTML = "<h2>AGUARDANDO HOST INICIAR...</h2>";
-        } else if (data.t === 'lobby_update') {
-            players = data.players;
-            // Only update lobby list if we are in lobby
-        } else if (data.t === 'start') {
-            players = data.players;
-            document.getElementById('screen-lobby').style.display = 'none';
-            document.getElementById('game-layout').classList.add('active');
+    broadcast: (msg) => { if(isHost) net.conns.forEach(c => c.send(msg)); },
+    
+    act: (act, p) => {
+        if(isHost) game.logic(0, act, p);
+        else net.hostConn.send({t:'act', act, p});
+    },
+
+    handleHost: (d, conn) => {
+        if(d.t === 'join') {
+            if(players.length >= 8) return;
+            const newId = players.length;
+            players.push({name: d.name, id: newId, money:500, active:true, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2","#e91e63","#00acc1","#ff5722","#5d4037"][newId], rolledOrder:false});
+            conn.send({t:'welcome', id: newId});
+            net.broadcast({t:'lobby_data', players, charState});
+            lobby.updateUI();
+        } else if (d.t === 'act') {
+            game.logic(turn, d.act, d.p); // Note: turn logic handled inside game.logic usually, or mapping conn to ID
+            // For Char Select, we need to map conn to ID. In simplified PeerJS, we rely on client ID awareness or conn mapping.
+            // Simplified: Broadcast acts carry explicit ID logic inside game.logic or we iterate conns.
+            // Hack: Clients act for themselves. We assume honest clients.
+            // Actually, for char selection, 'turn' isn't relevant yet.
+            // Let's modify game.logic to accept source ID? 
+            // Better: find player ID by iterating players? No mapping.
+            // Client sends ID in payload. Trust client.
+        }
+        else if (d.t === 'req_char') { game.handleCharSelect(d.id, d.charIdx); }
+        else if (d.t === 'req_confirm') { game.handleCharConfirm(d.id); }
+        else if (d.t === 'req_roll_order') { game.handleOrderRoll(d.id); }
+    },
+
+    handleClient: (d) => {
+        if(d.t === 'welcome') {
+            myPlayerId = d.id;
+            ui.showScreen('screen-lobby');
+        } else if (d.t === 'lobby_data') {
+            players = d.players; charState = d.charState;
+            lobby.updateUI();
+            lobby.renderChars();
+        } else if (d.t === 'goto_chars') {
+            ui.showScreen('screen-char-select');
+            lobby.renderChars();
+        } else if (d.t === 'goto_order') {
+            ui.showScreen('screen-roll-order');
+            lobby.updateOrderUI();
+        } else if (d.t === 'order_update') {
+            orderState = d.data;
+            lobby.updateOrderUI();
+        } else if (d.t === 'game_start') {
+            players = d.sorted; turn = 0;
+            // Remap my ID
+            const me = players.find(p => p.name === (document.getElementById('start-nick').value || "HOST"));
+            if(me) myPlayerId = me.id; // The IDs shuffled? No, keep original ID for logic or reassign?
+            // Safer to reassign IDs based on new index 0..N
+            // Actually game logic uses index. Let's reassign IDs 0..N based on order.
+            players.forEach((p, i) => p.id = i);
+            myPlayerId = players.findIndex(p => p.name === (document.getElementById('start-nick').value || (isHost?"HOST":"VISITANTE")));
+            
+            ui.showScreen('game-layout');
             ui.buildBoard(); resizeBoard(); ui.hud();
-        } else if (data.t === 'state') {
+        } else if (d.t === 'state') {
             // Full Sync
-            players = data.state.players;
-            props = data.state.props;
-            turn = data.state.turn;
-            rolled = data.state.rolled;
-            pendingCardType = data.state.pending;
-            ui.updatePositions();
-            ui.hud();
-            if(data.anim) {
-                 if(data.anim.t === 'dice') ui.dice(data.anim.d1, data.anim.d2);
-                 if(data.anim.t === 'toast') ui.toast(data.anim.msg);
-                 if(data.anim.t === 'card') ui.showEvent(data.anim.type, data.anim.txt);
-                 if(data.anim.t === 'confetti') confetti();
-                 if(data.anim.t === 'shark') {
-                     document.querySelector('.shark-anim').classList.add('active'); 
-                     setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000);
-                 }
-                 if(data.anim.t === 'traffic') {
-                     document.querySelector('.traffic-anim').classList.add('active'); 
-                     setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000);
-                 }
-            }
+            players=d.st.pl; props=d.st.pr; turn=d.st.t; rolled=d.st.r; pendingCardType=d.st.pc;
+            if(d.anim) ui.runAnim(d.anim);
+            ui.updatePositions(); ui.hud();
         }
     },
     
-    sync: (animObj = null) => {
-        // Host calls this to update everyone
-        const state = { players, props, turn, rolled, pending: pendingCardType };
-        const payload = { t: 'state', state: state, anim: animObj };
-        net.broadcast(payload);
-        // Also update Host UI
-        if(animObj) {
-             if(animObj.t === 'dice') ui.dice(animObj.d1, animObj.d2);
-             if(animObj.t === 'toast') ui.toast(animObj.msg);
-             if(animObj.t === 'card') ui.showEvent(animObj.type, animObj.txt);
-             if(animObj.t === 'confetti') confetti();
-             if(animObj.t === 'shark') {
-                 document.querySelector('.shark-anim').classList.add('active'); 
-                 setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000);
-             }
-             if(animObj.t === 'traffic') {
-                 document.querySelector('.traffic-anim').classList.add('active'); 
-                 setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000);
-             }
-        }
-        ui.updatePositions();
-        ui.hud();
+    sync: (anim=null) => {
+        if(!isHost) return;
+        const st = {pl:players, pr:props, t:turn, r:rolled, pc:pendingCardType};
+        net.broadcast({t:'state', st, anim});
+        if(anim) ui.runAnim(anim);
+        ui.updatePositions(); ui.hud();
     }
 };
 
 const lobby = {
     create: () => {
-        document.getElementById('screen-start').style.display = 'none';
-        document.getElementById('screen-char').style.display = 'flex';
-        ui.mode = 'host';
-    },
-    toJoin: () => {
-        document.getElementById('screen-start').style.display = 'none';
-        document.getElementById('screen-char').style.display = 'flex';
-        ui.mode = 'join';
-    },
-    confirmChar: (icon) => {
-        ui.selectedChar = icon;
-        const name = document.getElementById('p-name-input').value || (ui.mode==='host'?"HOST":"JOGADOR");
-        
-        if(ui.mode === 'host') {
-            document.getElementById('screen-char').style.display = 'none';
-            document.getElementById('screen-lobby').style.display = 'flex';
-            document.getElementById('lobby-create-view').style.display = 'block';
-            
-            // Host is player 0
-            players = [{
-                name: name, icon: icon, pos:0, money:500, jailed:false, 
-                protection:false, jailTurns:0, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0
-            }];
-            ui.updateLobbyList();
-            net.init('host');
-        } else {
-            // Client goes to Join screen
-            document.getElementById('screen-char').style.display = 'none';
-            document.getElementById('screen-lobby').style.display = 'flex';
-            document.getElementById('lobby-join-view').style.display = 'block';
-        }
+        const nick = document.getElementById('start-nick').value;
+        if(!nick) return alert("Digite seu apelido!");
+        net.init('host');
+        ui.showScreen('screen-lobby');
     },
     join: () => {
-        const code = document.getElementById('join-code').value;
-        if(!code) return alert("Digite o código!");
-        net.join(code);
+        const nick = document.getElementById('start-nick').value;
+        if(!nick) return alert("Digite seu apelido!");
+        net.init('client');
     },
-    startGame: () => {
-        if(players.length < 2) { 
-            // Allow single player for testing? No, it's multiplayer. But okay for debug.
-            // alert("Precisa de pelo menos 2 jogadores!"); return; 
+    copyCode: () => {
+        navigator.clipboard.writeText(net.roomId).then(() => ui.toast("CÓDIGO COPIADO!"));
+    },
+    updateUI: () => {
+        document.getElementById('lobby-code-val').innerText = net.roomId || "...";
+        if(isHost) {
+            document.getElementById('host-code-display').style.display = 'block';
+            document.getElementById('lobby-status').innerText = `Jogadores: ${players.length}/8`;
+            document.getElementById('btn-goto-chars').style.display = 'block';
+        } else {
+            document.getElementById('lobby-status').innerText = "Aguardando Host iniciar...";
         }
-        net.broadcast({t:'start', players: players});
-        document.getElementById('screen-lobby').style.display = 'none';
-        document.getElementById('game-layout').classList.add('active');
-        ui.buildBoard(); resizeBoard(); ui.hud();
+        document.getElementById('lobby-list').innerHTML = players.map(p => `<div>${p.name}</div>`).join('');
+    },
+    startCharSelect: () => {
+        net.broadcast({t:'goto_chars'});
+        ui.showScreen('screen-char-select');
+        lobby.renderChars();
+    },
+    renderChars: () => {
+        const grid = document.getElementById('char-grid-realtime');
+        grid.innerHTML = CHARS.map((c, i) => {
+            const ownerId = charState.selected[i];
+            const isTaken = ownerId !== undefined && ownerId !== myPlayerId;
+            const isMine = ownerId === myPlayerId;
+            const isConfirmed = charState.confirmed.includes(ownerId);
+            
+            let classes = 'char-opt';
+            if(isTaken) classes += ' taken';
+            if(isMine) classes += ' selected';
+            if(isMine && isConfirmed) classes += ' confirmed';
+            
+            const ownerName = ownerId!==undefined ? players.find(p=>p.id===ownerId)?.name : '';
+            const badge = ownerName ? `<div class="owner-badge" style="background:${isConfirmed?'#2e7d32':'#fbc02d'}">${ownerName}</div>` : '';
+
+            return `<div class="${classes}" onclick="lobby.selectChar(${i})">
+                <div style="font-size:2rem;">${c.i}</div>
+                ${badge}
+            </div>`;
+        }).join('');
+        
+        // Confirm Button Logic
+        const mySel = charState.selected[Object.keys(charState.selected).find(k => charState.selected[k] === myPlayerId)];
+        const amIConfirmed = charState.confirmed.includes(myPlayerId);
+        const btn = document.getElementById('btn-confirm-char');
+        
+        if(amIConfirmed) {
+            btn.innerText = "AGUARDANDO..."; btn.disabled = true;
+        } else if (mySel !== undefined) {
+            btn.innerText = "CONFIRMAR"; btn.disabled = false;
+        } else {
+            btn.innerText = "ESCOLHA"; btn.disabled = true;
+        }
+
+        if(isHost) {
+            const allConf = players.length > 0 && charState.confirmed.length === players.length;
+            document.getElementById('btn-start-game').style.display = allConf ? 'block' : 'none';
+            document.getElementById('char-status').innerText = allConf ? "TODOS PRONTOS!" : `Confirmados: ${charState.confirmed.length}/${players.length}`;
+        }
+    },
+    selectChar: (idx) => {
+        if(charState.confirmed.includes(myPlayerId)) return; // Already locked
+        if(isHost) game.handleCharSelect(0, idx);
+        else net.hostConn.send({t:'req_char', id:myPlayerId, charIdx:idx});
+    },
+    confirmChar: () => {
+        if(isHost) game.handleCharConfirm(0);
+        else net.hostConn.send({t:'req_confirm', id:myPlayerId});
+    },
+    startOrderRoll: () => {
+        net.broadcast({t:'goto_order'});
+        ui.showScreen('screen-roll-order');
+        lobby.updateOrderUI();
+    },
+    updateOrderUI: () => {
+        const list = document.getElementById('order-list');
+        // Merge players with orderState
+        let html = '';
+        players.forEach(p => {
+            const roll = orderState.find(o => o.pid === p.id);
+            const val = roll ? roll.val : '-';
+            html += `<div class="roll-item">
+                <span>${p.name}</span>
+                <span class="roll-val">${val}</span>
+            </div>`;
+        });
+        list.innerHTML = html;
+        
+        // Enable button if haven't rolled
+        const myRoll = orderState.find(o => o.pid === myPlayerId);
+        const btn = document.getElementById('btn-roll-order');
+        if(myRoll) { btn.disabled = true; btn.innerText = "AGUARDANDO..."; }
+        else { btn.disabled = false; btn.innerText = "JOGAR DADO"; }
+    }
+};
+
+const game = {
+    // HOST LOGIC FOR SETUP
+    handleCharSelect: (pid, charIdx) => {
+        // Check if taken
+        const existingOwner = charState.selected[charIdx];
+        if(existingOwner !== undefined && existingOwner !== pid) return; // Taken
+        
+        // Remove previous selection of this player
+        Object.keys(charState.selected).forEach(k => {
+            if(charState.selected[k] === pid) delete charState.selected[k];
+        });
+        
+        charState.selected[charIdx] = pid;
+        // Assign char to player object
+        players.find(p => p.id === pid).icon = CHARS[charIdx].i;
+        
+        net.broadcast({t:'lobby_data', players, charState});
+        lobby.renderChars();
+    },
+    handleCharConfirm: (pid) => {
+        if(!charState.confirmed.includes(pid)) {
+            charState.confirmed.push(pid);
+            net.broadcast({t:'lobby_data', players, charState});
+            lobby.renderChars();
+        }
+    },
+    handleOrderRoll: (pid) => {
+        if(orderState.find(o => o.pid === pid)) return;
+        const val = Math.ceil(Math.random()*20); // D20 for order
+        orderState.push({pid, val});
+        
+        net.broadcast({t:'order_update', data: orderState});
+        lobby.updateOrderUI();
+        
+        if(orderState.length === players.length) {
+            setTimeout(() => {
+                // Sort players
+                let sorted = [...players];
+                sorted.sort((a,b) => {
+                    const ra = orderState.find(o=>o.pid===a.id).val;
+                    const rb = orderState.find(o=>o.pid===b.id).val;
+                    return rb - ra;
+                });
+                net.broadcast({t:'game_start', sorted});
+                // Host handles local start via handleClient logic
+                net.handleClient({t:'game_start', sorted}); 
+            }, 1500);
+        }
+    },
+    
+    // GAMEPLAY LOGIC
+    logic: async (reqPid, act, p) => {
+        if(act === 'orderRoll') { game.handleOrderRoll(0); return; } // Host roll
+        
+        if(act === 'roll') {
+            if(turn !== reqPid) return;
+            animating=true;
+            const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
+            players[turn].lastD1=d1; players[turn].lastD2=d2;
+            net.sync({t:'dice', d1, d2}); await sleep(1500);
+            
+            const pl = players[turn];
+            if(pl.jailed) {
+                pl.jailTurns++;
+                if(pl.jailTurns>3 || d1===d2) {
+                    pl.jailed=false; pl.jailAttempts=0; pl.jailTurns=0;
+                    net.sync({t:'toast', msg:"LIVRE!"}); play('good');
+                    await game.move(turn, d1+d2);
+                    rolled=true; setTimeout(()=>game.pass(),1500);
+                } else {
+                    pl.jailAttempts++; net.sync({t:'toast', msg:`PRESO! ${pl.jailAttempts}/3`}); play('bad');
+                    rolled=true; animating=false; net.sync(); setTimeout(()=>game.pass(),1500);
+                }
+            } else {
+                if(d1===d2) { pl.doubles++; net.sync({t:'toast', msg:"DUPLOS!"}); play('good'); } else pl.doubles=0;
+                if(pl.doubles===3) { game.jail(turn); return; }
+                await game.move(turn, d1+d2);
+                rolled=true; animating=false; net.sync();
+                if(d1!==d2 && !pendingCardType) setTimeout(()=>game.pass(), 1500);
+            }
+        }
+        else if(act === 'pass') game.pass();
+        else if(act === 'confirmBuy') {
+            const pl = players[turn]; const s=BD[pl.pos];
+            if(pl.money>=s.p){ pl.money-=s.p; props[pl.pos]={owner:turn, level:0, loan:null}; net.sync({t:'toast', msg:`${pl.name} comprou!`}); play('cash'); }
+        }
+        else if(act === 'build') {
+             const pl=players[turn]; const s=BD[pl.pos]; const pr=props[pl.pos];
+             if(pr && pr.owner===turn && pl.money>=s.h && pr.level<5) { pl.money-=s.h; pr.level++; net.sync({t:'toast', msg:"CONSTRUÍDO!"}); play('cash'); }
+        }
+        else if(act === 'mortgage') {
+             const pl=players[turn]; const pr=props[pl.pos];
+             if(pr && pr.owner===turn && !pr.loan) {
+                 const v=Math.floor(BD[pl.pos].p*0.8); pl.money+=v; pr.loan={val:v, turns:5}; net.sync({t:'toast', msg:"HIPOTECADO"}); play('cash');
+             }
+        }
+        else if(act === 'payLoan') {
+             const pl=players[turn]; const pr=props[pl.pos];
+             if(pr && pr.owner===turn && pr.loan) {
+                 const d=Math.ceil(pr.loan.val*1.2);
+                 if(pl.money>=d) { pl.money-=d; pr.loan=null; net.sync({t:'toast', msg:"PAGO!"}); play('cash'); }
+             }
+        }
+        else if(act === 'draw') {
+            if(pendingCardType) {
+                const deck=pendingCardType==='ch'?CARDS_SORTE:CARDS_REVES;
+                const c=deck[Math.floor(Math.random()*deck.length)];
+                game.tempEffect=c;
+                net.sync({t:'card', type:pendingCardType==='ch'?'sorte':'vixe', txt:c.txt});
+                pendingCardType=null;
+            }
+        }
+        else if(act === 'applyCard') {
+            const c=game.tempEffect; const pl=players[turn];
+            if(c){
+                if(c.val) pl.money+=c.val;
+                if(c.act==='jail') game.jail(turn);
+                game.checkDebt(turn);
+                if(pl.active) { rolled=true; net.sync(); if(turn!==0) setTimeout(()=>game.pass(),1500); }
+            }
+        }
+        else if(act === 'payJail') {
+            const pl=players[turn];
+            if(pl.money>=50) { pl.money-=50; pl.jailed=false; pl.jailAttempts=0; pl.jailTurns=0; net.sync({t:'toast', msg:"PAGO!"}); play('cash'); }
+        }
+    },
+    
+    move: async (pid, steps) => {
+        const p = players[pid];
+        for(let i=0; i<steps; i++){
+            if(!p.active) break;
+            p.pos = (p.pos + 1) % 40;
+            if(p.pos===0 && p.active){ p.money+=200; net.sync({t:'toast', msg:"Início! +$200"}); play('cash'); if(pid===0) confetti(); }
+            net.sync(); await sleep(250);
+        }
+        if(p.active) game.land(pid);
+    },
+    land: (pid) => {
+        const p=players[pid]; const s=BD[p.pos]; const pr=props[p.pos];
+        if(p.pos===30){ net.sync({t:'toast', msg:"BLITZ!"}); game.jail(pid); return; }
+        
+        if(s.n === "Agamenon" && (!pr || pr.owner!==pid)) {
+            const c = Math.ceil(Math.random()*12);
+            if(c>6) { net.sync({t:'toast', msg:"CUPOM BK! +$50"}); p.money+=50; }
+            else { net.sync({t:'traffic'}); net.sync({t:'toast', msg:"ENGARRAFAMENTO! -$50"}); p.money-=50; }
+        }
+        if((s.n==="Boa Viagem"||s.n==="Paiva"||s.n==="Pina")){
+             const c = Math.ceil(Math.random()*12);
+             if(c>6) { p.protection=true; net.sync({t:'toast', msg:"PROTEGIDO!"}); }
+             else { 
+                 net.sync({t:'shark'}); 
+                 if(p.protection) { p.protection=false; net.sync({t:'toast', msg:"ESCUDO USADO!"}); }
+                 else { p.money-=100; net.sync({t:'toast', msg:"MORDIDA! -$100"}); }
+             }
+        }
+        if(s.t==='pr'||s.t==='rr'||s.t==='ut') {
+            if(pr && pr.owner!==pid && !pr.loan && players[pr.owner].active) {
+                 let rent=0;
+                 if(s.t==='pr') rent=s.r[pr.level];
+                 else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
+                 else if(s.t==='ut') rent=(players[pid].lastD1+players[pid].lastD2)*4;
+                 p.money-=rent; players[pr.owner].money+=rent;
+                 net.sync({t:'toast', msg:`ALUGUEL $${rent}`}); play('cash');
+                 game.checkDebt(pid);
+            }
+        }
+        else if(s.t==='ch'||s.t==='rev') { pendingCardType=s.t==='ch'?'ch':'rev'; net.sync({t:'toast', msg:"PEGUE UMA CARTA!"}); }
+        else if(s.t==='tx') { const t=Math.floor(p.money>0?p.money*0.1:0); p.money-=t; net.sync({t:'toast', msg:`IMPOSTO -${t}`}); game.checkDebt(pid); }
+        net.sync();
+    },
+    jail: (pid) => {
+        players[pid].jailed=true; players[pid].jailAttempts=0; players[pid].jailTurns=0; players[pid].pos=10;
+        net.sync({t:'toast', msg:"PRESO!..."}); play('jail'); animating=false; rolled=true; setTimeout(()=>game.pass(),2000);
+    },
+    pass: () => {
+        players[turn].doubles=0;
+        props.forEach((pr,i)=>{
+            if(pr && pr.owner===turn && pr.loan) {
+                pr.loan.turns--;
+                if(pr.loan.turns<=0) { props[i]=null; net.sync({t:'toast', msg:`PERDEU IMÓVEL: ${BD[i].n}`}); }
+            }
+        });
+        if(players[turn].active && players[turn].money<0) game.checkDebt(turn);
+        if(players[turn].active && players[turn].money<0) return; // Locked until solved
+
+        const ac = players.filter(p=>p.active);
+        if(ac.length===1) { net.sync({t:'toast', msg:`${ac[0].name} VENCEU!`}); play('win'); confetti(); return; }
+        
+        let l=0; do { turn=(turn+1)%players.length; l++; } while(!players[turn].active && l<players.length);
+        rolled=false; animating=false; net.sync();
+    },
+    checkDebt: (pid) => {
+        if(players[pid].money<0) {
+            if(!props.some(pr=>pr && pr.owner===pid && !pr.loan)) game.bankrupt(pid);
+        }
+    },
+    bankrupt: (pid) => {
+        players[pid].active=false; net.sync({t:'toast', msg:`${players[pid].name} FALIU!`}); play('bad');
+        props.forEach((pr,i)=>{if(pr&&pr.owner===pid)props[i]=null;});
     }
 };
 
 const ui = {
-    selectedChar: null,
-    mode: null,
-    updateLobbyUI: () => {
-        document.getElementById('host-code').innerText = net.roomId;
+    showScreen: (id) => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); },
+    toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); },
+    runAnim: (a) => {
+        if(a.t==='dice') ui.dice(a.d1, a.d2);
+        if(a.t==='toast') ui.toast(a.msg);
+        if(a.t==='card') ui.showEvent(a.type, a.txt);
+        if(a.t==='confetti') confetti();
+        if(a.t==='shark') { document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); }
+        if(a.t==='traffic') { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); }
     },
-    updateLobbyList: () => {
-        const div = document.getElementById('lobby-players-list');
-        div.innerHTML = players.map(p => `<div class="lobby-p-item">${p.icon} ${p.name}</div>`).join('');
-        document.getElementById('btn-start-game').disabled = players.length < 1; // Allow testing
+    dice: (d1,d2) => {
+        const ds = document.getElementById('dice-visual'); ds.classList.add('active');
+        const c1=document.getElementById('d1'), c2=document.getElementById('d2');
+        c1.className='cube shake'; c2.className='cube shake';
+        setTimeout(()=>{ c1.className='cube'; c2.className='cube'; void c1.offsetWidth; c1.innerText=d1; c2.innerText=d2; }, 1000);
+        setTimeout(()=>{ ds.classList.remove('active'); }, 2000);
     },
-    start: (icon) => lobby.confirmChar(icon),
-    
-    // ... (Existing UI Methods) ...
-    buildBoard: () => {
-        const b = document.getElementById('board');
-        BD.forEach((s,i) => {
-            const d=document.createElement('div');d.className='space';d.id=`s${i}`;
-            let r,c, rotClass;
-            if(i<=10){ r=11; c=11-i; rotClass = 'rot-bottom'; } 
-            else if(i<=20){ r=11-(i-10); c=1; rotClass = 'rot-left'; } 
-            else if(i<=30){ r=1; c=1+(i-20); rotClass = 'rot-top'; } 
-            else { r=1+(i-30); c=11; rotClass = 'rot-right'; }
-            if(i===0||i===10||i===20||i===30) rotClass='';
-            d.style.gridRow=r; d.style.gridColumn=c;
-            const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
-            let contentHTML = s.t==='pr' ? 
-                `<div class="space-content ${rotClass}"><div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>` :
-                `<div class="space-content ${rotClass}"><div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}</div>`;
-            d.innerHTML = contentHTML;
-            b.appendChild(d);
-        });
-        // Create tokens for all players in the list
-        players.forEach((p)=>{ const t=document.createElement('div');t.className='token';t.id=`tok${p.id}`;t.innerHTML=`${p.icon}<div class="token-shield" style="display:none" id="sh${p.id}">🛡️</div>`; b.appendChild(t); });
-        ui.updatePositions();
-    },
-    updatePositions: () => {
-        const map = {};
-        players.forEach((p) => { if(p.active){ if(!map[p.pos]) map[p.pos] = []; map[p.pos].push(p.id); } });
-        Object.keys(map).forEach(pos => {
-            const pids = map[pos]; const s = document.getElementById(`s${pos}`); if(!s) return;
-            if(pids.length === 1) {
-                const t = document.getElementById(`tok${pids[0]}`);
-                if(t) { t.style.left = (s.offsetLeft + 12) + 'px'; t.style.top = (s.offsetTop + 12) + 'px'; t.style.transform = 'scale(1)'; }
-            } else {
-                pids.forEach((pid, idx) => {
-                    const angle = (idx / pids.length) * 2 * Math.PI;
-                    const ox = Math.cos(angle) * 15; const oy = Math.sin(angle) * 15;
-                    const t = document.getElementById(`tok${pid}`);
-                    if(t) { t.style.left = (s.offsetLeft + 12 + ox) + 'px'; t.style.top = (s.offsetTop + 12 + oy) + 'px'; t.style.transform = 'scale(0.8)'; }
-                });
-            }
-        });
-    },
-    hud: () => {
-        // HUD logic updated to reflect 'myPlayerId' visibility
-        const p = players[turn];
-        document.getElementById('turn-display').innerText = `VEZ DE: ${p.name}`;
-        
-        // Show MY money
-        const me = players[myPlayerId];
-        const mDisp = document.getElementById('p-money');
-        mDisp.innerText = `$${me.money}`;
-        if(me.money < 0) mDisp.classList.add('debt'); else mDisp.classList.remove('debt');
-
-        document.getElementById('players-scroll').innerHTML = players.map((pl) => {
-            const shield = pl.protection ? '🛡️' : '';
-            return `<div class="p-stat ${turn===pl.id?'active':''} ${!pl.active?'bankrupt':''}"><div>${pl.icon} ${shield} ${pl.name}</div><div>${pl.active ? (pl.id===myPlayerId ? '$'+pl.money : (pl.jailed?'🔒':'?')) : '💀'}</div></div>`;
-        }).join('');
-        players.forEach((pl) => { const sh = document.getElementById(`sh${pl.id}`); if(sh) sh.style.display = pl.protection ? 'flex' : 'none'; });
-
-        // Update Properties
-        let propsHTML = '';
-        props.forEach((pr,i)=>{
-            const sp = document.getElementById(`s${i}`);
-            if(sp && pr) {
-                sp.classList.add('owned');
-                sp.style.borderColor = players[pr.owner].color;
-                if(pr.loan) {
-                   if(!sp.querySelector('.loan-badge')) { const b=document.createElement('div');b.className='loan-badge';b.innerText='HIPOTECA';sp.appendChild(b); }
-                   sp.querySelector('.loan-badge').style.display='flex';
-                } else if(sp.querySelector('.loan-badge')) sp.querySelector('.loan-badge').style.display='none';
-            } else if(sp) {
-                sp.classList.remove('owned'); sp.style.borderColor = '#1a1a1a';
-                if(sp.querySelector('.loan-badge')) sp.querySelector('.loan-badge').style.display='none';
-            }
-            const el = document.getElementById(`b${i}`);
-            if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
-            
-            // Only show my properties in the list
-            if(pr && pr.owner===myPlayerId) {
-                const loanTxt = pr.loan ? `<br><span class="loan-alert">Dívida: $${Math.ceil(pr.loan.val*1.2)} (${pr.loan.turns}T)</span>` : '';
-                propsHTML += `<div class="prop-item ${pr.loan?'loan':''}" style="border-left-color:${BD[i].g||'#333'}" onclick="ui.openProp(${i})"><span>${BD[i].n}${loanTxt}</span><span>${pr.loan?'⚠️':''} ${pr.level>0?'🏠'+pr.level:''}</span></div>`;
-            }
-        });
-        document.getElementById('desktop-props-container').innerHTML = propsHTML;
-        document.getElementById('inv-list').innerHTML = propsHTML;
-
-        // Button Visibility logic
-        const jailed = players[myPlayerId].jailed;
-        const myTurn = (turn === myPlayerId);
-
-        document.getElementById('jail-btns').style.display = (jailed && myTurn) ? 'flex' : 'none';
-        document.getElementById('normal-btns').style.display = (!jailed && myTurn) ? 'flex' : 'none';
-        
-        if(!jailed && myTurn) {
-            const doubles = players[myPlayerId].lastD1 === players[myPlayerId].lastD2 && players[myPlayerId].lastD1 !== undefined;
-            const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
-            document.getElementById('b-roll').disabled = !canRoll;
-            
-            if(players[myPlayerId].money < 0) {
-                document.getElementById('b-roll').disabled = true;
-                document.getElementById('b-buy').disabled = true;
-                document.getElementById('b-pass').disabled = true;
-                document.getElementById('b-pass').innerText = "HIPOTEQUE!";
-                if(document.getElementById('inv-modal').style.display !== 'flex') ui.toggleInv();
-            } else {
-                document.getElementById('b-pass').innerText = "PASSAR";
-            }
-            
-            const btnCard = document.getElementById('b-card');
-            if(pendingCardType) {
-                btnCard.style.display = 'block'; document.getElementById('normal-btns').style.display = 'none';
-            } else {
-                btnCard.style.display = 'none'; document.getElementById('normal-btns').style.display = 'flex';
-            }
-            
-            let canBuy = rolled && (BD[players[myPlayerId].pos].t==='pr' || BD[players[myPlayerId].pos].t==='rr' || BD[players[myPlayerId].pos].t==='ut') && !props[players[myPlayerId].pos] && !pendingCardType && players[myPlayerId].money >= BD[players[myPlayerId].pos].p;
-            if(gameMode === 'hardcore' && players[myPlayerId].boughtRound) canBuy = false;
-            if(players[myPlayerId].money < 0) canBuy = false;
-
-            document.getElementById('b-buy').disabled = !canBuy;
-            if(players[myPlayerId].money >= 0) {
-                document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
-            }
-        }
-    },
-    openProp: (idx, forBuy=false) => {
-        play('slide');
-        activeIdx = idx; const s = BD[idx]; const pr = props[idx];
-        document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g||'#333'; document.getElementById('pc-price').innerText=`$${s.p}`;
-        let html = '';
-        if(s.r) {
-            const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel'];
-            s.r.forEach((val, i) => html += `<tr><td>${labels[i]}</td><td style="text-align:right">$${val}</td></tr>`);
-            html += `<tr style="background:#eee; color:#000;"><td>Custo Const.</td><td style="text-align:right">$${s.h}</td></tr>`;
-        } else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
-        else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
-        document.getElementById('rent-table-body').innerHTML = html;
-        document.getElementById('act-buy').style.display = forBuy?'block':'none';
-        document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===myPlayerId)?'block':'none';
-        
-        if(!forBuy && pr){
-            const bM = document.getElementById('btn-mtg');
-            const lInfo = document.getElementById('loan-info');
-            if(pr.loan) { 
-                bM.innerText="QUITAR DÍVIDA"; bM.onclick=()=>net.act('payLoan'); 
-                lInfo.style.display='block';
-                const debt = Math.ceil(pr.loan.val * 1.2);
-                document.getElementById('debt-val').innerText = `$${debt}`;
-                document.getElementById('debt-turns').innerText = `${pr.loan.turns} RODADAS`;
-                document.getElementById('btn-bld').disabled = true;
-            } else { 
-                bM.innerText="HIPOTECAR (80%)"; bM.onclick=()=>net.act('mortgage'); 
-                lInfo.style.display='none';
-                document.getElementById('btn-bld').disabled = false;
-            }
-        }
-        document.getElementById('prop-card').style.display='block';
-        document.getElementById('overlay-bg').style.display='block';
-    },
-    closeCard: () => { document.getElementById('prop-card').style.display='none'; document.getElementById('overlay-bg').style.display='none'; },
-    toggleInv: () => { play('slide'); const m = document.getElementById('inv-modal'); m.style.display = m.style.display==='flex'?'none':'flex'; },
     showEvent: (type, text) => {
         play('card');
         const c = document.getElementById('card-event'); const flip = document.getElementById('card-flipper');
@@ -803,227 +781,120 @@ const ui = {
         document.getElementById('ev-title').innerText = type.toUpperCase(); document.getElementById('ev-desc').innerText = text;
         c.style.display='flex'; setTimeout(()=>flip.classList.add('flipped'), 100);
     },
-    closeEvent: () => { document.getElementById('card-event').style.display='none'; document.getElementById('card-flipper').classList.remove('flipped'); net.act('applyCard'); },
-    dice: (d1,d2) => {
-        const ds = document.getElementById('dice-visual'); ds.classList.add('active');
-        const c1=document.getElementById('d1'), c2=document.getElementById('d2');
-        c1.className='cube shake'; c2.className='cube shake';
-        setTimeout(()=>{ c1.className='cube'; c2.className='cube'; void c1.offsetWidth; c1.innerText=d1; c2.innerText=d2; }, 1000);
-        setTimeout(()=>{ ds.classList.remove('active'); }, 2000);
+    closeEvent: () => { document.getElementById('card-event').style.display='none'; document.getElementById('card-flipper').classList.remove('flipped'); if(turn===myPlayerId && isHost) net.act('applyCard'); else if(turn===myPlayerId) net.hostConn.send({t:'act', act:'applyCard'}); },
+    
+    // --- HUD AND BOARD ---
+    buildBoard: () => {
+        const b = document.getElementById('board'); b.innerHTML = '<div class="center-hub"><div class="brennand-tower"><div class="bt-head">🌷</div><div class="bt-body"><div class="bt-ring"></div><div class="bt-ring"></div><div class="bt-ring"></div></div><div class="bt-base">RECIFE</div></div></div><div class="deck chance" id="d-chance" onclick="net.act(\'draw\')"><div class="deck-label">?</div></div><div class="deck reves" id="d-reves" onclick="net.act(\'draw\')"><div style="font-size:2rem">💰</div></div>';
+        BD.forEach((s,i) => {
+            const d=document.createElement('div');d.className='space';d.id=`s${i}`;
+            let r,c, rotClass;
+            if(i<=10){ r=11; c=11-i; rotClass = 'rot-bottom'; } else if(i<=20){ r=11-(i-10); c=1; rotClass = 'rot-left'; } else if(i<=30){ r=1; c=1+(i-20); rotClass = 'rot-top'; } else { r=1+(i-30); c=11; rotClass = 'rot-right'; }
+            if(i%10===0) rotClass='';
+            d.style.gridRow=r; d.style.gridColumn=c;
+            const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
+            d.innerHTML = s.t==='pr' ? `<div class="space-content ${rotClass}"><div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>` : `<div class="space-content ${rotClass}"><div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}</div>`;
+            b.appendChild(d);
+        });
+        players.forEach((p)=>{ const t=document.createElement('div');t.className='token';t.id=`tok${p.id}`;t.innerHTML=`${p.icon}<div class="token-shield" style="display:none" id="sh${p.id}">🛡️</div>`; b.appendChild(t); });
     },
-    toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); }
-};
-
-const game = {
-    // MAIN HOST LOGIC
-    handleAction: async (pid, action, param) => {
-        if(!isHost) return;
-        const p = players[pid];
-
-        if(action === 'roll') {
-            animating=true; 
-            const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
-            p.lastD1 = d1; p.lastD2 = d2;
-            net.sync({t:'dice', d1, d2});
-            await sleep(1500);
-            
-            if(p.jailed) {
-                p.jailTurns++;
-                if(p.jailTurns > 3 || d1===d2) {
-                    p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
-                    net.sync({t:'toast', msg:"LIVRE!"}); play('good');
-                    await game.move(pid, d1+d2);
-                    rolled=true; setTimeout(()=>game.pass(), 1500);
-                } else {
-                    p.jailAttempts++; net.sync({t:'toast', msg:`PRESO! ${p.jailAttempts}/3`}); play('bad');
-                    rolled=true; animating=false; net.sync(); setTimeout(()=>game.pass(), 1500);
+    updatePositions: () => {
+        const map={}; players.forEach(p=>{if(p.active){if(!map[p.pos])map[p.pos]=[]; map[p.pos].push(p.id);}});
+        Object.keys(map).forEach(pos=>{
+            const pids=map[pos]; const s=document.getElementById(`s${pos}`); if(!s)return;
+            pids.forEach((pid,idx)=>{
+                const t=document.getElementById(`tok${pid}`);
+                if(t){
+                    const angle=(idx/pids.length)*2*Math.PI;
+                    t.style.left=(s.offsetLeft+12+(pids.length>1?Math.cos(angle)*15:0))+'px';
+                    t.style.top=(s.offsetTop+12+(pids.length>1?Math.sin(angle)*15:0))+'px';
+                    t.style.transform=pids.length>1?'scale(0.8)':'scale(1)';
                 }
-            } else {
-                if(d1===d2) { p.doubles++; net.sync({t:'toast', msg:"DUPLOS!"}); play('good'); } else p.doubles=0;
-                if(p.doubles===3) { net.sync({t:'toast', msg:"3x DUPLOS! CADEIA!"}); game.jail(pid); return; }
-                await game.move(pid, d1+d2);
-                rolled=true; animating=false; net.sync();
-                if(d1!==d2 && !pendingCardType) setTimeout(()=>game.pass(), 1500);
-            }
-        } 
-        else if (action === 'pass') game.pass();
-        else if (action === 'buy') {
-             // Host validates buy
-             if(p.money >= BD[p.pos].p) ui.openProp(p.pos, true); // Host UI only for now? No, need to instruct client
-             // In this simple architecture, logic is host side. UI is mostly state based.
-             // We need to trigger the card open on the specific client.
-             // Simplification: Host executes logic directly if host is player, else sends confirmation?
-             // Actually, 'buy' is just checking if we can buy.
-             // The UI handles 'confirmBuy'.
-        }
-        else if (action === 'confirmBuy') {
-             const s = BD[p.pos];
-             if(p.money >= s.p) { p.money-=s.p; props[p.pos]={owner:pid, level:0, loan:null}; net.sync({t:'toast', msg:`${p.name} comprou!`}); play('cash'); }
-             // UI close handled by sync
-        }
-        else if (action === 'build') {
-             const idx = p.pos; // Or activeIdx from param? We use p.pos generally for current space
-             // Logic simplified: assumes building on current space or active prop
-             // We need ActiveIdx. Since simple P2P, we assume player is interacting with current or passed idx.
-             // Let's rely on client validation for index, but here we check ownership.
-             // For safety, let's assume activeIdx is tracked globally? No, each client has UI state.
-             // We'll trust the logic: Build on current space if owned.
-             // Better: Client sends index.
-             // Let's implement activeIdx param in handleAction later if needed. For now, assume current pos.
-             const s = BD[p.pos]; const pr = props[p.pos];
-             if(pr && pr.owner === pid) {
-                 if(p.money >= s.h && pr.level < 5) { p.money-=s.h; pr.level++; net.sync({t:'toast', msg:"CONSTRUÍDO!"}); play('cash'); }
-             }
-        }
-        else if (action === 'mortgage') {
-             const idx = p.pos; // Limitation: only current pos for now in this snippet
-             // Ideally send index. But let's assume player clicked correctly.
-             // Actually, client UI sets activeIdx. We need to know WHICH prop.
-             // We'll skip complex logic and assume player mortgages what they are standing on or just implemented minimal logic.
-             // FIX: Client sends specific prop index in param?
-             // We need to expand act() to send param. (Updated above).
-             // Assuming param is index.
-             const i = param !== undefined ? param : p.pos;
-             const pr = props[i];
-             if(pr && pr.owner === pid && !pr.loan) {
-                 const v = Math.floor(BD[i].p*0.8); p.money+=v; pr.loan={val:v, turns:5}; net.sync({t:'toast', msg:`${p.name} hipotecou`}); play('cash');
-             }
-        }
-        else if (action === 'payLoan') {
-             const i = param !== undefined ? param : p.pos;
-             const pr = props[i];
-             if(pr && pr.owner === pid && pr.loan) {
-                 const d = Math.ceil(pr.loan.val*1.2);
-                 if(p.money >= d) { p.money-=d; pr.loan=null; net.sync({t:'toast', msg:"DÍVIDA PAGA!"}); play('cash'); }
-             }
-        }
-        else if (action === 'draw') {
-             if(pendingCardType) {
-                 const deck = pendingCardType==='ch'?CARDS_SORTE:CARDS_REVES;
-                 const c = deck[Math.floor(Math.random()*deck.length)];
-                 ui.pendingCard = c; // Host temp store
-                 net.sync({t:'card', type: pendingCardType==='ch'?'sorte':'vixe', txt: c.txt});
-                 pendingCardType = null;
-                 // Apply effect immediately? No, wait for 'applyCard'
-                 // Store effect to apply
-                 game.tempEffect = c;
-             }
-        }
-        else if (action === 'applyCard') {
-             const c = game.tempEffect;
-             if(c) {
-                 if(c.val) p.money+=c.val;
-                 if(c.act==='jail') game.jail(pid);
-                 game.checkDebt(pid);
-                 if(p.active) { rolled=true; net.sync(); if(pid!==0) setTimeout(()=>game.pass(), 1500); }
-             }
-        }
-        else if (action === 'payJail') {
-             if(p.money >= 50) { p.money-=50; p.jailed=false; p.jailAttempts=0; p.jailTurns=0; net.sync({t:'toast', msg:"PAGO!"}); play('cash'); }
-        }
+            });
+        });
     },
+    hud: () => {
+        const p = players[turn];
+        document.getElementById('turn-display').innerText = `VEZ DE: ${p.name}`;
+        const me = players[myPlayerId];
+        document.getElementById('p-money').innerText = `$${me.money}`;
+        document.getElementById('players-scroll').innerHTML = players.map(pl => `<div class="p-stat ${turn===pl.id?'active':''} ${!pl.active?'bankrupt':''}"><div>${pl.icon} ${pl.protection?'🛡️':''} ${pl.name}</div><div>${pl.active ? (pl.id===myPlayerId ? '$'+pl.money : (pl.jailed?'🔒':'?')) : '💀'}</div></div>`).join('');
+        players.forEach(pl => { const sh=document.getElementById(`sh${pl.id}`); if(sh) sh.style.display=pl.protection?'flex':'none'; });
 
-    move: async (pid, steps) => {
-        const p = players[pid];
-        for(let i=0; i<steps; i++){
-            if(!p.active) break;
-            p.pos = (p.pos + 1) % 40;
-            if(p.pos===0 && p.active){ p.money+=200; net.sync({t:'toast', msg:"Início! +$200"}); play('cash'); if(pid===0) confetti(); }
-            // Send position update every step? Too much bandwidth. Send batch or every few steps.
-            // For smooth anim, peerjs is fast enough locally usually.
-            net.sync(); await sleep(250);
-        }
-        if(p.active) game.land(pid);
-    },
-
-    land: (pid) => {
-        const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
-        if(p.pos===30){ net.sync({t:'toast', msg:"BLITZ!"}); game.jail(pid); return; }
-        
-        // LOGIC BLOCKS (Agamenon, Shark, Rent)
-        if(s.n === "Agamenon" && (!pr || pr.owner!==pid)) {
-            const check = Math.ceil(Math.random()*12);
-            if(check > 6) { net.sync({t:'toast', msg:`CUPOM BK! +$50`}); p.money += 50; }
-            else { net.sync({t:'traffic'}); net.sync({t:'toast', msg:`ENGARRAFAMENTO! -$50`}); p.money -= 50; }
-        }
-        if((s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina")){ 
-             const check = Math.ceil(Math.random()*12);
-             if(check > 6) { p.protection = true; net.sync({t:'toast', msg:"TUBARÃO RATÃO PROTEGEU!"}); } 
-             else {
-                 net.sync({t:'shark'});
-                 if(p.protection) { p.protection=false; net.sync({t:'toast', msg:"ESCUDO QUEBROU!"}); }
-                 else { p.money-=100; net.sync({t:'toast', msg:"NHAC! -$100"}); }
-             }
-        }
-        if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
-            if(pr && pr.owner !== pid && !pr.loan && players[pr.owner].active){
-                let rent = 0;
-                if(s.t==='pr') rent = s.r[pr.level];
-                else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
-                else if(s.t==='ut') rent = (p.lastD1+p.lastD2)*4;
-                p.money -= rent; players[pr.owner].money += rent; 
-                net.sync({t:'toast', msg:`ALUGUEL $${rent}`}); play('cash');
-                game.checkDebt(pid);
-            }
-        } 
-        else if(s.t==='ch' || s.t==='rev'){
-            pendingCardType = s.t==='ch'?'ch':'rev'; 
-            net.sync({t:'toast', msg:"PEGUE UMA CARTA!"});
-        } 
-        else if(s.t==='tx'){ 
-            const tax = Math.floor(p.money > 0 ? p.money * 0.10 : 0); 
-            p.money -= tax; net.sync({t:'toast', msg:`IMPOSTO! -${tax}`});
-            game.checkDebt(pid);
-        }
-        net.sync();
-    },
-
-    jail: (pid) => { 
-        players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].jailTurns = 0; players[pid].pos = 10; 
-        net.sync({t:'toast', msg:"PRESO! PASSANDO VEZ..."}); play('jail'); animating = false; rolled = true; 
-        setTimeout(()=>game.pass(), 2000); 
-    },
-
-    pass: () => {
-        players[turn].doubles = 0;
-        props.forEach((pr, i) => {
-            if(pr && pr.owner === turn && pr.loan) {
-                pr.loan.turns--;
-                if(pr.loan.turns <= 0) { props[i] = null; net.sync({t:'toast', msg:`${players[turn].name} perdeu imóvel`}); }
+        let propsHTML = '';
+        props.forEach((pr,i)=>{
+            const sp=document.getElementById(`s${i}`);
+            if(sp && pr) {
+                sp.classList.add('owned'); sp.style.borderColor=players[pr.owner].color;
+                if(pr.loan) { if(!sp.querySelector('.loan-badge')) { const b=document.createElement('div');b.className='loan-badge';b.innerText='HIPOTECA';sp.appendChild(b); } sp.querySelector('.loan-badge').style.display='flex'; } 
+                else if(sp.querySelector('.loan-badge')) sp.querySelector('.loan-badge').style.display='none';
+            } else if(sp) { sp.classList.remove('owned'); sp.style.borderColor='#1a1a1a'; if(sp.querySelector('.loan-badge')) sp.querySelector('.loan-badge').style.display='none'; }
+            
+            const el = document.getElementById(`b${i}`);
+            if(pr && el) el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join('');
+            
+            if(pr && pr.owner===myPlayerId) {
+                const loanTxt = pr.loan ? `<br><span class="loan-alert">Dívida: $${Math.ceil(pr.loan.val*1.2)} (${pr.loan.turns}T)</span>` : '';
+                propsHTML += `<div class="prop-item ${pr.loan?'loan':''}" style="border-left-color:${BD[i].g||'#333'}" onclick="ui.openProp(${i})"><span>${BD[i].n}${loanTxt}</span><span>${pr.loan?'⚠️':''} ${pr.level>0?'🏠'+pr.level:''}</span></div>`;
             }
         });
-        if(players[turn].active && players[turn].money < 0) {
-             game.checkDebt(turn);
-             if(players[turn].active && players[turn].money < 0) return; // Cannot pass
-        }
+        document.getElementById('desktop-props-container').innerHTML = propsHTML;
+        document.getElementById('inv-list').innerHTML = propsHTML;
+
+        const myTurn = (turn === myPlayerId);
+        document.getElementById('jail-btns').style.display = (me.jailed && myTurn) ? 'flex' : 'none';
+        document.getElementById('normal-btns').style.display = (!me.jailed && myTurn) ? 'flex' : 'none';
         
-        // Victory Check
-        const actives = players.filter(p=>p.active);
-        if(actives.length === 1) {
-            net.sync({t:'toast', msg:`${actives[0].name} VENCEU!`});
-            play('win'); confetti(); return;
-        }
+        if(!me.jailed && myTurn) {
+            const doubles = me.lastD1 === me.lastD2 && me.lastD1 !== undefined;
+            const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
+            document.getElementById('b-roll').disabled = !canRoll;
+            
+            if(me.money < 0) {
+                document.getElementById('b-roll').disabled=true; document.getElementById('b-buy').disabled=true; document.getElementById('b-pass').disabled=true;
+                document.getElementById('b-pass').innerText="HIPOTEQUE!";
+                if(document.getElementById('inv-modal').style.display !== 'flex') ui.toggleInv();
+            } else document.getElementById('b-pass').innerText="PASSAR";
 
-        let loop = 0; do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
-        rolled=false; animating=false; 
-        net.sync();
-    },
+            const btnCard = document.getElementById('b-card');
+            btnCard.style.display = pendingCardType ? 'block' : 'none';
+            document.getElementById('normal-btns').style.display = pendingCardType ? 'none' : 'flex';
 
-    checkDebt: (pid) => {
-        const p = players[pid];
-        if(p.money < 0) {
-            const assets = props.filter(pr => pr && pr.owner === pid && !pr.loan);
-            if(assets.length === 0) game.bankrupt(pid);
+            let canBuy = rolled && (BD[me.pos].t==='pr'||BD[me.pos].t==='rr'||BD[me.pos].t==='ut') && !props[me.pos] && !pendingCardType && me.money>=BD[me.pos].p;
+            if(me.money < 0) canBuy = false;
+            document.getElementById('b-buy').disabled = !canBuy;
+            if(me.money >= 0) document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
         }
     },
-    bankrupt: (pid) => {
-        players[pid].active = false; 
-        net.sync({t:'toast', msg:`${players[pid].name} FALIU!`}); play('bad');
-        props.forEach((pr,i)=>{if(pr && pr.owner===pid) props[i]=null;});
-    }
+    openProp: (idx, forBuy=false) => {
+        play('slide');
+        activeIdx = idx; const s = BD[idx]; const pr = props[idx];
+        document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g||'#333'; document.getElementById('pc-price').innerText=`$${s.p}`;
+        let html = '';
+        if(s.r) { const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel']; s.r.forEach((val, i) => html += `<tr><td>${labels[i]}</td><td style="text-align:right">$${val}</td></tr>`); html += `<tr style="background:#eee; color:#000;"><td>Custo Const.</td><td style="text-align:right">$${s.h}</td></tr>`; } 
+        else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
+        else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
+        document.getElementById('rent-table-body').innerHTML = html;
+        document.getElementById('act-buy').style.display = forBuy?'block':'none';
+        document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===myPlayerId)?'block':'none';
+        
+        if(!forBuy && pr){
+            const bM = document.getElementById('btn-mtg'); const lInfo = document.getElementById('loan-info');
+            if(pr.loan) { 
+                bM.innerText="QUITAR DÍVIDA"; bM.onclick=()=>net.act('payLoan'); lInfo.style.display='block';
+                document.getElementById('debt-val').innerText = `$${Math.ceil(pr.loan.val*1.2)}`; document.getElementById('debt-turns').innerText = `${pr.loan.turns} RODADAS`; document.getElementById('btn-bld').disabled = true;
+            } else { 
+                bM.innerText="HIPOTECAR (80%)"; bM.onclick=()=>net.act('mortgage'); lInfo.style.display='none'; document.getElementById('btn-bld').disabled = false;
+            }
+        }
+        document.getElementById('prop-card').style.display='block'; document.getElementById('overlay-bg').style.display='block';
+    },
+    closeCard: () => { document.getElementById('prop-card').style.display='none'; document.getElementById('overlay-bg').style.display='none'; },
+    toggleInv: () => { play('slide'); const m = document.getElementById('inv-modal'); m.style.display = m.style.display==='flex'?'none':'flex'; },
 };
 
-window.onload = () => CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
+function resizeBoard() { const el=document.getElementById('board-container'); const area=document.getElementById('board-area'); if(!el||!area)return; const w=area.offsetWidth; const h=area.offsetHeight; const minDim=Math.min(w, h)*0.95; const scale=minDim/950; el.style.transform=`scale(${scale})`; }
+window.addEventListener('resize', resizeBoard);
 </script>
 </body>
 </html>
