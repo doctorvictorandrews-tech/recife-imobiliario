@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário: V61 (Layout Híbrido)</title>
+    <title>Recife Imobiliário: V61 Ultimate</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -24,22 +24,10 @@
 
         /* --- FX LAYERS --- */
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
-        
-        .shark-anim {
-            position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; 
-            filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none;
-            transform: scaleX(-1);
-        }
+        .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
-        
-        .traffic-anim {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
-            display: none; align-items: center; justify-content: center;
-            font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center;
-            animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red;
-            flex-direction: column; z-index: 8500;
-        }
+        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
@@ -50,189 +38,145 @@
         select { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1rem; border-radius: 10px; cursor: pointer; }
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
-
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
         .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
-        .char-opt:hover { border-color: var(--c-blue); background: #e1f5fe; }
 
-        /* --- JOGO: LAYOUT RESPONSIVO --- */
+        /* --- JOGO: LAYOUT --- */
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; }
         #game-layout.active { display: flex; }
 
         /* ÁREA DO TABULEIRO */
         #board-area { 
-            flex: 1; position: relative; overflow: hidden; 
+            position: relative; overflow: hidden; 
             display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle, #424242 0%, #000000 100%);
+            /* Isso garante que ele encolha se precisar */
+            flex: 1; 
+            min-height: 0; 
         }
         #board-container { width: 950px; height: 950px; position: relative; transform-origin: center center; }
-        #board {
-            width: 100%; height: 100%;
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
-            background: #fff; border: 25px solid var(--c-dark); border-radius: 20px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            background-image: url('https://www.transparenttextures.com/patterns/cardboard.png');
-        }
+        #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: #fff; border: 25px solid var(--c-dark); border-radius: 20px; box-shadow: 0 0 50px rgba(0,0,0,0.8); background-image: url('https://www.transparenttextures.com/patterns/cardboard.png'); }
 
         /* PAINEL DE CONTROLE (HUD) */
         #hud-panel { 
             background: #fff; display: flex; flex-direction: column; z-index: 5000; 
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            flex-shrink: 0; /* IMPEDE QUE O HUD SUMA/ENCOLHA NO MOBILE */
         }
 
-        /* --- REGRAS DE LAYOUT ESPECÍFICAS --- */
-
-        /* DESKTOP (Painel Lateral Direito) */
+        /* --- DESKTOP VS MOBILE --- */
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             #hud-panel { width: 340px; height: 100%; border-left: 6px solid var(--c-dark); }
-            #players-scroll { flex-direction: column; }
-            .p-stat { margin-bottom: 8px; }
             #board-area { height: 100%; }
-            .hud-content { flex: 1; display: flex; flex-direction: column; }
-            #controls-area { margin-top: auto; }
+            .hud-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+            #controls-area { flex-shrink: 0; }
+            
+            /* Lista de jogadores vertical */
+            #players-scroll { flex-direction: column; margin-bottom: 10px; max-height: 30vh; overflow-y: auto; }
+            
+            /* Lista de Propriedades no Desktop (Visível) */
+            #desktop-props-container { 
+                display: block; flex: 1; overflow-y: auto; 
+                border-top: 2px dashed #ccc; margin-top: 10px; padding-top: 10px; 
+            }
+            .mobile-inv-btn { display: none; } /* Esconde botão de inventário mobile */
+            
+            /* Botões Grandes com Texto */
+            #normal-btns { flex-direction: column; gap: 8px; }
+            .btn-game { font-size: 1.2rem; padding: 15px; }
         }
 
-        /* MOBILE (Painel Inferior Compacto) */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
             #hud-panel { 
-                width: 100%; height: auto; 
+                width: 100%; 
                 border-top: 6px solid var(--c-dark); 
                 padding-bottom: env(safe-area-inset-bottom);
-                flex-shrink: 0; /* Impede que encolha demais */
             }
             
-            /* Lista de jogadores horizontal para economizar altura */
+            /* Lista de jogadores horizontal compacta */
             #players-scroll { 
-                flex-direction: row; 
-                overflow-x: auto; 
-                height: 70px; /* Altura fixa pequena */
-                gap: 10px; 
-                padding-bottom: 5px;
-                margin-bottom: 5px;
+                flex-direction: row; overflow-x: auto; 
+                height: 60px; gap: 5px; padding-bottom: 5px; margin-bottom: 5px;
             }
             .p-stat { 
-                min-width: 140px; 
-                height: 100%; 
-                flex-direction: column; /* Ícone em cima, dinheiro embaixo */
-                justify-content: center;
-                text-align: center;
-                padding: 5px;
+                min-width: 120px; height: 100%; flex-direction: column; 
+                justify-content: center; text-align: center; padding: 2px; font-size: 0.75rem; 
             }
 
-            /* Botões em Grid */
-            #normal-btns {
-                flex-direction: row !important; /* Força linha */
-                align-items: stretch;
-            }
-            #b-roll { flex: 2; font-size: 1.2rem; } /* Botão rolar maior */
-            #b-buy, #b-pass { flex: 1; }
+            /* Botões em Linha */
+            #normal-btns { flex-direction: row; align-items: stretch; height: 55px; }
+            #b-roll { flex: 1.5; font-size: 1.2rem; }
+            #b-buy, #b-pass { flex: 1; font-size: 1rem; }
+            
+            /* Propriedades no Mobile (Escondidas na Sidebar, usa modal) */
+            #desktop-props-container { display: none; }
+            .mobile-inv-btn { display: block; margin-top: 5px; }
         }
 
-        /* HUD GERAL */
-        .hud-top-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc;
-        }
+        /* ELEMENTOS COMUNS */
+        .hud-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; }
         .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
         .money-display { font-size: 1.5rem; color: var(--c-green); font-family: 'Titan One'; }
-
-        .hud-content { padding: 10px; overflow: hidden; display: flex; flex-direction: column; }
+        .hud-content { padding: 10px; }
         
-        #players-scroll { display: flex; /* Direction set by media query */ }
-        .p-stat { 
-            background: #fff; border: 1px solid #ddd;
-            border-radius: 8px; display: flex; align-items: center; justify-content: space-between;
-            font-weight: 700; font-size: 0.8rem; padding: 8px;
-        }
-        .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); box-shadow: 0 4px 5px rgba(0,0,0,0.1); }
+        .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
+        .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
         
-        #controls-area { width: 100%; display: flex; flex-direction: column; gap: 6px; justify-content: center; margin-top: 5px; }
-        
-        .btn-game { 
-            padding: 12px; border: none; border-radius: 12px; 
-            font-family: 'Titan One'; font-size: 1rem; cursor: pointer; color: #fff; 
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative;
-        }
+        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; }
         .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
         .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); }
-        
         .btn-roll { background: var(--c-yel); color: var(--c-dark); }
         .btn-buy { background: var(--c-green); }
         .btn-pass { background: var(--c-red); }
-        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; }
+        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; padding: 15px; font-size: 1.2rem; }
         @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
-        .btn-inv { background: #607d8b; color: white; font-size: 0.8rem; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-weight: bold; width: 100%; border: none; }
+        .btn-inv { background: #607d8b; color: white; font-size: 0.8rem; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; border: none; font-weight: bold; }
 
-        /* TABULEIRO INTERNO */
-        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.75rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; transition: border 0.3s; }
+        .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; }
+        .prop-item:hover { background: #f5f5f5; }
+
+        /* TABULEIRO */
+        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.75rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; }
         .color-strip { height: 25%; border-bottom: 2px solid var(--c-dark); }
         .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.85rem; }
         .sp-price { font-size: 0.9rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 2px 0; }
         .sp-icon { font-size: 3rem; display: flex; align-items: center; justify-content: center; height: 100%; }
-
         .space.owned { border-width: 4px !important; }
-
-        .center-hub { 
-            grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; 
-            border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center;
-        }
-        .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); text-align: center; line-height: 1; pointer-events: none; }
-
-        .deck { 
-            position: absolute; width: 120px; height: 160px; background: #fff; 
-            border: 4px solid #000; border-radius: 10px; cursor: pointer; 
-            box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-            font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000;
-        }
+        .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
+        .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
+        .deck { position: absolute; width: 120px; height: 160px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
         .deck:active { transform: scale(0.95); }
         .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: rotate(-10deg); }
         .deck.reves { top: 45%; left: 50%; background: var(--c-red); transform: rotate(10deg); }
         .deck.active { animation: pulseDeck 1s infinite; border-color: #ffeb3b; z-index: 100; }
-        @keyframes pulseDeck { 0%{transform:scale(1) rotate(0);} 50%{transform:scale(1.1) rotate(0);} 100%{transform:scale(1) rotate(0);} }
-
-        .token { 
-            width: 60px; height: 60px; position: absolute; z-index: 50; 
-            font-size: 3.5rem; text-align: center; line-height: 60px; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none;
-        }
-
+        .token { width: 60px; height: 60px; position: absolute; z-index: 50; font-size: 3.5rem; text-align: center; line-height: 60px; transition: all 0.4s; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none; }
         .build-area { position: absolute; top: -12px; width: 100%; display: flex; justify-content: center; gap: 2px; }
-        .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
-        .hotel-3d { width: 20px; height: 20px; background: var(--c-red); border: 1px solid #000; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
+        .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; }
+        .hotel-3d { width: 20px; height: 20px; background: var(--c-red); border: 1px solid #000; }
 
+        /* MODAIS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
-        
-        .prop-card { 
-            width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; 
-            border: 4px solid var(--c-dark); animation: popIn 0.3s;
-        }
+        .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
         .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
-        
         .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; width: 85%; height: 60vh; max-height: 500px; }
         .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
         .card-flip.flipped { transform: rotateY(180deg); }
         .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 5rem; transform: rotateY(0deg); }
         .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
-
         .dice-stage { position: absolute; display: flex; gap: 20px; pointer-events: none; opacity: 0; top: 30%; transition: 0.2s; z-index: 7000; }
         .dice-stage.active { opacity: 1; }
         .cube { width: 80px; height: 80px; background: #fff; border-radius: 15px; display: grid; place-items: center; font-size: 3rem; font-weight: bold; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-family: 'Titan One'; }
         .cube.shake { animation: shake 0.1s infinite; }
         @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
-
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
-
         #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
         #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
     </style>
@@ -241,10 +185,7 @@
 
 <div id="fx-layer">
     <div class="shark-anim">🦈</div>
-    <div class="traffic-anim">
-        <div style="font-size:5rem;">🛑</div>
-        <div>ENGARRAFAMENTO!<br>PERDEU A VEZ</div>
-    </div>
+    <div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div>
 </div>
 
 <div id="screen-start">
@@ -273,9 +214,7 @@
     <div id="board-area">
         <div id="board-container">
             <div id="board">
-                <div class="center-hub">
-                    <div class="center-logo">RECIFE</div>
-                </div>
+                <div class="center-hub"><div class="center-logo">RECIFE</div></div>
                 <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')">SORTE<br>🍀</div>
                 <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')">REVÉS<br>⚠️</div>
             </div>
@@ -285,7 +224,7 @@
     <div id="hud-panel">
         <div class="hud-top-bar">
             <div class="turn-badge" id="turn-display">Sua Vez</div>
-            <div class="money-display" id="p-money">$1500</div>
+            <div class="money-display" id="p-money">$500</div>
         </div>
         <div class="hud-content">
             <div id="players-scroll"></div>
@@ -299,13 +238,15 @@
                 </div>
                 
                 <div id="normal-btns" style="display:flex; gap:5px; width:100%;">
-                    <button id="b-roll" class="btn-game btn-roll" style="flex:2" onclick="game.roll()">🎲 ROLAR</button>
-                    <button id="b-buy" class="btn-game btn-buy" style="flex:1" disabled onclick="game.buy()">💰</button>
-                    <button id="b-pass" class="btn-game btn-pass" style="flex:1" disabled onclick="game.pass()">🛑</button>
+                    <button id="b-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 ROLAR</button>
+                    <button id="b-buy" class="btn-game btn-buy" disabled onclick="game.buy()">COMPRAR</button>
+                    <button id="b-pass" class="btn-game btn-pass" disabled onclick="game.pass()">PASSAR</button>
                 </div>
                 
-                <button class="btn-inv" onclick="ui.toggleInv()">💼 ESCRITURAS</button>
+                <button class="btn-inv mobile-inv-btn" onclick="ui.toggleInv()">💼 ESCRITURAS</button>
             </div>
+
+            <div id="desktop-props-container"></div>
         </div>
     </div>
 </div>
@@ -423,6 +364,7 @@ function resizeBoard() {
     const area = document.getElementById('board-area');
     if(!el || !area) return;
     
+    // Calcula o espaço disponível real (subtraindo o HUD)
     const w = area.offsetWidth;
     const h = area.offsetHeight;
     
@@ -436,8 +378,9 @@ const ui = {
     toChar: () => {
         const cpuCount = parseInt(document.getElementById('cpu-count').value);
         gameMode = document.getElementById('game-mode').value;
-        players = [{name:"Você", icon:"", pos:0, money:1500, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false}];
-        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:1500, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false});
+        // Dinheiro inicial agora é $500
+        players = [{name:"Você", icon:"", pos:0, money:500, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false}];
+        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:500, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false});
         document.getElementById('screen-start').style.display='none'; document.getElementById('screen-char').style.display='flex';
         CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
     },
@@ -487,7 +430,8 @@ const ui = {
         document.getElementById('p-money').innerText = `$${players[0].money}`;
         document.getElementById('players-scroll').innerHTML = players.map((pl,i) => `<div class="p-stat ${turn===i?'active':''} ${!pl.active?'bankrupt':''}"><div>${pl.icon} ${pl.name}</div><div>${pl.active ? (i===0 ? '$'+pl.money : (pl.jailed?'🔒':'?')) : '💀'}</div></div>`).join('');
         
-        const invList = document.getElementById('inv-list'); invList.innerHTML = '';
+        // Gera HTML das propriedades
+        let propsHTML = '';
         props.forEach((pr,i)=>{
             const sp = document.getElementById(`s${i}`);
             if(sp) {
@@ -499,11 +443,17 @@ const ui = {
                     sp.style.borderColor = 'rgba(0,0,0,0.15)';
                 }
             }
-
-            if(pr && pr.owner===0) invList.innerHTML+=`<div style="background:#fff;border-left:8px solid ${BD[i].g||'#333'};padding:15px;border-radius:5px;cursor:pointer;font-weight:bold;display:flex;justify-content:space-between;" onclick="ui.toggleInv();ui.openProp(${i})"><span>${BD[i].n}</span> <span>${pr.mtg?'⛔':''} ${pr.level>0?'🏠'+pr.level:''}</span></div>`;
             const el = document.getElementById(`b${i}`);
             if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
+            
+            if(pr && pr.owner===0) {
+                propsHTML += `<div class="prop-item" style="border-left-color:${BD[i].g||'#333'}" onclick="ui.openProp(${i})"><span>${BD[i].n}</span> <span>${pr.mtg?'⛔':''} ${pr.level>0?'🏠'+pr.level:''}</span></div>`;
+            }
         });
+        
+        // Atualiza Desktop Sidebar e Mobile Modal
+        document.getElementById('desktop-props-container').innerHTML = propsHTML;
+        document.getElementById('inv-list').innerHTML = propsHTML;
 
         const hum = turn===0; const jailed = players[0].jailed;
         document.getElementById('jail-btns').style.display = (jailed && hum) ? 'flex' : 'none';
@@ -587,15 +537,19 @@ const game = {
         const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
         p.lastD1 = d1; p.lastD2 = d2;
         ui.dice(d1,d2); await sleep(1500);
+        
+        // Lógica de Cadeia Atualizada
         if(p.jailed){
-            if(p.jailAttempts >= 3) { p.jailed = false; p.jailAttempts = 0; ui.toast("LIVRE!"); await game.move(turn, d1+d2); }
-            else {
-                if(d1===d2){ p.jailed=false; p.jailAttempts=0; ui.toast("SOLTO!"); await game.move(turn, d1+d2); }
-                else { p.jailAttempts++; ui.toast(`PRESO! ${p.jailAttempts}/3`); rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; }
-            }
+             // Se já está preso, tenta sair
+             if(d1===d2){ p.jailed=false; p.jailAttempts=0; ui.toast("SOLTO!"); await game.move(turn, d1+d2); }
+             else { 
+                 p.jailAttempts++; ui.toast(`AINDA PRESO! ${p.jailAttempts}/3`); 
+                 if(p.jailAttempts >= 3) { p.jailed = false; p.jailAttempts = 0; p.money -= 50; ui.toast("PAGOU $50 E SAIU!"); await game.move(turn, d1+d2); }
+                 else { rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; }
+             }
         } else {
             if(d1===d2) { p.doubles++; ui.toast("DUPLOS!"); } else p.doubles=0;
-            if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); animating=false; rolled=true; ui.hud(); return; }
+            if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); return; }
             await game.move(turn, d1+d2);
         }
         rolled = true; animating=false; ui.hud();
@@ -640,10 +594,21 @@ const game = {
     applyCard: () => {
         const c = ui.pendingCard; const p = players[turn];
         if(c.val) p.money += c.val; if(c.act==='jail') game.jail(turn);
-        ui.hud(); rolled=true; 
-        if(turn!==0) { if(players[turn].lastD1 === players[turn].lastD2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500); }
+        else {
+            ui.hud(); rolled=true; 
+            if(turn!==0) { if(players[turn].lastD1 === players[turn].lastD2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500); }
+        }
     },
-    jail: (pid) => { players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].pos = 10; ui.updatePositions(); ui.toast("PRESO!"); play('step'); },
+    jail: (pid) => { 
+        players[pid].jailed = true; 
+        players[pid].jailAttempts = 0; 
+        players[pid].pos = 10; 
+        ui.updatePositions(); 
+        ui.toast("PRESO! PASSANDO A VEZ..."); 
+        play('step');
+        animating = false; rolled = true;
+        setTimeout(game.pass, 2000); // Passa a vez automaticamente
+    },
     payJail: () => { const p = players[0]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); ui.hud(); } },
     pass: () => {
         players[turn].doubles = 0; 
