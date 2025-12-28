@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V65.1 (Mecânicas Ajustadas)</title>
+    <title>Recife Imobiliário: V65.2 (Mobile Widescreen)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -84,6 +84,9 @@
         /* --- MEDIA QUERIES --- */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
+            /* PADDING REDUZIDO PARA MOBILE */
+            #board-area { padding: 2px; } 
+            
             #board-container { width: 900px; height: 1250px; }
             #hud-panel { 
                 width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));
