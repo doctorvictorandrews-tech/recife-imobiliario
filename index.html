@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V68</title>
+    <title>Recife Imobiliário: V69</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
@@ -57,12 +57,14 @@
         #board-container { 
             position: relative; 
             transform-origin: center center;
+            /* Tamanho BASE do V63 (Quadrado) */
+            width: 950px; 
+            height: 950px;
         }
 
         #board { 
             width: 100%; height: 100%; 
             display: grid; 
-            /* Grid 11x11 Rigoroso */
             grid-template-columns: repeat(11, 1fr); 
             grid-template-rows: repeat(11, 1fr); 
             background: #fff; border: 25px solid var(--c-dark); border-radius: 15px; 
@@ -77,11 +79,12 @@
             flex-shrink: 0; 
         }
 
-        /* --- MEDIA QUERIES (GEOMETRIA) --- */
+        /* --- MEDIA QUERIES --- */
         @media (max-width: 899px) { /* Mobile */
             #game-layout { flex-direction: column; }
-            /* VOLTANDO AO ORIGINAL PEDIDO */
-            #board-container { width: 900px; height: 1100px; } 
+            
+            /* RESTAURADO PARA V63 (QUADRADO) */
+            #board-container { width: 950px; height: 950px; } 
             
             #hud-panel { 
                 width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
@@ -100,7 +103,7 @@
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
             
-            /* Tabuleiro esticado horizontalmente */
+            /* Desktop permanece Horizontal Largo para caber preços */
             #board-container { width: 1400px; height: 900px; }
 
             #mobile-controls-wrapper { display: contents; }
@@ -132,19 +135,16 @@
             width: 100%;
         }
         
-        /* Ícone ajustado para não empurrar o conteúdo */
+        /* Ícone ajustado */
         .sp-icon { 
-            font-size: 2rem; /* Reduzido de 3rem para caber melhor nas laterais */
+            font-size: 2rem; 
             display: flex; align-items: center; justify-content: center; 
             flex: 1; 
-            min-height: 0; /* Permite encolher se necessário */
+            min-height: 0; 
         }
         
         .space.owned { border-width: 4px !important; }
         
-        /* Rotação para laterais (mantendo texto reto, mas ajustando fluxo se necessário) */
-        /* Na V67 removemos a rotação de texto para legibilidade, mantendo assim */
-
         /* Centro */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
         .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
@@ -404,7 +404,7 @@ function resizeBoard() {
     const w = area.offsetWidth;
     const h = area.offsetHeight;
     const minDim = Math.min(w, h) * 0.95; 
-    const scale = Math.min(w / el.offsetWidth, h / el.offsetHeight) * 0.95;
+    const scale = minDim / 950;
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
