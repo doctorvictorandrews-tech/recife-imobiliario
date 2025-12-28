@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário V55</title>
+    <title>Recife Imobiliário V56 - Edição Hard</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
         
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
-            background: linear-gradient(135deg, #0d47a1, #006064);
+            background: linear-gradient(135deg, #b71c1c, #263238); /* Fundo mais agressivo para versão Hard */
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
 
@@ -31,15 +31,16 @@
         }
         .shark-anim.active { display: block; animation: sharkPass 3s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw; bottom: 10vh;} 100% {right: 150vw; bottom: 30vh;} }
-        body.shark-alert { animation: flashRed 0.5s infinite; }
-        @keyframes flashRed { 0%,100%{background:#300;} 50%{background:#500;} }
-
-        .rain-anim {
-            position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/diagmonds-light.png');
-            opacity: 0.5; display: none; animation: rainFall 0.5s linear infinite; background-color: rgba(0,0,50,0.4);
+        
+        .traffic-anim {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center;
+            font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center;
+            animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red;
+            flex-direction: column;
         }
-        .rain-anim.active { display: block; }
-        @keyframes rainFall { from{background-position:0 0;} to{background-position:20px 40px;} }
+        .traffic-anim.active { display: flex; }
+        @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
         /* --- UI --- */
         #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -49,7 +50,7 @@
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 2rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 8px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 4px 0 #1b5e20; }
 
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; max-height: 300px; overflow-y: auto; }
         .char-opt { border: 2px solid #ccc; border-radius: 15px; padding: 10px; cursor: pointer; background: #fff; transition: 0.2s; font-size: 2.5rem; text-align: center; }
         .char-opt:hover { border-color: var(--c-blue); transform: scale(1.1); background: #e1f5fe; }
 
@@ -108,6 +109,7 @@
         }
         .p-stat.active { background: #e3f2fd; border-color: var(--c-blue); transform: scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; filter: grayscale(1); }
+        .p-stat.skipped { background: #ffebee; border-color: red; opacity: 0.8; }
 
         .btn-game { 
             width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 15px; 
@@ -161,7 +163,10 @@
 
 <div id="fx-layer">
     <div class="shark-anim">🦈</div>
-    <div class="rain-anim"></div>
+    <div class="traffic-anim">
+        <div style="font-size:5rem;">🛑</div>
+        <div>ENGARRAFAMENTO!<br>PERDEU A VEZ</div>
+    </div>
 </div>
 
 <div id="screen-start">
@@ -264,26 +269,23 @@
 </div>
 
 <script>
-/* DADOS & PERSONAGENS */
+/* DADOS & PERSONAGENS (16 OPÇÕES) */
 const CHARS=[
-    {id:'rt',i:'💅',n:'A Ratona'},
-    {id:'as',i:'🗿',n:'Bilola de Brennand'},
-    {id:'bt',i:'🛶',n:'Celta Boiando'},
-    {id:'c',i:'🦀',n:'Caranguejo'},
-    {id:'s',i:'🦈',n:'Tubarão'},
-    {id:'u',i:'☂️',n:'Sombrinha de Frevo'},
-    {id:'pd',i:'🐀',n:'Gabiru'},
-    {id:'bb',i:'🌽',n:'Milho'}
+    {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta Boiando'}, {id:'c',i:'🦀',n:'Caranguejo'},
+    {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'},
+    {id:'gl',i:'🐔',n:'Galo'}, {id:'brt',i:'🚌',n:'BRT Quebrado'}, {id:'bdr',i:'🍥',n:'Bolo de Rolo'}, {id:'lu',i:'🐻',n:'A La Ursa'},
+    {id:'hmn',i:'🎩',n:'Homem da Meia-Noite'}, {id:'rp',i:'🚔',n:'Rádio Patrulha'}, {id:'srr',i:'🐚',n:'Sururu'}, {id:'and',i:'😎',n:'Anderson'}
 ];
 
+/* MAPA ATUALIZADO (V56) */
 const BD=[
     {t:'st',n:'MARCO ZERO',i:'🚩'}, 
     {t:'pr',g:'#795548',n:'Coque',p:60,h:50,m:30,r:[2,10,30,90,160,250]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#795548',n:'Ibura',p:60,h:50,m:30,r:[4,20,60,180,320,450]}, 
-    {t:'tx',n:'IPTU',p:200,i:'💸'}, 
+    {t:'tx',n:'IPTU',i:'💸'}, /* Taxa Variável */
     {t:'rr',n:'Est. Joana Bezerra',p:200,m:100,i:'🚆',r:[25,50,100,200]},
-    {t:'pr',g:'#03a9f4',n:'Sto Amaro',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
+    {t:'pr',g:'#03a9f4',n:'Av. Agamenon',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, /* Agamenon aqui (substituiu Sto Amaro) */
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
     {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,m:60,r:[8,40,100,300,450,600]},
@@ -293,7 +295,7 @@ const BD=[
     {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
     {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,m:80,r:[12,60,180,500,700,900]}, 
     {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#ff5722',n:'Av. Agamenon',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
+    {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, /* Imbiribeira aqui (substituiu antiga Agamenon) */
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
     {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,m:100,r:[16,80,220,600,800,1000]},
@@ -315,7 +317,7 @@ const BD=[
     {t:'rr',n:'Est. Afogados',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,m:175,r:[35,175,500,1100,1300,1500]}, 
-    {t:'tx',n:'Taxa',p:100,i:'🧾'}, 
+    {t:'tx',n:'Taxa',i:'🧾'}, /* Taxa Variável */
     {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,m:200,r:[50,200,600,1400,1700,2000]}
 ];
 
@@ -333,8 +335,8 @@ const ui = {
     toChar: () => {
         const cpuCount = parseInt(document.getElementById('cpu-count').value);
         gameMode = document.getElementById('game-mode').value;
-        players = [{name:"Você", icon:"", pos:0, money:1500, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0}];
-        for(let i=0; i<cpuCount; i++) players.push({name:`Gabiru ${i+1}`, icon:"🤖", pos:0, money:1500, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0});
+        players = [{name:"Você", icon:"", pos:0, money:1500, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false}];
+        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:1500, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false});
         document.getElementById('screen-start').style.display='none'; document.getElementById('screen-char').style.display='flex';
         CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
     },
@@ -366,7 +368,7 @@ const ui = {
         if(!players[turn]) return;
         document.getElementById('turn-display').innerText = `VEZ DE: ${players[turn].name}`;
         document.getElementById('p-money').innerText = `$${players[0].money}`;
-        document.getElementById('players-list').innerHTML = players.map((p,i) => `<div class="p-stat ${turn===i?'active':''} ${!p.active?'bankrupt':''}"><div>${p.icon} ${p.name}</div><div>${p.active ? (i===0 ? '$'+p.money : (p.jailed?'🔒':'?')) : 'FALIU'}</div></div>`).join('');
+        document.getElementById('players-list').innerHTML = players.map((p,i) => `<div class="p-stat ${turn===i?'active':''} ${!p.active?'bankrupt':''} ${p.skippedTurn?'skipped':''}"><div>${p.icon} ${p.name} ${p.skippedTurn?'(🛑)':''}</div><div>${p.active ? (i===0 ? '$'+p.money : (p.jailed?'🔒':'?')) : 'FALIU'}</div></div>`).join('');
         
         const inv = document.getElementById('inventory'); inv.innerHTML = '';
         props.forEach((pr,i)=>{
@@ -382,7 +384,8 @@ const ui = {
         document.getElementById('normal-controls').style.display = (!p.jailed && hum) ? 'block' : 'none';
         
         if(!p.jailed && hum) {
-            document.getElementById('b-roll').disabled = !(!rolled && !animating && !pendingCardType);
+            document.getElementById('b-roll').disabled = !(!rolled && !animating && !pendingCardType && !p.skippedTurn);
+            
             let canBuy = rolled && (BD[p.pos].t==='pr' || BD[p.pos].t==='rr' || BD[p.pos].t==='ut') && !props[p.pos] && !pendingCardType;
             if(gameMode === 'hardcore' && p.boughtRound) canBuy = false;
             document.getElementById('b-buy').disabled = !canBuy;
@@ -449,15 +452,45 @@ const game = {
     },
     roll: async () => {
         if(animating || pendingCardType) return;
-        animating=true; ui.hud();
-        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
-        players[turn].lastD1 = d1; players[turn].lastD2 = d2;
-        ui.dice(d1,d2); await sleep(1500);
         
         const p = players[turn];
+        
+        // --- 1. VERIFICAÇÃO DE TURNO PULADO (ENGARRAFAMENTO) ---
+        if(p.skippedTurn) {
+            ui.toast(`${p.name} NO ENGARRAFAMENTO!`);
+            p.skippedTurn = false;
+            await sleep(1500);
+            game.pass();
+            return;
+        }
+
+        animating=true; ui.hud();
+        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
+        p.lastD1 = d1; p.lastD2 = d2;
+        ui.dice(d1,d2); await sleep(1500);
+        
+        // --- 2. LÓGICA DE CADEIA (AJUSTADA) ---
         if(p.jailed){
-            if(d1===d2){ p.jailed=false; ui.toast("SOLTOU! DADOS IGUAIS!"); await game.move(turn, d1+d2); }
-            else { ui.toast("PRESO!"); rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; }
+            // Se for a 4ª tentativa (já errou 3x), sai livre
+            if(p.jailAttempts >= 3) {
+                p.jailed = false; 
+                p.jailAttempts = 0;
+                ui.toast("PENA CUMPRIDA! LIVRE!");
+                await game.move(turn, d1+d2);
+            } else {
+                if(d1===d2){ 
+                    p.jailed=false; 
+                    p.jailAttempts=0; 
+                    ui.toast("DADOS IGUAIS! SOLTO!"); 
+                    await game.move(turn, d1+d2); 
+                } else { 
+                    p.jailAttempts++;
+                    ui.toast(`PRESO! TENTATIVA ${p.jailAttempts}/3`); 
+                    rolled=true; animating=false; ui.hud(); 
+                    setTimeout(game.pass, 1500); 
+                    return; 
+                }
+            }
         } else {
             if(d1===d2) { p.doubles++; ui.toast("JOGA DE NOVO!"); } else p.doubles=0;
             if(p.doubles===3) { ui.toast("3x IGUAIS! CADEIA!"); game.jail(turn); animating=false; rolled=true; ui.hud(); return; }
@@ -465,7 +498,6 @@ const game = {
         }
         rolled=true; animating=false; ui.hud();
         
-        // AUTO PASS FOR CPU
         if(turn!==0 && !pendingCardType) {
             if(d1===d2) setTimeout(game.roll, 1500);
             else setTimeout(game.pass, 1500);
@@ -485,19 +517,40 @@ const game = {
         if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
         
         totalTurns++;
-        // Galo: Only current player moves
         if(totalTurns%20 === 0) { 
-            ui.toast("O GALO PASSOU! +$200"); 
+            ui.toast(`O GALO PASSOU! ${p.name} -> Marco Zero`); 
             p.money+=200; p.pos=0; ui.place(pid,0); 
             return;
         }
         
-        // Rain Agamenon
-        if(s.n.includes("Agamenon")){
-            document.querySelector('.rain-anim').classList.add('active');
-            setTimeout(()=>document.querySelector('.rain-anim').classList.remove('active'), 4000);
-            ui.toast("CARRO AFOGOU! -$100 DE GUINCHO"); p.money-=100;
-            return;
+        // --- DINÂMICA DA AGAMENON (V56) ---
+        if(s.n === "Av. Agamenon") {
+            const hasOwner = pr && pr.owner !== null;
+            const isOwner = hasOwner && pr.owner === pid;
+            
+            // Se não for dono (ou não tiver dono), sofre a dinâmica
+            if(!isOwner) {
+                if(Math.random() < 0.5) {
+                    // 50% Engarrafamento
+                    document.querySelector('.traffic-anim').classList.add('active');
+                    setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000);
+                    p.skippedTurn = true;
+                    ui.toast("ENGARRAFAMENTO! PERDE A VEZ.");
+                } else {
+                    // 50% BK
+                    ui.toast("BÔNUS DO BK! +$50");
+                    p.money += 50;
+                }
+            }
+        }
+
+        // --- DINÂMICA DO TUBARÃO (Boa Viagem / Paiva) ---
+        if(s.n === "Boa Viagem" || s.n === "Paiva"){
+            if(Math.random() > 0.7){ // 30% chance
+                 document.querySelector('.shark-anim').classList.add('active');
+                 setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000);
+                 ui.toast("TUBARÃO! CORREU! -$50"); p.money-=50;
+            }
         }
 
         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
@@ -519,7 +572,14 @@ const game = {
                 ui.showEvent(s.t==='ch'?'sorte':'vixe', ui.pendingCard.txt);
                 setTimeout(()=>ui.closeEvent(), 3000);
             }
-        } else if(s.t==='tx'){ p.money-=200; ui.toast("IMPOSTO -$200"); }
+        } 
+        
+        // --- DIFICULDADE OPÇÃO C (IMPOSTO %) ---
+        else if(s.t==='tx' || s.t==='tx_fix'){ 
+            const tax = Math.floor(p.money * 0.10); // 10% do total
+            p.money -= tax; 
+            ui.toast(`LEÃO DO IR! -${tax} (10%)`); 
+        }
         ui.hud(); 
     },
     applyCard: () => {
@@ -532,16 +592,17 @@ const game = {
         }
     },
     jail: (pid) => {
-        players[pid].jailed = true; players[pid].pos = 10; ui.place(pid, 10);
+        players[pid].jailed = true; 
+        players[pid].jailAttempts = 0; // Reseta tentativas
+        players[pid].pos = 10; ui.place(pid, 10);
         ui.toast("PRESO!"); play('step');
     },
     payJail: () => {
         const p = players[0];
-        if(p.money >= 50){ p.money-=50; p.jailed=false; ui.toast("PAGO!"); ui.hud(); }
+        if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); ui.hud(); }
     },
     pass: () => {
         players[turn].doubles = 0;
-        // Check bankruptcy
         if(players[turn].money < 0) {
              players[turn].active = false; 
              ui.toast(`${players[turn].name} FALIU!`);
@@ -558,7 +619,6 @@ const game = {
         if(turn!==0) setTimeout(game.roll, 1500);
     },
     aiBuy: (idx) => {
-        // Simple AI logic
         if(Math.random() > 0.3){
              const p = players[turn]; const s = BD[idx];
              if(p.money >= s.p){
