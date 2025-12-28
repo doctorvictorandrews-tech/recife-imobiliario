@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário: V67 Carnaval</title>
+    <title>Recife Imobiliário: GOLD (V68)</title>
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
@@ -13,7 +13,6 @@
             --wood: #5d4037; --paper: #fff;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
             --c-dark: #263238;
-            --shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -28,86 +27,48 @@
         /* FX LAYER */
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; overflow: hidden; }
         
-        /* SHARK & TRAFFIC ANIMATIONS (MANTIDOS DA V66) */
         .shark-anim { position: absolute; bottom: 30%; right: -50vw; font-size: min(30vh, 30vw); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); display: none; transform: scaleX(-1); z-index: 9001; }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
+
         .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 9002; }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
         .emote-float { position: absolute; font-size: 3rem; animation: floatUp 2s forwards; z-index: 9100; text-shadow: 0 5px 10px rgba(0,0,0,0.5); }
         @keyframes floatUp { 0%{opacity:1; transform:translateY(0) scale(0.5);} 50%{transform:translateY(-50px) scale(1.5);} 100%{opacity:0; transform:translateY(-100px) scale(1);} }
 
-        /* --- UI: START & LOBBY (REDESIGN) --- */
+        /* UI BASE */
         .modal-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        
-        .card-menu { 
-            background: #fff; border: none; border-radius: 30px; padding: 30px; 
-            text-align: center; width: 90%; max-width: 500px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4); position: relative; animation: popIn 0.4s;
-        }
-        
-        /* TELA DE PERSONAGEM EXPANDIDA */
+        .card-menu { background: #fff; border: none; border-radius: 30px; padding: 30px; text-align: center; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); position: relative; animation: popIn 0.4s; }
         .card-menu.large { width: 95%; max-width: 1200px; height: 90vh; display: flex; flex-direction: column; }
 
-        .title-main {
-            font-size: 3.5rem; line-height: 1; margin: 0 0 10px 0;
-            background: -webkit-linear-gradient(#0277bd, #2e7d32, #fbc02d, #c62828);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2));
-        }
-
-        .input-box { 
-            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; 
-            font-family: 'Nunito'; font-weight: 900; font-size: 1.2rem; border-radius: 15px; 
-            text-align: center; outline: none; transition: 0.3s; background: #f9f9f9;
-        }
+        .title-main { font-size: 3.5rem; line-height: 1; margin: 0 0 10px 0; background: -webkit-linear-gradient(#0277bd, #2e7d32, #fbc02d, #c62828); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2)); }
+        
+        .input-box { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; font-family: 'Nunito'; font-weight: 900; font-size: 1.2rem; border-radius: 15px; text-align: center; outline: none; transition: 0.3s; background: #f9f9f9; }
         .input-box:focus { border-color: var(--c-blue); background: #fff; transform: scale(1.02); }
 
-        .btn-main { 
-            width: 100%; padding: 18px; margin-top: 10px; border: none; border-radius: 50px; 
-            font-size: 1.4rem; font-weight: 900; cursor: pointer; color: #fff; 
-            box-shadow: 0 8px 0 rgba(0,0,0,0.2); text-transform: uppercase; transition: 0.1s; 
-        }
+        .btn-main { width: 100%; padding: 18px; margin-top: 10px; border: none; border-radius: 50px; font-size: 1.4rem; font-weight: 900; cursor: pointer; color: #fff; box-shadow: 0 8px 0 rgba(0,0,0,0.2); text-transform: uppercase; transition: 0.1s; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
         .bg-blue { background: var(--c-blue); } .bg-green { background: var(--c-green); } .bg-red { background: var(--c-red); }
 
-        .lobby-code { 
-            background: #e3f2fd; color: var(--c-blue); border: 2px dashed var(--c-blue);
-            padding: 15px; border-radius: 15px; font-family: monospace; font-size: 1.5rem; font-weight: bold;
-            cursor: pointer; margin-bottom: 10px; word-break: break-all; transition: 0.2s;
-        }
+        .lobby-code { background: #e3f2fd; color: var(--c-blue); border: 2px dashed var(--c-blue); padding: 15px; border-radius: 15px; font-family: monospace; font-size: 1.5rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; word-break: break-all; transition: 0.2s; }
         .lobby-code:active { background: #bbdefb; transform: scale(0.98); }
 
-        /* GRID DE PERSONAGENS (REDESIGN) */
-        #char-grid { 
-            display: grid; gap: 15px; padding: 10px; flex: 1; overflow-y: auto;
-            grid-template-columns: repeat(4, 1fr); /* Mobile default */
-        }
+        /* CHARACTERS */
+        #char-grid { display: grid; gap: 15px; padding: 10px; flex: 1; overflow-y: auto; grid-template-columns: repeat(4, 1fr); }
         @media (min-width: 800px) { #char-grid { grid-template-columns: repeat(8, 1fr); } }
-
-        .char-opt { 
-            border: 3px solid #eee; border-radius: 20px; padding: 10px; cursor: pointer; 
-            background: #fff; font-size: 3rem; text-align: center; transition: 0.2s; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        .char-opt { border: 3px solid #eee; border-radius: 20px; padding: 10px; cursor: pointer; background: #fff; font-size: 3rem; text-align: center; transition: 0.2s; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .char-opt:hover { transform: scale(1.1); border-color: var(--c-yel); z-index: 10; }
         .char-opt.taken { filter: grayscale(1); opacity: 0.3; pointer-events: none; background: #eee; }
         .char-opt.selected { border-color: var(--c-green); background: #e8f5e9; box-shadow: 0 0 20px rgba(76, 175, 80, 0.4); transform: scale(1.1); }
         .char-name { font-size: 0.9rem; font-family: 'Titan One'; margin-top: 5px; color: #555; }
 
-        /* --- GAME UI --- */
+        /* GAME BOARD */
         #game-layout { display: none; width: 100%; height: 100%; flex-direction: column; }
         #game-layout.active { display: flex; }
-
         #board-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); }
         #board-container { width: 950px; height: 950px; position: relative; transform-origin: center center; }
-        #board { 
-            width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            background: #fff; border: 25px solid var(--c-dark); border-radius: 30px; 
-            box-shadow: 0 30px 100px rgba(0,0,0,0.5); 
-            background-image: url('https://www.transparenttextures.com/patterns/cardboard.png'); 
-        }
+        #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: #fff; border: 25px solid var(--c-dark); border-radius: 30px; box-shadow: 0 30px 100px rgba(0,0,0,0.5); background-image: url('https://www.transparenttextures.com/patterns/cardboard.png'); }
         
         .space { border: 1px solid rgba(0,0,0,0.1); background: #fff; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; transition: border 0.3s; }
         .space.owned { border-width: 6px !important; z-index: 5; }
@@ -134,8 +95,9 @@
         .hud-content { flex: 1; display: flex; justify-content: center; width: 100%; }
         .hud-inner { display: flex; gap: 10px; padding: 10px; width: 100%; max-width: 800px; }
         #players-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 5px; }
-        .p-stat { display: flex; justify-content: space-between; padding: 8px; background: #fff; border: 2px solid #eee; border-radius: 10px; align-items: center; font-weight: 800; font-size: 0.85rem; }
+        .p-stat { display: flex; justify-content: space-between; padding: 8px; background: #fff; border: 2px solid #eee; border-radius: 10px; align-items: center; font-weight: 800; font-size: 0.85rem; cursor:pointer; }
         .p-stat.active { background: #e3f2fd; border-color: var(--c-blue); transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .p-stat:active { transform:scale(0.98); }
         
         #controls-area { width: 50%; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
         .btn-game { width: 100%; padding: 12px; border: none; border-radius: 12px; font-family: 'Titan One'; font-size: 1rem; cursor: pointer; color: #fff; box-shadow: 0 5px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; }
@@ -144,6 +106,7 @@
         .btn-roll { background: var(--c-yel); color: var(--c-dark); } .btn-buy { background: var(--c-green); } .btn-pass { background: var(--c-red); }
         .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; }
         @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
+        .btn-inv { background: #607d8b; color: white; font-size: 0.8rem; padding: 8px; border-radius: 5px; margin-top: 5px; cursor: pointer; text-align: center; font-weight: bold; width: 100%; border: none; }
 
         .emote-bar { display: flex; gap: 5px; margin-top: 5px; justify-content: center; }
         .btn-emote { background: #eee; border: none; font-size: 1.5rem; padding: 5px; border-radius: 50%; cursor: pointer; transition: 0.1s; }
@@ -189,7 +152,7 @@
 <div id="screen-login" class="modal-overlay">
     <div class="card-menu">
         <h1 class="title-main">RECIFE<br>ONLINE</h1>
-        <p style="color:#666; font-weight:bold;">V67: Carnaval</p>
+        <p style="color:#666; font-weight:bold;">V68: Gold Master</p>
         <input id="p-name" class="input-box" placeholder="Seu Apelido" maxlength="12">
         <button class="btn-main bg-blue" onclick="net.host()">CRIAR SALA</button>
         <p style="margin:5px 0; color:#888;">- OU -</p>
@@ -307,45 +270,25 @@
     </div>
 </div>
 
-<div id="overlay-layer">
-    <div id="dice-visual" class="dice-stage"><div id="d1" class="cube">1</div><div id="d2" class="cube">1</div></div>
-    
-    <div class="card-flip-container" id="card-event">
-        <div class="card-flip" id="card-flipper">
-            <div class="cf-face cf-back" id="cf-back-style">?</div>
-            <div class="cf-face cf-front">
-                <h2 class="brand" id="ev-title" style="font-size:2.8rem; margin-bottom:20px;">SORTE</h2>
-                <p id="ev-desc" style="font-size:1.6rem; font-weight:bold;">Texto...</p>
-                <button class="btn-game btn-roll" style="width:auto; padding:15px 50px; margin-top:30px; color:#000;" onclick="ui.closeEvent()">BELEZA</button>
-            </div>
-        </div>
+<div id="host-tools" class="modal-overlay" style="display:none;">
+    <div class="card-menu">
+        <h2 style="color:var(--c-red)">PAINEL DO MESTRE</h2>
+        <p>Gerenciar Jogador: <b id="ht-pname"></b></p>
+        <button class="btn-main bg-blue" onclick="game.hostForcePass()">FORÇAR PASSAR VEZ</button>
+        <button class="btn-main bg-red" onclick="game.hostKick()">EXPULSAR DA SALA</button>
+        <button class="btn-main" style="background:#546e7a" onclick="document.getElementById('host-tools').style.display='none'">FECHAR</button>
     </div>
+</div>
 
-    <div id="prop-card" class="prop-card">
-        <div class="pc-head" id="pc-name">NOME DA RUA</div>
-        <div style="padding:15px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:3.5rem;">🏠</div>
-                <div style="text-align:right;">
-                    <div style="font-size:0.9rem; color:#666; font-weight:bold;">VALOR</div>
-                    <div class="brand" style="font-size:2.2rem; color:var(--c-green);" id="pc-price">$200</div>
-                </div>
-            </div>
-            
-            <table class="rent-table" id="rent-table-body"></table>
+<div id="dice-visual" class="dice-stage"><div id="d1" class="cube">1</div><div id="d2" class="cube">1</div></div>
 
-            <div id="act-buy" style="display:none; margin-top:15px;">
-                <button class="btn-game bg-green" onclick="game.act('confirmBuy')">COMPRAR AGORA</button>
-                <button class="btn-game" style="background:#546E7A; margin-top:8px;" onclick="ui.closeCard()">NÃO QUERO</button>
-            </div>
-
-            <div id="act-manage" style="display:none; margin-top:15px;">
-                <div style="display:flex; gap:8px; margin-bottom:8px;">
-                    <button id="btn-mtg" class="btn-game btn-roll" style="font-size:0.9rem; padding:10px;" onclick="game.act('mortgage', activeIdx)">HIPOTECAR</button>
-                    <button id="btn-bld" class="btn-game bg-green" style="font-size:0.9rem; padding:10px;" onclick="game.act('build', activeIdx)">+ CASA</button>
-                </div>
-                <button class="btn-game" style="background:#37474F; font-size:0.9rem; padding:10px;" onclick="ui.closeCard()">FECHAR</button>
-            </div>
+<div id="card-flip-container" class="card-flip-container" style="display:none; position:fixed; inset:0; z-index:8000; justify-content:center; align-items:center;">
+    <div class="card-flip" id="card-flipper">
+        <div class="cf-face cf-back" id="cf-back-style">?</div>
+        <div class="cf-face cf-front">
+            <h2 class="brand" id="ev-title" style="font-size:2.8rem; margin-bottom:20px;">SORTE</h2>
+            <p id="ev-desc" style="font-size:1.6rem; font-weight:bold;">Texto...</p>
+            <button class="btn-game btn-roll" style="width:auto; padding:15px 50px; margin-top:30px; color:#000;" onclick="ui.closeEvent()">BELEZA</button>
         </div>
     </div>
 </div>
@@ -379,6 +322,7 @@ let state={
 }; 
 let activeIdx = -1;
 let pendingCardType = null;
+let selectedTargetId = null; // For host tools
 
 /* UTILS */
 const util = {
@@ -387,7 +331,6 @@ const util = {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => ui.toast("Copiado!"));
         } else {
-            // Fallback for older browsers/mobile
             let textArea = document.createElement("textarea");
             textArea.value = text;
             textArea.style.position = "fixed";
@@ -395,12 +338,7 @@ const util = {
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            try {
-                document.execCommand('copy');
-                ui.toast("Copiado!");
-            } catch (err) {
-                alert("Copie manualmente: " + text);
-            }
+            try { document.execCommand('copy'); ui.toast("Copiado!"); } catch (err) { alert("Copie manualmente: " + text); }
             document.body.removeChild(textArea);
         }
     }
@@ -409,28 +347,32 @@ const util = {
 const narrator = {
     on: false,
     toggle: () => { narrator.on = !narrator.on; document.getElementById('btn-sound').innerText = narrator.on ? '🔊' : '🔇'; },
-    speak: (txt) => { if(narrator.on && 'speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; speechSynthesis.speak(u); } }
+    speak: (txt) => { if(narrator.on && 'speechSynthesis' in window) { try{const u = new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; speechSynthesis.speak(u);}catch(e){} } }
 };
 
 /* NET */
 const net={
     init:()=>{
-        const p = new Peer(null,{debug:1});
-        p.on('open',id=>{ 
-            myId=id; 
-            document.getElementById('net-status').innerText="✅ PRONTO PARA A FOLIA"; 
-            document.getElementById('net-status').style.color="#2e7d32";
-            setTimeout(()=>{
-                confetti({particleCount: 100, spread: 70, origin: { y: 0.6 }});
-            }, 500);
-        });
-        p.on('connection',c=>{
-            if(isHost){
-                c.on('open',()=> { c.send({t:'SYNC',s:state}); conns.push(c); });
-                c.on('data',d=> net.hostProcess(d));
-            }
-        });
-        net.me=p;
+        try {
+            const p = new Peer(null,{debug:1});
+            p.on('open',id=>{ 
+                myId=id; 
+                document.getElementById('net-status').innerText="✅ PRONTO PARA A FOLIA"; 
+                document.getElementById('net-status').style.color="#2e7d32";
+                setTimeout(()=>{ confetti({particleCount: 100, spread: 70, origin: { y: 0.6 }}); }, 500);
+            });
+            p.on('connection',c=>{
+                if(isHost){
+                    c.on('open',()=> { c.send({t:'SYNC',s:state}); conns.push(c); });
+                    c.on('data',d=> net.hostProcess(d));
+                    c.on('close', () => { 
+                        // Basic handling of disconnects: remove from list? No, might reconnect. Just toast.
+                        ui.toast("Alguém desconectou!"); 
+                    });
+                }
+            });
+            net.me=p;
+        } catch(e) { alert("Erro PeerJS: " + e); }
     },
     host:()=>{ 
         if(!myId)return alert("Aguarde a conexão..."); 
@@ -444,6 +386,7 @@ const net={
         hostConn=net.me.connect(id);
         hostConn.on('open',()=>{ hostConn.send({t:'JOIN',name:myName}); ui.screen('lobby'); document.getElementById('msg-wait').style.display='block'; });
         hostConn.on('data',d=> net.clientProcess(d));
+        hostConn.on('close',()=>alert("Desconectado do Host!"));
     },
     hostProcess:(d)=>{
         if(d.t==='JOIN'){
@@ -467,10 +410,7 @@ const net={
     toChars:()=>{ state.phase='CHARS'; net.sync(); },
     startGame:()=>{ if(state.players.every(p=>p.char)){ state.phase='GAME'; net.sync(); } },
     selectChar:(cid)=>{ 
-        // Feedback visual imediato
-        const el = document.querySelectorAll('.char-opt');
-        el.forEach(e => e.classList.remove('selected'));
-        // Send logic
+        const el = document.querySelectorAll('.char-opt'); el.forEach(e => e.classList.remove('selected'));
         if(isHost){ const p=state.players.find(x=>x.id===myId); if(!state.players.some(x=>x.char===cid)){p.char=cid; net.sync();} } 
         else hostConn.send({t:'CHAR', pid:myId, c:cid}); 
     }
@@ -479,10 +419,33 @@ const net={
 /* GAME LOGIC (HOST) */
 const game={
     act:(a, val=null)=> net.send({t:'ACT', a, val}),
+    hostForcePass:() => {
+        if(!selectedTargetId) return;
+        // Force state.turn to next
+        state.rolled=false; state.doubles=0; 
+        const pIdx = state.players.findIndex(p=>p.id===selectedTargetId);
+        if(pIdx !== -1 && state.turn === pIdx) {
+             do { state.turn=(state.turn+1)%state.players.length; } while(!state.players[state.turn].active);
+             net.broadcast({t:'TOAST', m:"O Mestre passou a vez!"});
+             net.sync();
+        }
+        document.getElementById('host-tools').style.display='none';
+    },
+    hostKick:() => {
+        if(!selectedTargetId) return;
+        const pIdx = state.players.findIndex(p=>p.id===selectedTargetId);
+        if(pIdx !== -1) {
+            game.bankrupt(pIdx);
+            // Optional: Remove from array? Risk of index shift. Better to set active=false (Bankrupt).
+            net.broadcast({t:'TOAST', m:"Jogador removido!"});
+            net.sync();
+        }
+        document.getElementById('host-tools').style.display='none';
+    },
     run:(d)=>{
         const pIdx=state.players.findIndex(p=>p.id===d.pid);
         const p=state.players[pIdx];
-        if(state.turn!==pIdx) return;
+        if(state.turn!==pIdx) return; // Ignore acts out of turn
 
         if(d.a==='roll'){
             if(state.rolled && state.doubles===0) return;
@@ -528,12 +491,19 @@ const game={
         else if(d.a==='payLoan'){ const pr=state.props[d.val]; if(pr && pr.owner===pIdx && pr.loan && p.money>=pr.loan.val){ p.money-=pr.loan.val; pr.loan=null; net.sync(); } }
         else if(d.a==='emote') net.broadcast({t:'EMOTE', pid:d.pid, e:d.val});
         else if(d.a==='build'){
-            // Build logic simple
             const pr = state.props[d.val];
             if(pr && pr.owner===pIdx && pr.level<5){
                 const cost = BD[d.val].h;
                 if(p.money >= cost){ p.money-=cost; pr.level++; net.broadcast({t:'TOAST', m:"Construiu!"}); net.sync(); }
             }
+        }
+        else if(d.a==='drawCard'){
+            const card = d.val.card;
+            if(card.val) p.money += card.val;
+            if(card.act === 'jail') { p.jailed=true; p.pos=10; }
+            state.rolled = true; 
+            if(state.doubles > 0) state.rolled = false; 
+            net.sync();
         }
     },
     move:(p, steps)=>{
@@ -673,9 +643,6 @@ const ui={
                 if(pr) { d.classList.add('owned'); d.style.borderColor=state.players[pr.owner].color; if(pr.loan && !d.querySelector('.loan-badge')){const b=document.createElement('div');b.className='loan-badge';b.innerText='DIVIDA';d.appendChild(b);} }
                 else { d.classList.remove('owned'); d.style.borderColor='rgba(0,0,0,0.1)'; const lb=d.querySelector('.loan-badge'); if(lb) lb.remove(); }
                 
-                const bld=document.getElementById(`b${i}`); // Ensure build area exists for V67? No, injected by script V66. Need to ensure V67 adds it.
-                // NOTE: V67 code snippet below adds build-area dynamically if not present?
-                // Actually, V66 added it inside innerHTML. V67 needs to ensure house rendering.
                 if(s.t==='pr' && pr){
                     let area = d.querySelector('.build-area');
                     if(!area){ area = document.createElement('div'); area.className='build-area'; d.appendChild(area); }
@@ -723,12 +690,20 @@ const ui={
             document.getElementById('my-controls').style.display = (isMyTurn && me.jailed) ? 'none' : 'block';
             
             document.getElementById('players-scroll').innerHTML = state.players.map((p,i)=>
-                `<div class="p-stat ${state.turn===i?'active':''} ${!p.active?'bankrupt':''}" style="border-left:5px solid ${p.color}">
+                `<div class="p-stat ${state.turn===i?'active':''} ${!p.active?'bankrupt':''}" style="border-left:5px solid ${p.color}" onclick="ui.clickPlayer('${p.id}')">
                     <span>${CHARS.find(c=>c.id===p.char).i} ${p.name} ${p.jailed?'🔒':''} ${p.sharkProt>0?'🛡️':''}</span>
                     <span>$${p.money}</span>
                 </div>`
             ).join('');
             resizeBoard();
+        }
+    },
+    clickPlayer:(pid) => {
+        if(isHost && pid !== myId) {
+            selectedTargetId = pid;
+            const p = state.players.find(x=>x.id===pid);
+            document.getElementById('ht-pname').innerText = p.name;
+            document.getElementById('host-tools').style.display='flex';
         }
     },
     clickSpace:(i)=>{
@@ -798,99 +773,23 @@ const ui={
             const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
             const card = deck[Math.floor(Math.random()*deck.length)];
             ui.showEvent(type, card.txt);
-            
-            // Logic handled by client sending ACT applying card effect? No, logic should be robust.
-            // Simplified: Client clicks -> Host knows pending -> Host applies effect.
-            // Better: Client sends "DRAW_CARD" action.
             game.act('drawCard', {type, card});
             pendingCardType = null;
         }
     },
     showEvent: (type, text) => {
-        const c = document.getElementById('card-event'); const flip = document.getElementById('card-flipper');
+        const c = document.getElementById('card-flip-container'); // FIX V67: Use container ID
+        c.style.display='flex';
+        const flip = document.getElementById('card-flipper');
         const back = document.getElementById('cf-back-style');
         back.style.background = type==='ch' ? '#2e7d32' : '#c62828'; back.innerText = type==='ch' ? '?' : '!';
         document.getElementById('ev-title').innerText = type==='ch'?'SORTE':'REVÉS'; 
         document.getElementById('ev-desc').innerText = text;
-        c.style.display='flex'; setTimeout(()=>flip.classList.add('flipped'), 100);
+        setTimeout(()=>flip.classList.add('flipped'), 100);
     },
-    closeEvent: () => { document.getElementById('card-event').style.display='none'; document.getElementById('card-flipper').classList.remove('flipped'); }
-};
-
-/* GAME LOGIC EXTENSION FOR CARDS */
-// Note: Overwriting game.run to handle drawCard would be messy in one file. 
-// Added a special handling in hostProcess implicitly via 'ACT'.
-// Let's refine game.run to include 'drawCard'.
-
-game.run = (d) => {
-    const pIdx=state.players.findIndex(p=>p.id===d.pid);
-    const p=state.players[pIdx];
-    if(state.turn!==pIdx) return;
-
-    if(d.a==='roll'){
-        if(state.rolled && state.doubles===0) return;
-        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
-        net.broadcast({t:'ANIM',d1,d2});
-        
-        state.totalTurns++;
-        if(state.totalTurns >= state.nextGalo){
-            state.nextGalo = state.totalTurns + Math.floor(Math.random()*11) + 20;
-            p.pos=0; p.money+=200;
-            state.rolled=true; 
-            net.broadcast({t:'TOAST',m:`O GALO LEVOU ${p.name} PRO MARCO ZERO!`});
-            net.sync();
-            return;
-        }
-
-        if(p.jailed){
-            if(d1===d2){ p.jailed=false; game.move(p, d1+d2); }
-            else { state.rolled=true; net.broadcast({t:'TOAST',m:"Ainda preso!"}); }
-        } else {
-            if(d1===d2) { state.doubles++; net.broadcast({t:'TOAST',m:"Duplos! Jogue de novo"}); } else state.doubles=0;
-            if(state.doubles>=3) { p.jailed=true; p.pos=10; state.rolled=true; state.doubles=0; net.broadcast({t:'TOAST',m:"3x Duplos! Cadeia!"}); }
-            else { game.move(p, d1+d2); if(d1!==d2) state.rolled=true; }
-        }
-        net.sync();
-    }
-    else if(d.a==='confirmBuy'){ /* ... same as before */
-        const s=BD[p.pos];
-        if(p.money>=s.p && !state.props[p.pos]){
-            p.money-=s.p; state.props[p.pos]={owner:pIdx, level:0, loan:null};
-            net.broadcast({t:'TOAST',m:`${p.name} comprou ${s.n}`}); net.sync();
-        }
-    }
-    else if(d.a==='buy'){ /* same... */
-        const s=BD[p.pos];
-        if(p.money>=s.p && !state.props[p.pos]){
-            p.money-=s.p; state.props[p.pos]={owner:pIdx, level:0, loan:null};
-            net.broadcast({t:'TOAST',m:`${p.name} comprou ${s.n}`}); net.sync();
-        }
-    }
-    else if(d.a==='pass'){
-        state.props.forEach((pr, i)=>{ if(pr && pr.owner===pIdx && pr.loan){ pr.loan.val=Math.ceil(pr.loan.val*1.1); pr.loan.turns--; if(pr.loan.turns<=0) game.bankrupt(pIdx); } });
-        state.rolled=false; state.doubles=0; p.traded=false;
-        do { state.turn=(state.turn+1)%state.players.length; } while(!state.players[state.turn].active);
-        net.sync();
-    }
-    else if(d.a==='payJail' && p.money>=50){ p.money-=50; p.jailed=false; net.sync(); }
-    else if(d.a==='mortgage'){ const pr=state.props[d.val]; if(pr && pr.owner===pIdx && !pr.loan){ pr.loan={val:Math.floor(BD[d.val].p*0.8), turns:5}; p.money+=pr.loan.val; net.sync(); } }
-    else if(d.a==='payLoan'){ const pr=state.props[d.val]; if(pr && pr.owner===pIdx && pr.loan && p.money>=pr.loan.val){ p.money-=pr.loan.val; pr.loan=null; net.sync(); } }
-    else if(d.a==='emote') net.broadcast({t:'EMOTE', pid:d.pid, e:d.val});
-    else if(d.a==='build'){
-        const pr = state.props[d.val];
-        if(pr && pr.owner===pIdx && pr.level<5){
-            const cost = BD[d.val].h;
-            if(p.money >= cost){ p.money-=cost; pr.level++; net.broadcast({t:'TOAST', m:"Construiu!"}); net.sync(); }
-        }
-    }
-    else if(d.a==='drawCard'){
-        // Card Effect Logic
-        const card = d.val.card;
-        if(card.val) p.money += card.val;
-        if(card.act === 'jail') { p.jailed=true; p.pos=10; }
-        state.rolled = true; 
-        if(state.doubles > 0) state.rolled = false; // If double, play again even after card? Rules say usually yes.
-        net.sync();
+    closeEvent: () => { 
+        document.getElementById('card-flip-container').style.display='none'; 
+        document.getElementById('card-flipper').classList.remove('flipped'); 
     }
 };
 
