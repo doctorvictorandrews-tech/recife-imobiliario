@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V69</title>
+    <title>Recife Imobiliário: V70 (Gold)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
@@ -57,9 +57,6 @@
         #board-container { 
             position: relative; 
             transform-origin: center center;
-            /* Tamanho BASE do V63 (Quadrado) */
-            width: 950px; 
-            height: 950px;
         }
 
         #board { 
@@ -83,8 +80,8 @@
         @media (max-width: 899px) { /* Mobile */
             #game-layout { flex-direction: column; }
             
-            /* RESTAURADO PARA V63 (QUADRADO) */
-            #board-container { width: 950px; height: 950px; } 
+            /* TABULEIRO LEVEMENTE VERTICAL (V64 Style) */
+            #board-container { width: 900px; height: 1100px; } 
             
             #hud-panel { 
                 width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
@@ -103,7 +100,7 @@
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
             
-            /* Desktop permanece Horizontal Largo para caber preços */
+            /* Tabuleiro Horizontal Largo */
             #board-container { width: 1400px; height: 900px; }
 
             #mobile-controls-wrapper { display: contents; }
@@ -131,7 +128,7 @@
         .sp-price { 
             font-size: 0.8rem; color: #fff; background: var(--c-dark); 
             font-family: 'Titan One'; padding: 2px 0; 
-            flex-shrink: 0; /* Preço nunca encolhe */
+            flex-shrink: 0; 
             width: 100%;
         }
         
@@ -139,8 +136,7 @@
         .sp-icon { 
             font-size: 2rem; 
             display: flex; align-items: center; justify-content: center; 
-            flex: 1; 
-            min-height: 0; 
+            flex: 1; min-height: 0; 
         }
         
         .space.owned { border-width: 4px !important; }
