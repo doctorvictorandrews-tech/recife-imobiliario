@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V66 (Refined)</title>
+    <title>Recife Imobiliário: V64 (Final Mechanics)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --wood: #5d4037; --paper: #fff8e1;
@@ -17,7 +17,7 @@
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
             background: linear-gradient(135deg, #212121, #1a237e);
-            height: 100dvh; 
+            height: 100dvh; /* Altura dinâmica para mobile */
             overflow: hidden; display: flex; flex-direction: column;
         }
 
@@ -48,134 +48,105 @@
 
         /* ÁREA DO TABULEIRO */
         #board-area { 
-            position: relative; overflow: auto; 
+            position: relative; overflow: auto; /* Permite rolar se o zoom for grande */
             display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle, #424242 0%, #000000 100%);
             flex: 1; min-height: 0; padding: 20px;
         }
         
-        #board-container { position: relative; transform-origin: center center; }
+        #board-container { 
+            position: relative; 
+            transform-origin: center center;
+            /* Dimensões base serão sobrescritas pelas media queries */
+        }
 
         #board { 
             width: 100%; height: 100%; 
-            display: grid; 
-            /* Grid 11x11 Rigoroso */
-            grid-template-columns: repeat(11, 1fr); 
-            grid-template-rows: repeat(11, 1fr); 
-            background: #fff; border: 20px solid var(--c-dark); border-radius: 15px; 
-            box-shadow: 0 0 80px rgba(0,0,0,0.8); 
+            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
+            background: #fff; border: 25px solid var(--c-dark); border-radius: 20px; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
             background-image: url('https://www.transparenttextures.com/patterns/cardboard.png'); 
         }
 
-        /* HUD */
-        #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; }
+        /* PAINEL HUD */
+        #hud-panel { 
+            background: #fff; display: flex; flex-direction: column; z-index: 5000; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            flex-shrink: 0; 
+        }
 
-        /* --- MEDIA QUERIES (GEOMETRIA) --- */
-        @media (max-width: 899px) { /* Mobile */
+        /* --- MEDIA QUERIES (GEOMETRIA DO TABULEIRO) --- */
+        
+        /* MOBILE (Retrato - Vertical) */
+        @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
-            #board-container { width: 900px; height: 1200px; } /* Vertical Longo */
-            #hud-panel { width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark); }
+            
+            /* TABULEIRO MOBILE: Retângulo Vertical */
+            #board-container {
+                width: 900px; 
+                height: 1100px; /* Um pouco mais alto que largo */
+            }
+
+            #hud-panel { 
+                width: 100%; 
+                padding: 10px;
+                padding-bottom: calc(10px + env(safe-area-inset-bottom));
+                gap: 8px;
+                background: #f5f5f5;
+                border-top: 4px solid var(--c-dark);
+            }
+
             #action-btns { display: flex; gap: 5px; width: 100%; height: 60px; }
             #b-roll { flex: 1.5; font-size: 1.3rem; }
             #b-buy, #b-pass { flex: 1; font-size: 0.9rem; line-height: 1.1; }
-            .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
+            
+            .hud-top-bar { 
+                background: #fff; border: 2px solid #ccc; border-radius: 10px; 
+                padding: 8px 15px; display: flex; justify-content: space-between; align-items: center;
+            }
             .btn-inv { height: 45px; font-size: 1rem; }
-            #players-scroll, #desktop-props-container { display: none; }
+
+            #players-scroll { display: none; }
+            #desktop-props-container { display: none; }
             #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
         }
 
-        @media (min-width: 900px) { /* Desktop */
+        /* DESKTOP (Paisagem - Horizontal) */
+        @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
-            #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
-            #board-container { width: 1400px; height: 900px; } /* Horizontal Largo */
+            
+            #hud-panel { 
+                width: 380px; 
+                height: 100%; border-left: 6px solid var(--c-dark); padding: 0; 
+            }
+            
+            /* TABULEIRO DESKTOP: Retângulo Horizontal Largo */
+            /* Isso alarga as colunas laterais (Iputinga, etc) */
+            #board-container {
+                width: 1300px; 
+                height: 900px;
+            }
+
             #mobile-controls-wrapper { display: contents; }
             .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; display: flex; justify-content: space-between; align-items: center; }
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; }
+            
             #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
             .btn-game { padding: 18px; font-size: 1.3rem; } 
+            
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
             .btn-inv { display: none; }
         }
 
-        /* --- ESPAÇOS DO TABULEIRO (Rotação e Estilo) --- */
-        .space { 
-            border: 1px solid rgba(0,0,0,0.15); background: #fff; 
-            font-size: 0.8rem; text-align: center; position: relative; 
-            display: flex; flex-direction: column; justify-content: space-between;
-            font-weight: 800; overflow: hidden;
-        }
-        
-        .color-strip { height: 20px; width: 100%; border-bottom: 2px solid var(--c-dark); flex-shrink: 0; }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.85rem; word-break: break-word; }
-        .sp-price { font-size: 0.9rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 2px 0; width: 100%; }
-        .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; flex: 1; }
-        .space.owned { border-width: 4px !important; }
-
-        /* Rotação para laterais */
-        .row-bottom { flex-direction: column; }
-        .row-left { transform: rotate(90deg); }
-        .row-top { transform: rotate(180deg); }
-        .row-right { transform: rotate(-90deg); }
-
-        /* Centro */
-        .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
-        .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
-        
-        /* Decks */
-        .deck { position: absolute; width: 130px; height: 180px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; transition: transform 0.1s; }
-        .deck:active { transform: scale(0.95); }
-        .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: translate(-50%,-50%) rotate(-10deg); }
-        .deck.reves { top: 45%; left: 55%; background: var(--c-red); transform: translate(-50%,-50%) rotate(10deg); }
-        
-        /* Peças */
-        .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 2.5rem; text-align: center; line-height: 50px; transition: all 0.4s; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none; }
-        
-        /* Construções */
-        .build-area { position: absolute; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 2; pointer-events: none; }
-        /* Ajuste de posição baseado na rotação seria complexo, então centralizamos */
-        .row-bottom .build-area { top: -8px; }
-        .row-left .build-area { bottom: -8px; transform: rotate(-90deg); } /* Compensate */
-        .row-right .build-area { bottom: -8px; transform: rotate(90deg); }
-        .row-top .build-area { bottom: 2px; }
-
-        .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; }
-        .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; }
-        .loan-badge { position: absolute; top: 0; right: 0; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; font-weight: bold; z-index: 10; display:none; }
-
-        /* MODAIS */
-        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; display: flex; justify-content: center; align-items: center; } /* Z-INDEX ALTO PARA O CARD */
-        .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; }
-        .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
-        .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
-        .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
-        
-        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 9500; width: 85%; height: 60vh; max-height: 500px; }
-        .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
-        .card-flip.flipped { transform: rotateY(180deg); }
-        .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 5rem; transform: rotateY(0deg); }
-        .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
-        
-        .dice-stage { position: absolute; display: flex; gap: 20px; pointer-events: none; opacity: 0; top: 30%; transition: 0.2s; z-index: 7000; }
-        .dice-stage.active { opacity: 1; }
-        .cube { width: 80px; height: 80px; background: #fff; border-radius: 15px; display: grid; place-items: center; font-size: 3rem; font-weight: bold; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-family: 'Titan One'; }
-        .cube.shake { animation: shake 0.1s infinite; }
-        @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
-        
-        .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
-        @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
-        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
-        
-        #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
-        #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
-        
-        /* UI Elements Comuns */
+        /* UI ELEMENTS */
         .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
         .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        
         .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
         .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
+        
         .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; }
         .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
         .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
@@ -184,11 +155,57 @@
         .btn-pass { background: var(--c-red); }
         .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 15px; }
         @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
+        
         .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
+
         .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
         .prop-item:hover { background: #f5f5f5; }
         .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
         .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
+
+        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.8rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; }
+        .color-strip { height: 22%; border-bottom: 2px solid var(--c-dark); }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.9rem; }
+        .sp-price { font-size: 0.9rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 2px 0; }
+        .sp-icon { font-size: 3rem; display: flex; align-items: center; justify-content: center; height: 100%; }
+        .space.owned { border-width: 4px !important; }
+        
+        .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
+        .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
+        
+        .deck { position: absolute; width: 120px; height: 160px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
+        .deck:active { transform: scale(0.95); }
+        .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: rotate(-10deg); }
+        .deck.reves { top: 45%; left: 50%; background: var(--c-red); transform: rotate(10deg); }
+        .deck.active { animation: pulseDeck 1s infinite; border-color: #ffeb3b; z-index: 100; }
+        
+        .token { width: 60px; height: 60px; position: absolute; z-index: 50; font-size: 3.5rem; text-align: center; line-height: 60px; transition: all 0.4s; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none; }
+        .build-area { position: absolute; top: -12px; width: 100%; display: flex; justify-content: center; gap: 2px; }
+        .house-3d { width: 14px; height: 14px; background: var(--c-green); border: 1px solid #000; }
+        .hotel-3d { width: 20px; height: 20px; background: var(--c-red); border: 1px solid #000; }
+        .loan-badge { position: absolute; top: 0; right: 0; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; font-weight: bold; border-bottom-left-radius: 5px; z-index: 10; display:none; }
+
+        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: flex; justify-content: center; align-items: center; }
+        .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; }
+        .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
+        .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
+        .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
+        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; width: 85%; height: 60vh; max-height: 500px; }
+        .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+        .card-flip.flipped { transform: rotateY(180deg); }
+        .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 5rem; transform: rotateY(0deg); }
+        .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
+        .dice-stage { position: absolute; display: flex; gap: 20px; pointer-events: none; opacity: 0; top: 30%; transition: 0.2s; z-index: 7000; }
+        .dice-stage.active { opacity: 1; }
+        .cube { width: 80px; height: 80px; background: #fff; border-radius: 15px; display: grid; place-items: center; font-size: 3rem; font-weight: bold; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-family: 'Titan One'; }
+        .cube.shake { animation: shake 0.1s infinite; }
+        @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
+        .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
+        @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
+        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+        #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
+        #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
     </style>
 </head>
 <body>
@@ -335,11 +352,11 @@ const BD=[
     {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:300,r:[10,50,150,450,750,950]}, 
     {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:300,r:[12,60,180,500,700,900]}, 
     {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#ff5722',n:'Rosarinho',p:180,h:300,r:[14,70,200,550,750,950]}, 
+    {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:300,r:[14,70,200,550,750,950]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
     {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:300,r:[14,70,200,550,750,950]}, 
     {t:'pr',g:'#ff5722',n:'Torre',p:200,h:300,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Pq. Jaqueira',i:'🌳'}, 
+    {t:'pk',n:'Boa Vista',i:'🛍️'}, 
     {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:450,r:[18,90,250,700,875,1050]}, 
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:450,r:[18,90,250,700,875,1050]}, 
@@ -358,7 +375,7 @@ const BD=[
     {t:'rev',n:'Revés',i:'⚠️'}, 
     {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:600,r:[35,175,500,1100,1300,1500]}, 
     {t:'tx',n:'Taxa',i:'🧾'}, 
-    {t:'pr',g:'#1565c0',n:'Pina',p:400,h:600,r:[50,200,600,1400,1700,2000]}
+    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:600,r:[50,200,600,1400,1700,2000]}
 ];
 
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Vó deu dinheiro. +100", val:100}];
@@ -387,7 +404,7 @@ function resizeBoard() {
     const w = area.offsetWidth;
     const h = area.offsetHeight;
     const minDim = Math.min(w, h) * 0.95; 
-    const scale = Math.min(w / el.offsetWidth, h / el.offsetHeight) * 0.95;
+    const scale = minDim / 950; // Base scale reference
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
@@ -413,17 +430,8 @@ const ui = {
         const b = document.getElementById('board');
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
-            let r,c, rotClass;
-            
-            // Lógica de Grid 11x11 e Rotação
-            if(i<=10) { r=11; c=11-i; rotClass='row-bottom'; } // Baixo
-            else if(i<=20) { r=11-(i-10); c=1; rotClass='row-left'; } // Esquerda
-            else if(i<=30) { r=1; c=1+(i-20); rotClass='row-top'; } // Topo
-            else { r=1+(i-30); c=11; rotClass='row-right'; } // Direita
-            
+            let r,c; if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
             d.style.gridRow=r; d.style.gridColumn=c;
-            d.classList.add(rotClass);
-
             const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
             d.innerHTML = s.t==='pr' ? 
                 `<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="build-area" id="b${i}"></div><div class="sp-price">$${s.p}</div>` :
@@ -438,16 +446,15 @@ const ui = {
         players.forEach((p, i) => { if(!map[p.pos]) map[p.pos] = []; map[p.pos].push(i); });
         Object.keys(map).forEach(pos => {
             const pids = map[pos]; const s = document.getElementById(`s${pos}`); if(!s) return;
-            // Ajuste de posição considerando rotação é complexo, usamos centro absoluto
             if(pids.length === 1) {
                 const t = document.getElementById(`tok${pids[0]}`);
-                t.style.left = (s.offsetLeft + 10) + 'px'; t.style.top = (s.offsetTop + 10) + 'px'; t.style.transform = 'scale(1)';
+                t.style.left = (s.offsetLeft + 12) + 'px'; t.style.top = (s.offsetTop + 12) + 'px'; t.style.transform = 'scale(1)';
             } else {
                 pids.forEach((pid, idx) => {
                     const angle = (idx / pids.length) * 2 * Math.PI;
-                    const ox = Math.cos(angle) * 10; const oy = Math.sin(angle) * 10;
+                    const ox = Math.cos(angle) * 15; const oy = Math.sin(angle) * 15;
                     const t = document.getElementById(`tok${pid}`);
-                    t.style.left = (s.offsetLeft + 10 + ox) + 'px'; t.style.top = (s.offsetTop + 10 + oy) + 'px'; t.style.transform = 'scale(0.8)';
+                    t.style.left = (s.offsetLeft + 12 + ox) + 'px'; t.style.top = (s.offsetTop + 12 + oy) + 'px'; t.style.transform = 'scale(0.8)';
                 });
             }
         });
@@ -592,11 +599,14 @@ const game = {
         p.lastD1 = d1; p.lastD2 = d2;
         ui.dice(d1,d2); await sleep(1500);
         
+        // --- LÓGICA DE CADEIA CORRIGIDA ---
         if(p.jailed){
+             // Tenta sair com dados
              if(d1===d2){ 
                  p.jailed=false; p.jailAttempts=0; 
                  ui.toast("SOLTO (DUPLOS)!"); play('good'); 
                  await game.move(turn, d1+d2); 
+                 // CORREÇÃO: Saiu com dados = Fim da vez, não joga de novo
                  rolled = true; 
                  setTimeout(game.pass, 1500);
                  return;
@@ -607,9 +617,11 @@ const game = {
                      ui.toast("PAGOU $50 E SAIU!"); 
                      await game.move(turn, d1+d2); 
                  }
+                 // Passa a vez automaticamente se falhou
                  rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; 
              }
         } else {
+            // Jogo Normal
             if(d1===d2) { p.doubles++; ui.toast("DUPLOS!"); play('good'); } else p.doubles=0;
             if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); return; }
             await game.move(turn, d1+d2);
@@ -636,7 +648,7 @@ const game = {
             if(Math.random() < 0.5) { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); p.skippedTurn = true; ui.toast("ENGARRAFAMENTO!"); play('bad'); }
             else { ui.toast("BÔNUS! +$50"); p.money += 50; play('cash'); }
         }
-        if((s.n === "Boa Viagem" || s.n === "Pina" || s.n === "Paiva") && Math.random() > 0.7){ document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); ui.toast("TUBARÃO! -$50"); p.money-=50; play('bad'); }
+        if((s.n === "Boa Viagem" || s.n === "Paiva") && Math.random() > 0.7){ document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); ui.toast("TUBARÃO! -$50"); p.money-=50; play('bad'); }
         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
             if(!pr){
                 if(pid===0 && p.money >= s.p) ui.openProp(p.pos, true); 
@@ -663,16 +675,18 @@ const game = {
             if(turn!==0) { if(players[turn].lastD1 === players[turn].lastD2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500); }
         }
     },
+    // CORREÇÃO: Cadeia encerra o turno imediatamente
     jail: (pid) => { 
         players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].pos = 10; 
         ui.updatePositions(); ui.toast("PRESO! PASSANDO A VEZ..."); 
         play('jail'); animating = false; rolled = true; 
-        setTimeout(game.pass, 2000); 
+        setTimeout(game.pass, 2000); // Passa a vez sozinho
     },
     payJail: () => { const p = players[0]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); play('cash'); ui.hud(); } },
     pass: () => {
         play('slide');
         players[turn].doubles = 0; 
+        
         props.forEach((pr, i) => {
             if(pr && pr.owner === turn && pr.loan) {
                 pr.loan.turns--;
@@ -680,7 +694,9 @@ const game = {
                 if(pr.loan.turns <= 0) { game.bankrupt(turn); }
             }
         });
+
         if(players[turn].active && players[turn].money < 0) { game.bankrupt(turn); }
+        
         let loop = 0; do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
         rolled=false; animating=false; ui.hud();
         if(turn!==0) setTimeout(game.roll, 1500);
