@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V64.1 (Updates)</title>
+    <title>Recife Imobiliário: A Revolta das Rata Peso</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -16,10 +16,14 @@
         
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
-            background: linear-gradient(135deg, #212121, #1a237e);
-            height: 100dvh; /* Altura dinâmica para mobile */
+            /* Fundo Animado "Frevo" */
+            background: linear-gradient(120deg, #1565c0, #fbc02d, #c62828, #1565c0);
+            background-size: 400% 400%;
+            animation: frevoBG 15s ease infinite;
+            height: 100dvh; 
             overflow: hidden; display: flex; flex-direction: column;
         }
+        @keyframes frevoBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
@@ -33,7 +37,8 @@
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
         /* --- UI: START --- */
-        #screen-start, #screen-char { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
+        #screen-start, #screen-char, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
+        #screen-end { display: none; }
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
         .sel-box { margin: 15px 0; text-align: left; }
         select { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1rem; border-radius: 10px; cursor: pointer; }
@@ -48,16 +53,15 @@
 
         /* ÁREA DO TABULEIRO */
         #board-area { 
-            position: relative; overflow: auto; /* Permite rolar se o zoom for grande */
+            position: relative; overflow: auto; 
             display: flex; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #424242 0%, #000000 100%);
+            background: rgba(0,0,0,0.2);
             flex: 1; min-height: 0; padding: 20px;
         }
         
         #board-container { 
             position: relative; 
             transform-origin: center center;
-            /* Dimensões base serão sobrescritas pelas media queries */
         }
 
         #board { 
@@ -81,10 +85,10 @@
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
             
-            /* TABULEIRO MOBILE: Retângulo Vertical */
+            /* TABULEIRO MOBILE: Mais alto para preencher espaço */
             #board-container {
                 width: 900px; 
-                height: 1100px; /* Um pouco mais alto que largo */
+                height: 1250px; /* Aumentado para ser mais retangular */
             }
 
             #hud-panel { 
@@ -120,8 +124,6 @@
                 height: 100%; border-left: 6px solid var(--c-dark); padding: 0; 
             }
             
-            /* TABULEIRO DESKTOP: Retângulo Horizontal Largo */
-            /* Isso alarga as colunas laterais (Iputinga, etc) */
             #board-container {
                 width: 1300px; 
                 height: 900px;
@@ -170,8 +172,7 @@
         .sp-icon { font-size: 3rem; display: flex; align-items: center; justify-content: center; height: 100%; }
         .space.owned { border-width: 4px !important; }
         
-        .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
-        .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
+        .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; text-align: center; flex-direction: column; color: #fff; }
         
         .deck { position: absolute; width: 120px; height: 160px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
         .deck:active { transform: scale(0.95); }
@@ -185,10 +186,12 @@
         .hotel-3d { width: 20px; height: 20px; background: var(--c-red); border: 1px solid #000; }
         .loan-badge { position: absolute; top: 0; right: 0; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; font-weight: bold; border-bottom-left-radius: 5px; z-index: 10; display:none; }
 
-        /* CORREÇÃO: Z-INDEX 9000 para ficar acima do modal de inventário (7000) */
-        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; display: flex; justify-content: center; align-items: center; }
+        /* Z-INDEX CORRIGIDO PARA O CARD FICAR EM CIMA DO MODAL (7000) */
+        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
+        /* Adiciona um fundo escuro quando o card abre para bloquear cliques no inventário */
+        #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
         
-        .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; }
+        .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
         .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
@@ -220,7 +223,7 @@
 
 <div id="screen-start">
     <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:3.5rem; margin:0; line-height:1;">RECIFE<br><span style="font-size:1.5rem; color:#000;">IMOBILIÁRIO</span></h1>
+        <h1 style="color:var(--c-blue); font-size:3rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1.2rem; color:#000;">A REVOLTA DAS RATA PESO</span></h1>
         <div class="sel-box">
             <label>MODO</label>
             <select id="game-mode"><option value="normal">Normal</option><option value="hardcore">Hardcore</option></select>
@@ -240,11 +243,22 @@
     </div>
 </div>
 
+<div id="screen-end">
+    <div class="card-menu">
+        <h1 id="end-title" style="font-size:3rem;">FIM</h1>
+        <p id="end-msg">...</p>
+        <button class="btn-main" onclick="location.reload()">JOGAR DE NOVO</button>
+    </div>
+</div>
+
 <div id="game-layout">
     <div id="board-area">
         <div id="board-container">
             <div id="board">
-                <div class="center-hub"><div class="center-logo">RECIFE</div></div>
+                <div class="center-hub">
+                    <div style="font-size:4rem; line-height:1;">🗿</div>
+                    <div class="brand" style="font-size:1.5rem; margin-top:10px; color:rgba(255,255,255,0.2);">PICA DE<br>BRENNAND</div>
+                </div>
                 <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')">SORTE<br>🍀</div>
                 <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')">REVÉS<br>⚠️</div>
             </div>
@@ -287,6 +301,7 @@
 </div>
 
 <div id="overlay-layer">
+    <div id="overlay-bg" onclick="ui.closeCard()"></div>
     <div id="dice-visual" class="dice-stage"><div id="d1" class="cube">1</div><div id="d2" class="cube">1</div></div>
     
     <div class="card-flip-container" id="card-event">
@@ -318,7 +333,7 @@
             <div id="act-manage" style="display:none; margin-top:10px;">
                 <div style="background:#ffebee; padding:10px; border-radius:5px; margin-bottom:10px; display:none;" id="loan-info">
                     <b style="color:#d32f2f">EMPRÉSTIMO ATIVO</b><br>
-                    Dívida: <span id="debt-val"></span> | Prazo: <span id="debt-turns"></span>
+                    Quitação: <span id="debt-val"></span> | Prazo: <span id="debt-turns"></span>
                 </div>
                 <div style="display:flex; gap:5px; margin-bottom:5px;">
                     <button id="btn-mtg" class="btn-game btn-roll" style="font-size:0.8rem; padding:10px;" onclick="game.mortgage()">HIPOTECAR</button>
@@ -386,7 +401,6 @@ const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a car
 
 let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, gameMode='normal', pendingCardType=null, totalTurns=0;
 
-// SISTEMA DE SOM
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
     cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
@@ -407,7 +421,7 @@ function resizeBoard() {
     const w = area.offsetWidth;
     const h = area.offsetHeight;
     const minDim = Math.min(w, h) * 0.95; 
-    const scale = minDim / 950; // Base scale reference
+    const scale = minDim / 950; 
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
@@ -446,7 +460,7 @@ const ui = {
     },
     updatePositions: () => {
         const map = {};
-        players.forEach((p, i) => { if(!map[p.pos]) map[p.pos] = []; map[p.pos].push(i); });
+        players.forEach((p, i) => { if(p.active){ if(!map[p.pos]) map[p.pos] = []; map[p.pos].push(i); } });
         Object.keys(map).forEach(pos => {
             const pids = map[pos]; const s = document.getElementById(`s${pos}`); if(!s) return;
             if(pids.length === 1) {
@@ -494,7 +508,7 @@ const ui = {
             if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
             
             if(pr && pr.owner===0) {
-                const loanTxt = pr.loan ? `<br><span class="loan-alert">Dívida: $${pr.loan.val} (${pr.loan.turns}T)</span>` : '';
+                const loanTxt = pr.loan ? `<br><span class="loan-alert">Dívida: $${Math.ceil(pr.loan.val*1.2)} (${pr.loan.turns}T)</span>` : '';
                 propsHTML += `<div class="prop-item ${pr.loan?'loan':''}" style="border-left-color:${BD[i].g||'#333'}" onclick="ui.openProp(${i})">
                     <span>${BD[i].n}${loanTxt}</span> 
                     <span>${pr.loan?'⚠️':''} ${pr.level>0?'🏠'+pr.level:''}</span>
@@ -549,9 +563,10 @@ const ui = {
             const bM = document.getElementById('btn-mtg');
             const lInfo = document.getElementById('loan-info');
             if(pr.loan) { 
-                bM.innerText="PAGAR DÍVIDA"; bM.onclick=()=>game.payLoan(); 
+                bM.innerText="QUITAR DÍVIDA"; bM.onclick=()=>game.payLoan(); 
                 lInfo.style.display='block';
-                document.getElementById('debt-val').innerText = `$${pr.loan.val}`;
+                const debt = Math.ceil(pr.loan.val * 1.2);
+                document.getElementById('debt-val').innerText = `$${debt}`;
                 document.getElementById('debt-turns').innerText = `${pr.loan.turns} RODADAS`;
                 document.getElementById('btn-bld').disabled = true;
             } else { 
@@ -561,8 +576,9 @@ const ui = {
             }
         }
         document.getElementById('prop-card').style.display='block';
+        document.getElementById('overlay-bg').style.display='block';
     },
-    closeCard: () => document.getElementById('prop-card').style.display='none',
+    closeCard: () => { document.getElementById('prop-card').style.display='none'; document.getElementById('overlay-bg').style.display='none'; },
     toggleInv: () => { play('slide'); const m = document.getElementById('inv-modal'); m.style.display = m.style.display==='flex'?'none':'flex'; },
     showEvent: (type, text) => {
         play('card');
@@ -631,11 +647,12 @@ const game = {
     move: async (pid, steps) => {
         const p = players[pid];
         for(let i=0; i<steps; i++){
+            if(!p.active) break;
             p.pos = (p.pos + 1) % 40;
             if(p.pos===0 && p.active){ p.money+=200; ui.toast("Início! +$200"); play('cash'); p.boughtRound=false; if(pid===0) confetti(); }
             ui.updatePositions(); play('step'); await sleep(250);
         }
-        game.land(pid);
+        if(p.active) game.land(pid);
     },
     land: (pid) => {
         const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
@@ -657,17 +674,19 @@ const game = {
                 else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
                 else if(s.t==='ut') { rent = (players[pid].lastD1+players[pid].lastD2)*4; }
                 p.money -= rent; players[pr.owner].money += rent; ui.toast(`ALUGUEL $${rent}`); play('cash');
+                if(p.money < 0) game.bankrupt(pid);
             }
         } else if(s.t==='ch' || s.t==='rev'){
             if(pid===0) { pendingCardType = s.t==='ch'?'ch':'rev'; ui.hud(); ui.toast("PEGUE UMA CARTA!"); }
             else { const deck = s.t==='ch' ? CARDS_SORTE : CARDS_REVES; ui.pendingCard = deck[Math.floor(Math.random()*deck.length)]; ui.showEvent(s.t==='ch'?'sorte':'vixe', ui.pendingCard.txt); setTimeout(()=>ui.closeEvent(), 3000); }
-        } else if(s.t==='tx'){ const tax = Math.floor(p.money * 0.10); p.money -= tax; ui.toast(`IMPOSTO! -${tax}`); play('bad'); }
+        } else if(s.t==='tx'){ const tax = Math.floor(p.money * 0.10); p.money -= tax; ui.toast(`IMPOSTO! -${tax}`); play('bad'); if(p.money < 0) game.bankrupt(pid); }
         ui.hud(); 
     },
     applyCard: () => {
         const c = ui.pendingCard; const p = players[turn];
         if(c.val > 0) play('cash'); else play('bad');
         if(c.val) p.money += c.val; if(c.act==='jail') game.jail(turn);
+        if(p.money < 0) game.bankrupt(turn);
         else {
             ui.hud(); rolled=true; 
             if(turn!==0) { if(players[turn].lastD1 === players[turn].lastD2) setTimeout(game.roll, 1500); else setTimeout(game.pass, 1500); }
@@ -680,21 +699,49 @@ const game = {
         setTimeout(game.pass, 2000); 
     },
     payJail: () => { const p = players[0]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); play('cash'); ui.hud(); } },
+    aiTurn: () => {
+        const p = players[turn];
+        if(!p.active || turn===0) return;
+        // Tenta construir
+        BD.forEach((s, idx) => {
+            const pr = props[idx];
+            if(pr && pr.owner === turn && s.t==='pr' && pr.level < 5 && !pr.loan) {
+                const groupColor = s.g;
+                const hasMonopoly = BD.map((b, i) => b.g === groupColor ? i : -1).filter(i => i !== -1).every(i => props[i] && props[i].owner === turn);
+                if(hasMonopoly && p.money > (s.h * 3)) { // Só constroi se tiver grana sobrando
+                    p.money -= s.h;
+                    pr.level++;
+                    ui.toast(`CPU construiu em ${s.n}`);
+                }
+            }
+        });
+    },
     pass: () => {
         play('slide');
         players[turn].doubles = 0; 
         
+        if(turn !== 0) game.aiTurn();
+
         props.forEach((pr, i) => {
             if(pr && pr.owner === turn && pr.loan) {
                 pr.loan.turns--;
-                pr.loan.val = Math.ceil(pr.loan.val * 1.10);
                 if(pr.loan.turns <= 0) { game.bankrupt(turn); }
             }
         });
 
         if(players[turn].active && players[turn].money < 0) { game.bankrupt(turn); }
         
+        // Verifica Vitoria
+        const actives = players.filter(p=>p.active);
+        if(actives.length === 1) {
+            document.getElementById('end-title').innerText = "VITÓRIA!";
+            document.getElementById('end-msg').innerText = `${actives[0].name} DONO DE RECIFE!`;
+            document.getElementById('screen-end').style.display = 'flex';
+            play('win'); confetti(); return;
+        }
+
         let loop = 0; do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
+        
         rolled=false; animating=false; ui.hud();
         if(turn!==0) setTimeout(game.roll, 1500);
     },
@@ -721,8 +768,9 @@ const game = {
     },
     payLoan: () => {
         const p = players[0]; const pr = props[activeIdx];
-        if(pr.loan && p.money >= pr.loan.val) {
-            p.money -= pr.loan.val;
+        const debt = Math.ceil(pr.loan.val * 1.2);
+        if(pr.loan && p.money >= debt) {
+            p.money -= debt;
             pr.loan = null;
             ui.toast("DÍVIDA PAGA!");
             play('cash');
@@ -736,6 +784,13 @@ const game = {
         ui.toast(`${players[pid].name} FALIU!`); 
         play('bad');
         props.forEach((pr,i)=>{if(pr && pr.owner===pid) props[i]=null;});
+        const t = document.getElementById(`tok${pid}`); if(t) t.style.display='none';
+        
+        if(pid === 0) {
+            document.getElementById('end-title').innerText = "FALIU!";
+            document.getElementById('end-msg').innerText = "Você perdeu tudo...";
+            document.getElementById('screen-end').style.display = 'flex';
+        }
     }
 };
 </script>
