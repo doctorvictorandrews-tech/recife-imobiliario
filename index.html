@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário V56 - Edição Hard</title>
+    <title>Recife Imobiliário V57 - Hard & Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
         
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
-            background: linear-gradient(135deg, #b71c1c, #263238); /* Fundo mais agressivo para versão Hard */
+            background: linear-gradient(135deg, #212121, #0d47a1); /* Tom noturno e sério */
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
 
@@ -33,11 +33,11 @@
         @keyframes sharkPass { 0% {right: -50vw; bottom: 10vh;} 100% {right: 150vw; bottom: 30vh;} }
         
         .traffic-anim {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.8);
+            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center;
             font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center;
             animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red;
-            flex-direction: column;
+            flex-direction: column; z-index: 8500;
         }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
@@ -77,7 +77,7 @@
 
         .center-hub { 
             grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; 
-            border: 6px solid var(--c-dark); overflow: hidden;
+            border: 6px solid var(--c-dark); overflow: visible; /* Alterado para visible para os decks não ficarem presos */
             display: flex; justify-content: center; align-items: center; pointer-events: none;
         }
         .center-logo { font-family: 'Titan One'; font-size: 5rem; color: rgba(255,255,255,0.1); transform: rotate(-45deg); text-align: center; line-height: 1; }
@@ -85,15 +85,22 @@
         .deck { 
             position: absolute; width: 90px; height: 130px; background: #fff; 
             border: 4px solid #000; border-radius: 10px; cursor: pointer; transition: 0.2s; 
-            transform: translateZ(2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.4); z-index: 50; 
+            transform: translateZ(2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.4); z-index: 100; /* Z-index alto */
             display: flex; align-items: center; justify-content: center; text-align: center;
-            font-family: 'Titan One'; font-size: 1.3rem; color: #fff; -webkit-text-stroke: 1.5px #000; pointer-events: auto;
+            font-family: 'Titan One'; font-size: 1.3rem; color: #fff; -webkit-text-stroke: 1.5px #000; pointer-events: auto; /* Garante clique */
         }
         .deck:hover { transform: translateZ(15px) scale(1.1); }
         .deck.chance { top: 15%; left: 15%; background: var(--c-green); transform: rotate(-10deg); }
         .deck.reves { bottom: 15%; right: 15%; background: var(--c-red); transform: rotate(10deg); }
-        .deck.active { animation: pulseGlow 0.8s infinite alternate; border-color: #fff; box-shadow: 0 0 40px #fff; z-index: 100; }
-        @keyframes pulseGlow { from{transform:scale(1) translateZ(5px)} to{transform:scale(1.2) translateZ(20px)} }
+        
+        .deck.active { 
+            animation: pulseGlow 0.8s infinite alternate; 
+            border: 5px solid #fff; 
+            box-shadow: 0 0 50px #ffeb3b; 
+            z-index: 200; /* Super alto quando ativo */
+            cursor: pointer;
+        }
+        @keyframes pulseGlow { from{transform:scale(1.1) translateZ(5px)} to{transform:scale(1.3) translateZ(25px)} }
 
         #sidebar { 
             width: 380px; background: #fff; border-left: 8px solid var(--c-dark); 
@@ -277,48 +284,48 @@ const CHARS=[
     {id:'hmn',i:'🎩',n:'Homem da Meia-Noite'}, {id:'rp',i:'🚔',n:'Rádio Patrulha'}, {id:'srr',i:'🐚',n:'Sururu'}, {id:'and',i:'😎',n:'Anderson'}
 ];
 
-/* MAPA ATUALIZADO (V56) */
+/* MAPA ATUALIZADO V57 - CUSTOS DE CONSTRUÇÃO (h) TRIPLICADOS */
 const BD=[
     {t:'st',n:'MARCO ZERO',i:'🚩'}, 
-    {t:'pr',g:'#795548',n:'Coque',p:60,h:50,m:30,r:[2,10,30,90,160,250]}, 
+    {t:'pr',g:'#795548',n:'Coque',p:60,h:150,m:30,r:[2,10,30,90,160,250]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#795548',n:'Ibura',p:60,h:50,m:30,r:[4,20,60,180,320,450]}, 
-    {t:'tx',n:'IPTU',i:'💸'}, /* Taxa Variável */
+    {t:'pr',g:'#795548',n:'Ibura',p:60,h:150,m:30,r:[4,20,60,180,320,450]}, 
+    {t:'tx',n:'IPTU',i:'💸'},
     {t:'rr',n:'Est. Joana Bezerra',p:200,m:100,i:'🚆',r:[25,50,100,200]},
-    {t:'pr',g:'#03a9f4',n:'Av. Agamenon',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, /* Agamenon aqui (substituiu Sto Amaro) */
+    {t:'pr',g:'#03a9f4',n:'Av. Agamenon',p:100,h:150,m:50,r:[6,30,90,270,400,550]},
     {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,m:50,r:[6,30,90,270,400,550]}, 
-    {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,m:60,r:[8,40,100,300,450,600]},
+    {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:150,m:50,r:[6,30,90,270,400,550]}, 
+    {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:150,m:60,r:[8,40,100,300,450,600]},
     {t:'jl',n:'LEI SECA',i:'👮'}, 
-    {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
+    {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:300,m:70,r:[10,50,150,450,750,950]}, 
     {t:'ut',n:'Celpe',p:150,m:75,i:'💡'}, 
-    {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,m:70,r:[10,50,150,450,750,950]}, 
-    {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,m:80,r:[12,60,180,500,700,900]}, 
+    {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:300,m:70,r:[10,50,150,450,750,950]}, 
+    {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:300,m:80,r:[12,60,180,500,700,900]}, 
     {t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, /* Imbiribeira aqui (substituiu antiga Agamenon) */
+    {t:'pr',g:'#ff5722',n:'Imbiribeira',p:180,h:300,m:90,r:[14,70,200,550,750,950]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,m:90,r:[14,70,200,550,750,950]}, 
-    {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,m:100,r:[16,80,220,600,800,1000]},
+    {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:300,m:90,r:[14,70,200,550,750,950]}, 
+    {t:'pr',g:'#ff5722',n:'Torre',p:200,h:300,m:100,r:[16,80,220,600,800,1000]},
     {t:'pk',n:'Shop. Boa Vista',i:'🛍️'}, 
-    {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
+    {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:450,m:110,r:[18,90,250,700,875,1050]}, 
     {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,m:110,r:[18,90,250,700,875,1050]}, 
-    {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,m:120,r:[20,100,300,750,925,1100]}, 
+    {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:450,m:110,r:[18,90,250,700,875,1050]}, 
+    {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:450,m:120,r:[20,100,300,750,925,1100]}, 
     {t:'rr',n:'Est. Barro',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
-    {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
-    {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,m:130,r:[22,110,330,800,975,1150]}, 
+    {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:450,m:130,r:[22,110,330,800,975,1150]}, 
+    {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:450,m:130,r:[22,110,330,800,975,1150]}, 
     {t:'ut',n:'Compesa',p:150,m:75,i:'💧'}, 
-    {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,m:140,r:[24,120,360,850,1025,1200]},
+    {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:450,m:140,r:[24,120,360,850,1025,1200]},
     {t:'gj',n:'CADEIA!',i:'🚓'}, 
-    {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
-    {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,m:150,r:[26,130,390,900,1100,1275]}, 
+    {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:600,m:150,r:[26,130,390,900,1100,1275]}, 
+    {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:600,m:150,r:[26,130,390,900,1100,1275]}, 
     {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,m:160,r:[28,150,450,1000,1200,1400]}, 
+    {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:600,m:160,r:[28,150,450,1000,1200,1400]}, 
     {t:'rr',n:'Est. Afogados',p:200,m:100,i:'🚆',r:[25,50,100,200]}, 
     {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,m:175,r:[35,175,500,1100,1300,1500]}, 
-    {t:'tx',n:'Taxa',i:'🧾'}, /* Taxa Variável */
-    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:200,m:200,r:[50,200,600,1400,1700,2000]}
+    {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:600,m:175,r:[35,175,500,1100,1300,1500]}, 
+    {t:'tx',n:'Taxa',i:'🧾'}, 
+    {t:'pr',g:'#1565c0',n:'Jaqueira',p:400,h:600,m:200,r:[50,200,600,1400,1700,2000]}
 ];
 
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Tua vó te deu dinheiro. +100", val:100}];
@@ -354,7 +361,7 @@ const ui = {
             d.style.gridRow=r; d.style.gridColumn=c;
             const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
             d.innerHTML = s.t==='pr' ? 
-                `<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div><div class="build-area" id="b${i}"></div>` :
+                `<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="build-area" id="b${i}"></div><div class="sp-price">$${s.p}</div>` :
                 `<div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}`;
             b.appendChild(d);
         });
@@ -405,6 +412,8 @@ const ui = {
         if(s.r) {
             const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel'];
             s.r.forEach((val, i) => html += `<tr><td>${labels[i]}</td><td style="text-align:right">$${val}</td></tr>`);
+            // ADD CUSTO DE CONSTRUÇÃO NA TABELA
+            html += `<tr style="background:#eee; color:#000;"><td>Custo Const.</td><td style="text-align:right">$${s.h}</td></tr>`;
         } else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
         else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
         
@@ -454,8 +463,6 @@ const game = {
         if(animating || pendingCardType) return;
         
         const p = players[turn];
-        
-        // --- 1. VERIFICAÇÃO DE TURNO PULADO (ENGARRAFAMENTO) ---
         if(p.skippedTurn) {
             ui.toast(`${p.name} NO ENGARRAFAMENTO!`);
             p.skippedTurn = false;
@@ -469,9 +476,7 @@ const game = {
         p.lastD1 = d1; p.lastD2 = d2;
         ui.dice(d1,d2); await sleep(1500);
         
-        // --- 2. LÓGICA DE CADEIA (AJUSTADA) ---
         if(p.jailed){
-            // Se for a 4ª tentativa (já errou 3x), sai livre
             if(p.jailAttempts >= 3) {
                 p.jailed = false; 
                 p.jailAttempts = 0;
@@ -523,30 +528,24 @@ const game = {
             return;
         }
         
-        // --- DINÂMICA DA AGAMENON (V56) ---
         if(s.n === "Av. Agamenon") {
             const hasOwner = pr && pr.owner !== null;
             const isOwner = hasOwner && pr.owner === pid;
-            
-            // Se não for dono (ou não tiver dono), sofre a dinâmica
             if(!isOwner) {
                 if(Math.random() < 0.5) {
-                    // 50% Engarrafamento
                     document.querySelector('.traffic-anim').classList.add('active');
                     setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000);
                     p.skippedTurn = true;
                     ui.toast("ENGARRAFAMENTO! PERDE A VEZ.");
                 } else {
-                    // 50% BK
                     ui.toast("BÔNUS DO BK! +$50");
                     p.money += 50;
                 }
             }
         }
 
-        // --- DINÂMICA DO TUBARÃO (Boa Viagem / Paiva) ---
         if(s.n === "Boa Viagem" || s.n === "Paiva"){
-            if(Math.random() > 0.7){ // 30% chance
+            if(Math.random() > 0.7){
                  document.querySelector('.shark-anim').classList.add('active');
                  setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000);
                  ui.toast("TUBARÃO! CORREU! -$50"); p.money-=50;
@@ -573,10 +572,8 @@ const game = {
                 setTimeout(()=>ui.closeEvent(), 3000);
             }
         } 
-        
-        // --- DIFICULDADE OPÇÃO C (IMPOSTO %) ---
-        else if(s.t==='tx' || s.t==='tx_fix'){ 
-            const tax = Math.floor(p.money * 0.10); // 10% do total
+        else if(s.t==='tx'){ 
+            const tax = Math.floor(p.money * 0.10); 
             p.money -= tax; 
             ui.toast(`LEÃO DO IR! -${tax} (10%)`); 
         }
@@ -593,7 +590,7 @@ const game = {
     },
     jail: (pid) => {
         players[pid].jailed = true; 
-        players[pid].jailAttempts = 0; // Reseta tentativas
+        players[pid].jailAttempts = 0; 
         players[pid].pos = 10; ui.place(pid, 10);
         ui.toast("PRESO!"); play('step');
     },
@@ -608,13 +605,11 @@ const game = {
              ui.toast(`${players[turn].name} FALIU!`);
              props.forEach((pr,i)=>{if(pr && pr.owner===turn) props[i]=null;});
         }
-
         let loop = 0;
         do {
             turn = (turn+1) % players.length;
             loop++;
         } while(!players[turn].active && loop < players.length);
-
         rolled=false; animating=false; ui.hud();
         if(turn!==0) setTimeout(game.roll, 1500);
     },
@@ -635,11 +630,44 @@ const game = {
             ui.toast("COMPRADO!"); play('cash'); ui.closeCard(); ui.hud();
         }
     },
+    /* NOVO SISTEMA DE CONSTRUÇÃO COM REGRAS RÍGIDAS */
     build: () => {
-        const p = players[0]; const s = BD[activeIdx]; const pr = props[activeIdx];
-        if(p.money >= s.h && pr.level < 5){
-            p.money -= s.h; pr.level++;
-            ui.toast("CONSTRUÍDO!"); play('cash'); ui.closeCard(); ui.hud();
+        const p = players[0]; const idx = activeIdx; const s = BD[idx]; const pr = props[idx];
+        
+        // 1. Verificar Monopólio
+        const groupColor = s.g;
+        // Pega todos os índices que tem essa cor
+        const groupIndices = BD.map((b, i) => b.g === groupColor ? i : -1).filter(i => i !== -1);
+        // Verifica se eu sou dono de TODOS eles
+        const hasMonopoly = groupIndices.every(i => props[i] && props[i].owner === 0);
+
+        if(!hasMonopoly) {
+            ui.toast("PRECISA TER TODAS DA MESMA COR!");
+            return;
+        }
+
+        // 2. Verificar Regra do Hotel
+        // Nivel 0-3 = Casas. Nivel 4 = 4 Casas. Nivel 5 = Hotel.
+        // Só constrói hotel se tiver 4 casas (nivel 4)
+        
+        if(pr.level === 4) {
+            // Construir Hotel
+            if(p.money >= s.h) {
+                p.money -= s.h; pr.level = 5;
+                ui.toast("HOTEL CONSTRUÍDO!"); play('cash'); ui.closeCard(); ui.hud();
+            } else {
+                ui.toast("SEM GRANA PRO HOTEL!");
+            }
+        } else if (pr.level < 4) {
+            // Construir Casa
+            if(p.money >= s.h) {
+                p.money -= s.h; pr.level++;
+                ui.toast("CASA CONSTRUÍDA!"); play('cash'); ui.closeCard(); ui.hud();
+            } else {
+                ui.toast("SEM GRANA PRA CASA!");
+            }
+        } else {
+            ui.toast("MÁXIMO DE CONSTRUÇÃO!");
         }
     },
     mortgage: () => {
