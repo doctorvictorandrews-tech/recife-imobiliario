@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Recife Imobiliário V59 - Final Stable</title>
+    <title>Recife Imobiliário V59 - Blindado</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
         
         body { 
             margin: 0; font-family: 'Nunito', sans-serif; 
-            background: linear-gradient(135deg, #100, #200); /* Fundo Dark/Hard */
+            background: linear-gradient(135deg, #212121, #0d47a1);
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
 
@@ -26,14 +26,15 @@
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
         
         .shark-anim {
-            position: absolute; bottom: -20vh; right: -50vw; font-size: 40vh; 
+            position: absolute; bottom: 10vh; right: -50vw; font-size: 35vh; 
             filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none;
+            transform: scaleX(-1); /* Inverte o emoji para olhar pra esquerda */
         }
         .shark-anim.active { display: block; animation: sharkPass 3s linear forwards; }
-        @keyframes sharkPass { 0% {right: -50vw; bottom: 10vh;} 100% {right: 150vw; bottom: 30vh;} }
+        @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
         
         .traffic-anim {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.9);
+            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center;
             font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center;
             animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red;
@@ -84,7 +85,7 @@
 
         .deck { 
             position: absolute; width: 90px; height: 130px; background: #fff; 
-            border: 4px solid #000; border-radius: 10px; cursor: pointer; transition: 0.4s; 
+            border: 4px solid #000; border-radius: 10px; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             transform: translateZ(2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.4); z-index: 100;
             display: flex; align-items: center; justify-content: center; text-align: center;
             font-family: 'Titan One'; font-size: 1.3rem; color: #fff; -webkit-text-stroke: 1.5px #000; pointer-events: auto;
@@ -228,7 +229,7 @@
             <button class="btn-game btn-roll" onclick="game.roll()">Tentar Sorte</button>
         </div>
         <div id="normal-controls">
-            <button id="b-card" class="btn-game btn-card" onclick="game.forceDrawCard()">🎴 PEGAR CARTA</button>
+            <button id="b-card" class="btn-game btn-card" onclick="game.forceDrawCard()">🎴 PEGAR CARTA!</button>
             
             <button id="b-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 Rolar Dados</button>
             <button id="b-buy" class="btn-game btn-buy" disabled onclick="game.buy()">💰 Comprar</button>
@@ -281,7 +282,7 @@
 </div>
 
 <script>
-/* CONFIGURAÇÃO */
+/* DADOS & PERSONAGENS (16 OPÇÕES) */
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta Boiando'}, {id:'c',i:'🦀',n:'Caranguejo'},
     {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'},
@@ -289,6 +290,7 @@ const CHARS=[
     {id:'hmn',i:'🎩',n:'Homem da Meia-Noite'}, {id:'rp',i:'🚔',n:'Rádio Patrulha'}, {id:'srr',i:'🐚',n:'Sururu'}, {id:'and',i:'😎',n:'Anderson'}
 ];
 
+/* MAPA ATUALIZADO V57 - CUSTOS DE CONSTRUÇÃO (h) TRIPLICADOS */
 const BD=[
     {t:'st',n:'MARCO ZERO',i:'🚩'}, 
     {t:'pr',g:'#795548',n:'Coque',p:60,h:150,m:30,r:[2,10,30,90,160,250]}, 
@@ -335,21 +337,19 @@ const BD=[
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Tua vó te deu dinheiro. +100", val:100}];
 const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a carteira. -100", val:-100}, {txt:"A Rádio Patrulha te pegou!", act:'jail'}];
 
-/* VARIÁVEIS DO JOGO */
+/* VARS */
 let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, gameMode='normal', pendingCardType=null, totalTurns=0;
 const SFX={step:new Audio('https://www.soundjay.com/misc/sounds/wood-block-1.mp3'),cash:new Audio('https://www.soundjay.com/misc/sounds/coins-in-hand-2.mp3')};
 const play=(k)=>{try{SFX[k].currentTime=0;SFX[k].play().catch(()=>{})}catch(e){}};
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 
-/* UI & HELPERS */
+/* UI */
 const ui = {
     toChar: () => {
         const cpuCount = parseInt(document.getElementById('cpu-count').value);
         gameMode = document.getElementById('game-mode').value;
-        // Inicia Humanos e CPUs
         players = [{name:"Você", icon:"", pos:0, money:1500, jailed:false, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false}];
         for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:1500, jailed:false, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false});
-        
         document.getElementById('screen-start').style.display='none'; document.getElementById('screen-char').style.display='flex';
         CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
     },
@@ -357,8 +357,7 @@ const ui = {
         players[0].icon = icon;
         players.slice(1).forEach(p=>{ const av=CHARS.filter(c=>c.i!==icon); if(av.length) p.icon=av[Math.floor(Math.random()*av.length)].i; });
         document.getElementById('screen-char').style.display='none'; document.getElementById('game-layout').classList.add('active');
-        ui.buildBoard(); 
-        ui.updateControls(); // Inicia o loop de verificação visual
+        ui.buildBoard(); ui.hud();
     },
     buildBoard: () => {
         const b = document.getElementById('board');
@@ -378,12 +377,12 @@ const ui = {
         const t = document.getElementById(`tok${pid}`); const s = document.getElementById(`s${pos}`);
         if(t && s) { t.style.left = (s.offsetLeft + 15 + (pid*5)) + 'px'; t.style.top = (s.offsetTop + 10 + (pid*5)) + 'px'; }
     },
-    // CONTROLE CENTRAL DE BOTÕES (WATCHDOG)
-    updateControls: () => {
+    hud: () => {
         if(!players[turn]) return;
-        document.getElementById('turn-display').innerText = `VEZ DE: ${players[turn].name}`;
+        const p = players[turn];
+        document.getElementById('turn-display').innerText = `VEZ DE: ${p.name}`;
         document.getElementById('p-money').innerText = `$${players[0].money}`;
-        document.getElementById('players-list').innerHTML = players.map((p,i) => `<div class="p-stat ${turn===i?'active':''} ${!p.active?'bankrupt':''} ${p.skippedTurn?'skipped':''}"><div>${p.icon} ${p.name} ${p.skippedTurn?'(🛑)':''}</div><div>${p.active ? (i===0 ? '$'+p.money : (p.jailed?'🔒':'?')) : 'FALIU'}</div></div>`).join('');
+        document.getElementById('players-list').innerHTML = players.map((pl,i) => `<div class="p-stat ${turn===i?'active':''} ${!pl.active?'bankrupt':''} ${pl.skippedTurn?'skipped':''}"><div>${pl.icon} ${pl.name} ${pl.skippedTurn?'(🛑)':''}</div><div>${pl.active ? (i===0 ? '$'+pl.money : (pl.jailed?'🔒':'?')) : 'FALIU'}</div></div>`).join('');
         
         const inv = document.getElementById('inventory'); inv.innerHTML = '';
         props.forEach((pr,i)=>{
@@ -393,49 +392,38 @@ const ui = {
         });
 
         const hum = turn===0;
-        const p = players[0];
         
-        // CONTROLES DE PRISÃO
-        document.getElementById('jail-controls').style.display = (p.jailed && hum) ? 'block' : 'none';
+        document.getElementById('jail-controls').style.display = (players[0].jailed && hum) ? 'block' : 'none';
+        document.getElementById('normal-controls').style.display = (!players[0].jailed && hum) ? 'block' : 'none';
         
-        // CONTROLES NORMAIS
-        const nc = document.getElementById('normal-controls');
-        nc.style.display = (!p.jailed && hum) ? 'block' : 'none';
-        
-        if(!p.jailed && hum) {
-            const btnRoll = document.getElementById('b-roll');
-            const btnPass = document.getElementById('b-pass');
+        if(!players[0].jailed && hum) {
+            const doubles = players[0].lastD1 === players[0].lastD2 && players[0].lastD1 !== undefined;
+            // CRITICAL FIX: Allow rolling if !rolled OR (rolled AND doubles AND NOT jailed)
+            const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
+            
+            document.getElementById('b-roll').disabled = !canRoll;
+            
+            // Controle do Botão de Emergência
             const btnCard = document.getElementById('b-card');
-            const btnBuy = document.getElementById('b-buy');
-
-            // Lógica de Estado
             if(pendingCardType) {
-                // Estado: Esperando Carta
                 btnCard.style.display = 'block';
-                btnRoll.style.display = 'none';
-                btnPass.style.display = 'none';
-                btnBuy.disabled = true;
+                document.getElementById('b-roll').style.display = 'none';
+                document.getElementById('b-pass').style.display = 'none';
             } else {
-                // Estado: Jogo Normal
                 btnCard.style.display = 'none';
-                btnRoll.style.display = 'block';
-                btnPass.style.display = 'block';
-                
-                // Habilitar Roll se ainda não rolou e não está animando
-                btnRoll.disabled = !(!rolled && !animating && !p.skippedTurn);
-                
-                // Habilitar Buy se rolou, caiu em propriedade sem dono
-                let canBuy = rolled && (BD[p.pos].t==='pr' || BD[p.pos].t==='rr' || BD[p.pos].t==='ut') && !props[p.pos];
-                if(gameMode === 'hardcore' && p.boughtRound) canBuy = false;
-                btnBuy.disabled = !canBuy;
-                
-                // Habilitar Passar se rolou
-                const doubles = players[turn].lastD1 === players[turn].lastD2;
-                btnPass.disabled = !(rolled && !doubles);
+                document.getElementById('b-roll').style.display = 'block';
+                document.getElementById('b-pass').style.display = 'block';
             }
+
+            let canBuy = rolled && (BD[players[0].pos].t==='pr' || BD[players[0].pos].t==='rr' || BD[players[0].pos].t==='ut') && !props[players[0].pos] && !pendingCardType;
+            if(gameMode === 'hardcore' && players[0].boughtRound) canBuy = false;
+            document.getElementById('b-buy').disabled = !canBuy;
+            
+            // Can Pass only if rolled AND NOT pending card AND NOT doubles
+            document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
         }
         
-        // Efeitos Visuais dos Decks
+        // Controle da Classe Active nos Decks
         document.getElementById('d-chance').classList.remove('active');
         document.getElementById('d-reves').classList.remove('active');
         if(hum && pendingCardType === 'ch') document.getElementById('d-chance').classList.add('active');
@@ -449,6 +437,7 @@ const ui = {
         if(s.r) {
             const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel'];
             s.r.forEach((val, i) => html += `<tr><td>${labels[i]}</td><td style="text-align:right">$${val}</td></tr>`);
+            // ADD CUSTO DE CONSTRUÇÃO NA TABELA
             html += `<tr style="background:#eee; color:#000;"><td>Custo Const.</td><td style="text-align:right">$${s.h}</td></tr>`;
         } else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
         else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
@@ -485,15 +474,14 @@ const ui = {
     toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); }
 };
 
-/* LÓGICA DO JOGO */
+/* LOGIC */
 const game = {
     clickDeck: (type) => {
         if(pendingCardType && turn===0 && type === pendingCardType){
             const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
             ui.pendingCard = deck[Math.floor(Math.random()*deck.length)];
             ui.showEvent(type==='ch'?'sorte':'vixe', ui.pendingCard.txt);
-            pendingCardType = null; 
-            ui.updateControls(); // Atualiza botões
+            pendingCardType = null; ui.hud();
         }
     },
     forceDrawCard: () => {
@@ -507,11 +495,11 @@ const game = {
             ui.toast(`${p.name} NO ENGARRAFAMENTO!`);
             p.skippedTurn = false;
             await sleep(1500);
-            game.pass(); // Importante: Passa a vez se estava pulando
+            game.pass();
             return;
         }
 
-        animating=true; ui.updateControls();
+        animating=true; ui.hud();
         const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
         p.lastD1 = d1; p.lastD2 = d2;
         ui.dice(d1,d2); await sleep(1500);
@@ -531,17 +519,21 @@ const game = {
                 } else { 
                     p.jailAttempts++;
                     ui.toast(`PRESO! TENTATIVA ${p.jailAttempts}/3`); 
-                    rolled=true; animating=false; ui.updateControls(); 
-                    setTimeout(game.pass, 1500); // Passa a vez automaticamente na prisão
+                    rolled=true; animating=false; ui.hud(); 
+                    setTimeout(game.pass, 1500); 
                     return; 
                 }
             }
         } else {
             if(d1===d2) { p.doubles++; ui.toast("JOGA DE NOVO!"); } else p.doubles=0;
-            if(p.doubles===3) { ui.toast("3x IGUAIS! CADEIA!"); game.jail(turn); animating=false; rolled=true; ui.updateControls(); return; }
+            if(p.doubles===3) { ui.toast("3x IGUAIS! CADEIA!"); game.jail(turn); animating=false; rolled=true; ui.hud(); return; }
             await game.move(turn, d1+d2);
         }
-        rolled=true; animating=false; ui.updateControls();
+        
+        // Se tirou dados iguais, rolled deve ser false para permitir jogar de novo
+        // Mas se foi pra cadeia, rolled = true e passa a vez.
+        rolled = true; 
+        animating=false; ui.hud();
         
         if(turn!==0 && !pendingCardType) {
             if(d1===d2) setTimeout(game.roll, 1500);
@@ -552,7 +544,11 @@ const game = {
         const p = players[pid];
         for(let i=0; i<steps; i++){
             p.pos = (p.pos + 1) % 40;
-            if(p.pos===0 && p.active){ p.money+=200; ui.toast("Início! +$200"); p.boughtRound=false; }
+            if(p.pos===0 && p.active){ 
+                p.money+=200; ui.toast("Início! +$200"); 
+                p.boughtRound=false; 
+                if(pid===0) confetti(); 
+            }
             ui.place(pid, p.pos); play('step'); await sleep(250);
         }
         game.land(pid);
@@ -565,8 +561,6 @@ const game = {
         if(totalTurns%20 === 0) { 
             ui.toast(`O GALO PASSOU! ${p.name} -> Marco Zero`); 
             p.money+=200; p.pos=0; ui.place(pid,0); 
-            // Se teleportou, encerra o movimento e libera para passar
-            if(pid !== 0) setTimeout(game.pass, 1500);
             return;
         }
         
@@ -579,7 +573,6 @@ const game = {
                     setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000);
                     p.skippedTurn = true;
                     ui.toast("ENGARRAFAMENTO! PERDE A VEZ.");
-                    // IMPORTANTE: Se perdeu a vez, marca e permite passar
                 } else {
                     ui.toast("BÔNUS DO BK! +$50");
                     p.money += 50;
@@ -607,7 +600,7 @@ const game = {
                 p.money -= rent; players[pr.owner].money += rent; ui.toast(`PAGOU ALUGUEL $${rent}`); play('cash');
             }
         } else if(s.t==='ch' || s.t==='rev'){
-            if(pid===0) { pendingCardType = s.t==='ch'?'ch':'rev'; ui.updateControls(); ui.toast("CLICA NO BARALHO!"); }
+            if(pid===0) { pendingCardType = s.t==='ch'?'ch':'rev'; ui.hud(); ui.toast("CLICA NO BARALHO!"); }
             else { 
                 const deck = s.t==='ch' ? CARDS_SORTE : CARDS_REVES; 
                 ui.pendingCard = deck[Math.floor(Math.random()*deck.length)]; 
@@ -620,12 +613,12 @@ const game = {
             p.money -= tax; 
             ui.toast(`LEÃO DO IR! -${tax} (10%)`); 
         }
-        ui.updateControls(); 
+        ui.hud(); 
     },
     applyCard: () => {
         const c = ui.pendingCard; const p = players[turn];
         if(c.val) p.money += c.val; if(c.act==='jail') game.jail(turn);
-        ui.updateControls(); rolled=true; 
+        ui.hud(); rolled=true; 
         if(turn!==0) {
             if(players[turn].lastD1 === players[turn].lastD2) setTimeout(game.roll, 1500); 
             else setTimeout(game.pass, 1500);
@@ -636,16 +629,15 @@ const game = {
         players[pid].jailAttempts = 0; 
         players[pid].pos = 10; ui.place(pid, 10);
         ui.toast("PRESO!"); play('step');
-        // Se for CPU, passa. Se for humano, a UI vai atualizar e mostrar opções.
-        if(pid !== 0) setTimeout(game.pass, 1500);
-        else ui.updateControls();
     },
     payJail: () => {
         const p = players[0];
-        if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); ui.updateControls(); }
+        if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); ui.hud(); }
     },
     pass: () => {
-        players[turn].doubles = 0;
+        // Human logic handles doubles via button state, so we reset here
+        players[turn].doubles = 0; 
+        
         if(players[turn].money < 0) {
              players[turn].active = false; 
              ui.toast(`${players[turn].name} FALIU!`);
@@ -657,9 +649,7 @@ const game = {
             loop++;
         } while(!players[turn].active && loop < players.length);
         
-        rolled=false; animating=false; ui.updateControls();
-        
-        // Se for CPU, joga sozinho. Se for Humano, espera.
+        rolled=false; animating=false; ui.hud();
         if(turn!==0) setTimeout(game.roll, 1500);
     },
     aiBuy: (idx) => {
@@ -668,7 +658,7 @@ const game = {
              if(p.money >= s.p){
                  p.money -= s.p; props[idx]={owner:turn, level:0, mtg:false};
                  ui.toast(`${p.name} comprou ${s.n}`);
-                 ui.updateControls();
+                 ui.hud();
              }
         }
     },
@@ -676,11 +666,13 @@ const game = {
         const p = players[0]; const s = BD[activeIdx];
         if(p.money >= s.p){
             p.money -= s.p; props[activeIdx]={owner:0, level:0, mtg:false};
-            ui.toast("COMPRADO!"); play('cash'); ui.closeCard(); ui.updateControls();
+            ui.toast("COMPRADO!"); play('cash'); ui.closeCard(); ui.hud();
         }
     },
     build: () => {
         const p = players[0]; const idx = activeIdx; const s = BD[idx]; const pr = props[idx];
+        
+        // 1. Verificar Monopólio
         const groupColor = s.g;
         const groupIndices = BD.map((b, i) => b.g === groupColor ? i : -1).filter(i => i !== -1);
         const hasMonopoly = groupIndices.every(i => props[i] && props[i].owner === 0);
@@ -689,17 +681,19 @@ const game = {
             ui.toast("PRECISA TER TODAS DA MESMA COR!");
             return;
         }
+
+        // 2. Verificar Regra do Hotel
         if(pr.level === 4) {
             if(p.money >= s.h) {
                 p.money -= s.h; pr.level = 5;
-                ui.toast("HOTEL CONSTRUÍDO!"); play('cash'); ui.closeCard(); ui.updateControls();
+                ui.toast("HOTEL CONSTRUÍDO!"); play('cash'); ui.closeCard(); ui.hud();
             } else {
                 ui.toast("SEM GRANA PRO HOTEL!");
             }
         } else if (pr.level < 4) {
             if(p.money >= s.h) {
                 p.money -= s.h; pr.level++;
-                ui.toast("CASA CONSTRUÍDA!"); play('cash'); ui.closeCard(); ui.updateControls();
+                ui.toast("CASA CONSTRUÍDA!"); play('cash'); ui.closeCard(); ui.hud();
             } else {
                 ui.toast("SEM GRANA PRA CASA!");
             }
@@ -715,7 +709,7 @@ const game = {
         } else {
             p.money += Math.round(s.p/2); pr.mtg=true; ui.toast("HIPOTECADO!");
         }
-        ui.closeCard(); ui.updateControls();
+        ui.closeCard(); ui.hud();
     },
     toggleMtg: (pay) => game.mortgage()
 };
