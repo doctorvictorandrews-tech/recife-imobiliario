@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V65 (Uniform Grid)</title>
+    <title>Recife Imobiliário: V65 (Uniforme)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --wood: #5d4037; --paper: #fff8e1;
@@ -24,11 +24,11 @@
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
         /* --- FX LAYERS --- */
-        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; overflow: hidden; }
+        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
         .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
-        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 9500; }
+        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
@@ -51,75 +51,43 @@
             position: relative; overflow: auto; 
             display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle, #424242 0%, #000000 100%);
-            flex: 1; min-height: 0; padding: 10px;
+            flex: 1; min-height: 0; padding: 20px;
         }
         
-        #board-container { 
-            position: relative; 
-            transform-origin: center center;
-        }
+        #board-container { position: relative; transform-origin: center center; }
 
         #board { 
             width: 100%; height: 100%; 
             display: grid; 
-            /* GRID UNIFORME: Cantos 1.25fr, Meio 1fr */
-            grid-template-columns: 1.25fr repeat(9, 1fr) 1.25fr;
-            grid-template-rows: 1.25fr repeat(9, 1fr) 1.25fr;
-            background: #fff; border: 20px solid var(--c-dark); border-radius: 20px; 
-            box-shadow: 0 0 60px rgba(0,0,0,0.8); 
+            /* Grid 11x11 Rigoroso */
+            grid-template-columns: repeat(11, 1fr); 
+            grid-template-rows: repeat(11, 1fr); 
+            background: #fff; border: 20px solid var(--c-dark); border-radius: 15px; 
+            box-shadow: 0 0 80px rgba(0,0,0,0.8); 
             background-image: url('https://www.transparenttextures.com/patterns/cardboard.png'); 
         }
 
-        /* PAINEL HUD */
-        #hud-panel { 
-            background: #fff; display: flex; flex-direction: column; z-index: 5000; 
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            flex-shrink: 0; 
-        }
+        /* HUD */
+        #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; }
 
-        /* --- MEDIA QUERIES --- */
-        
-        /* MOBILE (Retrato) */
-        @media (max-width: 899px) {
+        /* --- MEDIA QUERIES (GEOMETRIA) --- */
+        @media (max-width: 899px) { /* Mobile */
             #game-layout { flex-direction: column; }
-            
-            /* Tabuleiro Vertical e Grande */
-            #board-container { width: 900px; height: 1250px; }
-
-            #hud-panel { 
-                width: 100%; 
-                padding: 8px;
-                padding-bottom: calc(5px + env(safe-area-inset-bottom));
-                gap: 5px;
-                background: #f5f5f5;
-                border-top: 4px solid var(--c-dark);
-            }
-
-            #action-btns { display: flex; gap: 5px; width: 100%; height: 65px; }
-            #b-roll { flex: 1.5; font-size: 1.4rem; }
+            #board-container { width: 900px; height: 1200px; } /* Vertical Longo */
+            #hud-panel { width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark); }
+            #action-btns { display: flex; gap: 5px; width: 100%; height: 60px; }
+            #b-roll { flex: 1.5; font-size: 1.3rem; }
             #b-buy, #b-pass { flex: 1; font-size: 0.9rem; line-height: 1.1; }
-            
-            .hud-top-bar { 
-                background: #fff; border: 2px solid #ccc; border-radius: 10px; 
-                padding: 5px 15px; display: flex; justify-content: space-between; align-items: center;
-                height: 45px;
-            }
-            .btn-inv { height: 45px; font-size: 1rem; margin-top: 2px; }
-
-            #players-scroll { display: none; }
-            #desktop-props-container { display: none; }
-            #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+            .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
+            .btn-inv { height: 45px; font-size: 1rem; }
+            #players-scroll, #desktop-props-container { display: none; }
+            #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
         }
 
-        /* DESKTOP (Paisagem) */
-        @media (min-width: 900px) {
+        @media (min-width: 900px) { /* Desktop */
             #game-layout { flex-direction: row; }
-            
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
-            
-            /* Tabuleiro Bem Horizontal */
-            #board-container { width: 1450px; height: 900px; }
-
+            #board-container { width: 1400px; height: 900px; } /* Horizontal Largo */
             #mobile-controls-wrapper { display: contents; }
             .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; display: flex; justify-content: space-between; align-items: center; }
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
@@ -130,63 +98,59 @@
             .btn-inv { display: none; }
         }
 
-        /* UI ELEMENTS */
-        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
-        .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        /* --- ESPAÇOS DO TABULEIRO (Rotação e Estilo) --- */
+        .space { 
+            border: 1px solid rgba(0,0,0,0.15); background: #fff; 
+            font-size: 0.8rem; text-align: center; position: relative; 
+            display: flex; flex-direction: column; justify-content: space-between;
+            font-weight: 800; overflow: hidden;
+        }
         
-        .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
-        .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
-        .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
-        
-        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
-        .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
-        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
-        .btn-buy { background: var(--c-green); }
-        .btn-pass { background: var(--c-red); }
-        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 15px; }
-        @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
-        
-        .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .color-strip { height: 20px; width: 100%; border-bottom: 2px solid var(--c-dark); flex-shrink: 0; }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.85rem; word-break: break-word; }
+        .sp-price { font-size: 0.9rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 2px 0; width: 100%; }
+        .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; flex: 1; }
+        .space.owned { border-width: 4px !important; }
 
-        .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
-        .prop-item:hover { background: #f5f5f5; }
-        .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
-        .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
+        /* Rotação para laterais */
+        .row-bottom { flex-direction: column; }
+        .row-left { transform: rotate(90deg); }
+        .row-top { transform: rotate(180deg); }
+        .row-right { transform: rotate(-90deg); }
 
-        /* ESTILOS DE CASAS NO GRID */
-        .space { border: 1px solid rgba(0,0,0,0.15); background: #fff; font-size: 0.85rem; text-align: center; position: relative; display: flex; flex-direction: column; font-weight: 800; overflow: hidden; }
-        .color-strip { height: 20%; border-bottom: 2px solid var(--c-dark); width: 100%; }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; font-weight: 900; font-size: 0.9rem; word-break: break-word; }
-        .sp-price { font-size: 0.85rem; color: #fff; background: var(--c-dark); font-family: 'Titan One'; padding: 3px 0; width: 100%; }
-        .sp-icon { font-size: 3.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
-        .space.owned { border: 4px solid #000; } /* Borda padrão, cor sobrescrita via JS */
-        
+        /* Centro */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: #37474f; border: 6px solid var(--c-dark); display: flex; justify-content: center; align-items: center; }
         .center-logo { font-family: 'Titan One'; font-size: 6rem; color: rgba(255,255,255,0.05); transform: rotate(-45deg); pointer-events: none; }
         
-        .deck { position: absolute; width: 140px; height: 190px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.6rem; color: #fff; -webkit-text-stroke: 1.5px #000; }
+        /* Decks */
+        .deck { position: absolute; width: 130px; height: 180px; background: #fff; border: 4px solid #000; border-radius: 10px; cursor: pointer; box-shadow: 5px 5px 0 rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1.5px #000; transition: transform 0.1s; }
         .deck:active { transform: scale(0.95); }
-        .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: rotate(-10deg); }
-        .deck.reves { top: 45%; left: 50%; background: var(--c-red); transform: rotate(10deg); }
-        .deck.active { animation: pulseDeck 1s infinite; border-color: #ffeb3b; z-index: 100; }
+        .deck.chance { top: 35%; left: 35%; background: var(--c-green); transform: translate(-50%,-50%) rotate(-10deg); }
+        .deck.reves { top: 45%; left: 55%; background: var(--c-red); transform: translate(-50%,-50%) rotate(10deg); }
         
-        .token { width: 60px; height: 60px; position: absolute; z-index: 50; font-size: 3.5rem; text-align: center; line-height: 60px; transition: all 0.4s; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none; }
-        .build-area { position: absolute; top: -14px; width: 100%; display: flex; justify-content: center; gap: 2px; }
-        .house-3d { width: 16px; height: 16px; background: var(--c-green); border: 1px solid #000; }
-        .hotel-3d { width: 22px; height: 22px; background: var(--c-red); border: 1px solid #000; }
-        .loan-badge { position: absolute; top: 0; right: 0; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; font-weight: bold; border-bottom-left-radius: 5px; z-index: 10; display:none; }
+        /* Peças */
+        .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 2.5rem; text-align: center; line-height: 50px; transition: all 0.4s; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5)); pointer-events: none; }
+        
+        /* Construções */
+        .build-area { position: absolute; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 2; pointer-events: none; }
+        /* Ajuste de posição baseado na rotação seria complexo, então centralizamos */
+        .row-bottom .build-area { top: -8px; }
+        .row-left .build-area { bottom: -8px; transform: rotate(-90deg); } /* Compensate */
+        .row-right .build-area { bottom: -8px; transform: rotate(90deg); }
+        .row-top .build-area { bottom: 2px; }
+
+        .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; }
+        .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; }
+        .loan-badge { position: absolute; top: 0; right: 0; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; font-weight: bold; z-index: 10; display:none; }
 
         /* MODAIS */
-        /* Correção Z-Index: Overlay(8000) > Inv(7000) */
-        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; display: flex; justify-content: center; align-items: center; }
-        
+        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; display: flex; justify-content: center; align-items: center; } /* Z-INDEX ALTO PARA O CARD */
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
         .rent-table td { padding: 6px 12px; border-bottom: 1px dashed #ddd; font-weight: 800; }
         
-        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 8000; width: 85%; height: 60vh; max-height: 500px; }
+        .card-flip-container { perspective: 1000px; display: none; pointer-events: auto; z-index: 9500; width: 85%; height: 60vh; max-height: 500px; }
         .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
         .card-flip.flipped { transform: rotateY(180deg); }
         .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -205,6 +169,26 @@
         
         #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; }
         #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
+        
+        /* UI Elements Comuns */
+        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
+        .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
+        .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
+        .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
+        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+        .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
+        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
+        .btn-buy { background: var(--c-green); }
+        .btn-pass { background: var(--c-red); }
+        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 15px; }
+        @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
+        .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
+        .prop-item:hover { background: #f5f5f5; }
+        .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
+        .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
     </style>
 </head>
 <body>
@@ -382,6 +366,7 @@ const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a car
 
 let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, gameMode='normal', pendingCardType=null, totalTurns=0;
 
+// SISTEMA DE SOM
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
     cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
@@ -401,8 +386,7 @@ function resizeBoard() {
     if(!el || !area) return;
     const w = area.offsetWidth;
     const h = area.offsetHeight;
-    const minDim = Math.min(w, h) * 0.95; 
-    const scale = minDim / 950; // Base reference, doesn't lock aspect ratio perfectly which is good here
+    const scale = Math.min(w / el.offsetWidth, h / el.offsetHeight) * 0.95;
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
@@ -428,8 +412,17 @@ const ui = {
         const b = document.getElementById('board');
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
-            let r,c; if(i<=10){r=11;c=11-i;}else if(i<=20){r=11-(i-10);c=1;}else if(i<=30){r=1;c=1+(i-20);}else{r=1+(i-30);c=11;}
+            let r,c, rotClass;
+            
+            // Lógica de Grid 11x11 e Rotação
+            if(i<=10) { r=11; c=11-i; rotClass='row-bottom'; } // Baixo
+            else if(i<=20) { r=11-(i-10); c=1; rotClass='row-left'; } // Esquerda
+            else if(i<=30) { r=1; c=1+(i-20); rotClass='row-top'; } // Topo
+            else { r=1+(i-30); c=11; rotClass='row-right'; } // Direita
+            
             d.style.gridRow=r; d.style.gridColumn=c;
+            d.classList.add(rotClass);
+
             const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
             d.innerHTML = s.t==='pr' ? 
                 `<div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="build-area" id="b${i}"></div><div class="sp-price">$${s.p}</div>` :
@@ -444,15 +437,16 @@ const ui = {
         players.forEach((p, i) => { if(!map[p.pos]) map[p.pos] = []; map[p.pos].push(i); });
         Object.keys(map).forEach(pos => {
             const pids = map[pos]; const s = document.getElementById(`s${pos}`); if(!s) return;
+            // Ajuste de posição considerando rotação é complexo, usamos centro absoluto
             if(pids.length === 1) {
                 const t = document.getElementById(`tok${pids[0]}`);
-                t.style.left = (s.offsetLeft + 12) + 'px'; t.style.top = (s.offsetTop + 12) + 'px'; t.style.transform = 'scale(1)';
+                t.style.left = (s.offsetLeft + 10) + 'px'; t.style.top = (s.offsetTop + 10) + 'px'; t.style.transform = 'scale(1)';
             } else {
                 pids.forEach((pid, idx) => {
                     const angle = (idx / pids.length) * 2 * Math.PI;
-                    const ox = Math.cos(angle) * 15; const oy = Math.sin(angle) * 15;
+                    const ox = Math.cos(angle) * 10; const oy = Math.sin(angle) * 10;
                     const t = document.getElementById(`tok${pid}`);
-                    t.style.left = (s.offsetLeft + 12 + ox) + 'px'; t.style.top = (s.offsetTop + 12 + oy) + 'px'; t.style.transform = 'scale(0.8)';
+                    t.style.left = (s.offsetLeft + 10 + ox) + 'px'; t.style.top = (s.offsetTop + 10 + oy) + 'px'; t.style.transform = 'scale(0.8)';
                 });
             }
         });
