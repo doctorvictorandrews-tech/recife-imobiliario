@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V68.0 (Blindado)</title>
+    <title>Recife Imobiliário: V68.1 (Desktop Fix)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -51,20 +51,17 @@
         /* ÁREA DO TABULEIRO */
         #board-area { 
             position: relative; 
-            overflow: hidden; /* Importante para não scrolar */
+            overflow: hidden; 
             display: flex; align-items: center; justify-content: center; 
             background: rgba(0,0,0,0.1); 
-            flex: 1; /* Ocupa todo espaço que sobra */
+            flex: 1; 
             width: 100%;
         }
         #board-container { position: relative; transform-origin: center center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
         
-        /* DIMENSÕES DO TABULEIRO VIRTUAL 
-           Aqui definimos a proporção. 900x1050 é um retângulo leve, bom para mobile.
-        */
-        #board { width: 900px; height: 1050px; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); }
+        #board { width: 900px; height: 1125px; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); }
 
-        /* PAINEL HUD (BOTÕES) */
+        /* PAINEL HUD */
         #hud-panel { 
             background: #fff; display: flex; flex-direction: column; z-index: 5000; 
             box-shadow: 0 -5px 20px rgba(0,0,0,0.2); flex-shrink: 0; 
@@ -74,7 +71,6 @@
 
         #action-btns { width: 100%; margin-bottom: 5px; }
         
-        /* GRADE DE BOTÕES 2x2 */
         #normal-btns, #jail-btns {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -82,15 +78,14 @@
             width: 100%;
         }
 
-        /* ESTILO DOS BOTÕES COMPACTOS */
         .btn-game { 
             border: none; border-radius: 10px; font-family: 'Titan One'; cursor: pointer; color: #fff; 
             box-shadow: 0 3px 0 rgba(0,0,0,0.3); text-transform: uppercase; position: relative; 
             width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; 
             text-align: center; 
-            height: 45px; /* Altura Fixa Compacta */
-            font-size: 0.9rem;
-            padding: 0 5px;
+            min-height: 35px;
+            font-size: 0.8rem;
+            padding: 2px 5px;
         }
         .btn-game:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.3); }
         .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; opacity: 0.7; }
@@ -120,7 +115,7 @@
             .hud-top-bar { padding: 15px; margin: 0; border: none; border-bottom: 2px dashed #cfd8dc; border-radius: 0; }
             #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; padding: 20px;}
             #normal-btns, #jail-btns { display: flex; flex-direction: column; gap: 10px; }
-            .btn-game { height: 60px; font-size: 1.3rem; } 
+            .btn-game { min-height: 60px; font-size: 1.3rem; padding: 18px; } 
             .btn-inv { display: none; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; padding: 0 20px;}
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; padding: 20px;}
@@ -167,8 +162,7 @@
         .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
 
         /* UI ELEMENTS */
-        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
-        .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        .money-display { font-size: 1.4rem; color: var(--c-green); font-family: 'Titan One'; }
         .money-display.debt { color: #d32f2f; animation: pulseRed 1s infinite; }
         @keyframes pulseRed { 0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1} }
         
@@ -487,24 +481,22 @@ function resizeBoard() {
     // DETECT MOBILE
     const isMobile = window.innerWidth < 900;
     const baseWidth = isMobile ? 900 : 1300;
-    const baseHeight = isMobile ? 1050 : 1000;
+    const baseHeight = isMobile ? 1125 : 1000;
     
-    // Calcula o espaço disponível (Altura da janela - Altura do HUD)
-    const availableW = window.innerWidth;
-    const hudHeight = document.getElementById('hud-panel').offsetHeight || 100;
-    const availableH = window.innerHeight - hudHeight;
+    const availableW = isMobile ? window.innerWidth : area.offsetWidth;
+    // On mobile, subtract HUD height from window height
+    const hudHeight = isMobile ? (document.getElementById('hud-panel').offsetHeight || 100) : 0;
+    const availableH = isMobile ? (window.innerHeight - hudHeight) : area.offsetHeight;
 
-    // Calcula a escala baseada em AMBAS as dimensões para caber
     const scaleW = availableW / baseWidth;
     const scaleH = availableH / baseHeight;
     
-    // Usa a menor escala para garantir que cabe inteiro sem cortar
-    const scale = Math.min(scaleW, scaleH) * 0.98; // 0.98 para dar uma margem de segurança
+    // Use smaller scale to fit
+    const scale = Math.min(scaleW, scaleH) * 0.95;
     
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
-// Chama o resize também após o carregamento para garantir
 window.onload = resizeBoard;
 
 const ui = {
@@ -527,11 +519,9 @@ const ui = {
         players.slice(1).forEach(p=>{ const av=CHARS.filter(c=>c.i!==icon); if(av.length) p.icon=av[Math.floor(Math.random()*av.length)].i; });
         document.getElementById('screen-char').style.display='none'; document.getElementById('game-layout').classList.add('active');
         ui.buildBoard(); 
-        // Força resize após montar o tabuleiro e HUD estar visível
         setTimeout(resizeBoard, 100); 
         ui.hud();
     },
-    // ... resto das funções UI (sem alterações)
     buildBoard: () => {
         const b = document.getElementById('board');
         BD.forEach((s,i) => {
@@ -639,8 +629,6 @@ const ui = {
         document.getElementById('inv-list').innerHTML = propsHTML;
 
         const hum = turn===0; const jailed = players[0].jailed;
-        
-        // CORREÇÃO: Visibilidade dos botões
         const jailedArea = document.getElementById('jail-btns');
         const normalArea = document.getElementById('normal-btns');
         
@@ -648,7 +636,6 @@ const ui = {
             jailedArea.style.display = 'flex';
             normalArea.style.display = 'none';
 
-            // Limpa botões antigos de HC para não duplicar
             const oldHc = document.getElementById('btn-hc');
             if(oldHc) oldHc.remove();
 
@@ -663,14 +650,11 @@ const ui = {
                     players[0].hasJailCard=false; 
                     ui.toast("LIVRE!"); 
                     play('good'); 
-                    ui.hud(); // Atualiza a HUD para mostrar botões normais
+                    ui.hud(); 
                 };
                 jailedArea.appendChild(btn);
             }
             
-            // Se já rolou na cadeia e falhou, precisamos mostrar botão de PASSAR
-            // Mas a interface de cadeia padrão não tem PASSAR. 
-            // Vamos hackear: se rolled=true na cadeia, esconde botões de cadeia e mostra PASSAR do normal.
             if(rolled) {
                 jailedArea.style.display = 'none';
                 normalArea.style.display = 'grid';
@@ -683,7 +667,7 @@ const ui = {
 
         } else if (hum) {
             jailedArea.style.display = 'none';
-            normalArea.style.display = 'grid';
+            normalArea.style.display = 'grid'; // Grid for mobile, Flex for desktop via CSS
             
             const doubles = players[0].lastD1 === players[0].lastD2 && players[0].lastD1 !== undefined;
             const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
@@ -701,9 +685,12 @@ const ui = {
                 }
             } else {
                 document.getElementById('b-pass').innerText = "PASSAR";
-                // CORREÇÃO: Habilita passar se já rolou
                 document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
-                document.getElementById('b-trade').disabled = rolled && !doubles; 
+                
+                // TRADE LOGIC: 1 PER ROUND
+                // Can trade if it's my turn AND I haven't traded yet this round
+                const alreadyTraded = players[0].tradedRound;
+                document.getElementById('b-trade').disabled = alreadyTraded || (rolled && !doubles); 
             }
             
             const btnCard = document.getElementById('b-card');
@@ -719,9 +706,8 @@ const ui = {
 
             document.getElementById('b-buy').disabled = !canBuy;
         } else {
-            // Not human turn
             jailedArea.style.display = 'none';
-            normalArea.style.display = 'grid'; // Mantém layout mas desabilita tudo (feito pelo turno!=0)
+            normalArea.style.display = 'grid';
         }
     },
     openProp: (idx, forBuy=false) => {
@@ -956,7 +942,6 @@ const game = {
         play('jail'); animating = false; rolled = true; 
         setTimeout(game.pass, 2000); 
     },
-    // CORREÇÃO: Atualiza a interface imediatamente
     payJail: () => { const p = players[0]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); play('cash'); ui.hud(); } },
     aiTurn: () => {
         const p = players[turn];
