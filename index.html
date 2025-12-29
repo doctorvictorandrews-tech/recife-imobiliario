@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: O Negociador</title>
+    <title>Recife Imobiliário: Versão Final</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -55,20 +55,30 @@
 
         /* PAINEL HUD */
         #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; }
+        
+        #action-btns { width: 100%; margin-bottom: 10px; }
+        
+        /* CORREÇÃO: GRADE PARA BOTÕES MOBILE */
+        #normal-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            width: 100%;
+        }
 
         /* --- MEDIA QUERIES --- */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
             #board-container { width: 900px; height: 1250px; }
             #hud-panel { width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark); }
-            #action-btns { display: flex; gap: 5px; width: 100%; height: 60px; }
-            #b-roll { flex: 1.5; font-size: 1.3rem; }
-            #b-buy, #b-pass, #b-trade { flex: 1; font-size: 0.8rem; line-height: 1.1; }
+            /* Mobile Buttons */
+            #jail-btns { display: flex; gap:5px; width: 100%; }
             .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
             .btn-inv { height: 45px; font-size: 1rem; }
             #players-scroll, #desktop-props-container { display: none; }
             #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
         }
+
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
@@ -77,14 +87,30 @@
             .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; display: flex; justify-content: space-between; align-items: center; }
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; }
+            
+            /* Desktop Buttons: Coluna Vertical */
             #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
-            .btn-game { padding: 18px; font-size: 1.3rem; } 
+            #normal-btns { display: flex; flex-direction: column; gap: 10px; }
+            #jail-btns { display: flex; flex-direction: column; gap: 10px; }
+            
+            .btn-game { padding: 18px; font-size: 1.2rem; } 
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
             .btn-inv { display: none; }
         }
 
         /* SPACE DESIGN */
-        .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; }
+        .space { 
+            background: var(--space-bg); 
+            border: 1px solid var(--border-col); 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            color: #000;
+            overflow: hidden; /* CORREÇÃO DO VAZAMENTO */
+        }
+        
         .rot-left { transform: rotate(90deg); }
         .rot-top { transform: rotate(180deg); }
         .rot-right { transform: rotate(-90deg); }
@@ -133,7 +159,7 @@
         .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
         
-        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9rem; padding: 5px; }
         .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
         .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
         .btn-roll { background: var(--c-yel); color: var(--c-dark); }
@@ -584,6 +610,15 @@ const ui = {
 
         const hum = turn===0; const jailed = players[0].jailed;
         document.getElementById('jail-btns').style.display = (jailed && hum) ? 'flex' : 'none';
+        
+        if(jailed && hum && players[0].hasJailCard) {
+             if(!document.getElementById('btn-hc')) {
+                 const btn = document.createElement('button'); btn.id='btn-hc'; btn.className='btn-game btn-buy'; btn.innerText='USAR HABEAS CORPUS';
+                 btn.onclick = () => { players[0].jailed=false; players[0].jailAttempts=0; players[0].hasJailCard=false; ui.toast("LIVRE!"); play('good'); ui.hud(); };
+                 document.getElementById('jail-btns').appendChild(btn);
+             }
+        }
+        
         document.getElementById('normal-btns').style.display = (!jailed && hum) ? 'flex' : 'none';
         
         if(!jailed && hum) {
@@ -595,15 +630,15 @@ const ui = {
                 document.getElementById('b-roll').disabled = true;
                 document.getElementById('b-buy').disabled = true;
                 document.getElementById('b-pass').disabled = true;
-                document.getElementById('b-trade').disabled = true;
+                document.getElementById('b-trade').disabled = false; 
                 document.getElementById('b-pass').innerText = "HIPOTEQUE!";
-                if(document.getElementById('inv-modal').style.display !== 'flex') {
+                if(document.getElementById('inv-modal').style.display !== 'flex' && document.getElementById('trade-modal').style.display !== 'flex') {
                     ui.toggleInv();
-                    ui.toast("DÍVIDA! HIPOTEQUE BENS!");
+                    ui.toast("DÍVIDA! HIPOTEQUE OU VENDA BENS!");
                 }
             } else {
                 document.getElementById('b-pass').innerText = "PASSAR";
-                document.getElementById('b-trade').disabled = rolled && !doubles; // Só negocia no seu turno
+                document.getElementById('b-trade').disabled = rolled && !doubles; 
             }
             
             const btnCard = document.getElementById('b-card');
@@ -700,6 +735,14 @@ const game = {
         ui.dice(d1,d2); await sleep(1500);
         
         if(p.jailed){
+             // AI LOGIC: USE CARD IF HAS IT
+             if(turn !== 0 && p.hasJailCard) {
+                 p.jailed=false; p.jailAttempts=0; p.hasJailCard=false; p.jailTurns=0;
+                 ui.toast("CPU USOU HABEAS CORPUS!"); play('good');
+                 await game.move(turn, d1+d2); rolled=true;
+                 setTimeout(game.pass, 1500); return;
+             }
+             
              p.jailTurns++; 
              if(p.jailTurns > 3) {
                  p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
@@ -828,6 +871,7 @@ const game = {
         if(c.act==='all') { players.forEach((pl,i)=>{if(i!==turn && pl.active){ pl.money-=50; p.money+=50; }}); play('cash'); }
         if(c.act==='back') { p.pos -= 3; ui.updatePositions(); game.land(turn); return; }
         if(c.act==='skip') { p.skippedTurn = true; }
+        if(c.act==='getjail') { p.hasJailCard = true; ui.toast("Carta guardada!"); }
         if(c.act==='repairs') { 
             let cost = 0; props.forEach(pr=>{ if(pr && pr.owner===turn){ cost += pr.level===5?115 : pr.level*40; }});
             p.money -= cost; ui.toast(`REPAROS: -$${cost}`); play('bad');
@@ -972,36 +1016,31 @@ const game = {
         const bot = players[botId];
         const wantedProp = BD[getIndex];
         
-        // 1. Calculate Value of Offer (Money + Properties)
         let offerValue = moneyOffer;
         giveIndices.forEach(idx => {
             const s = BD[idx];
-            // If this completes a set for the bot -> HIGH VALUE
             const groupColor = s.g;
             const othersNeeded = BD.map((b,i)=>b.g===groupColor && i!==idx ? i:-1).filter(i=>i!==-1);
             const botHasAllOthers = othersNeeded.every(i=>props[i] && props[i].owner===botId);
             
-            if(botHasAllOthers) offerValue += s.p * 2.5; // Bot wants this badly
+            if(botHasAllOthers) offerValue += s.p * 2.5; 
             else offerValue += s.p;
         });
         
-        // 2. Calculate Value of What Bot is Giving
         let giveValue = wantedProp.p;
         const groupColor = wantedProp.g;
         const othersInGroup = BD.map((b,i)=>b.g===groupColor && i!==getIndex ? i:-1).filter(i=>i!==-1);
         const botHasOthers = othersInGroup.some(i=>props[i] && props[i].owner===botId);
         const botHasMonopoly = othersInGroup.every(i=>props[i] && props[i].owner===botId);
         
-        if(botHasMonopoly) giveValue *= 5; // Breaking monopoly? NO WAY (or very expensive)
-        else if(botHasOthers) giveValue *= 1.5; // Breaking a potential set?
+        if(botHasMonopoly) giveValue *= 5; 
+        else if(botHasOthers) giveValue *= 1.5; 
         
-        // 3. Desperation Factor
-        if(bot.money < 100) offerValue *= 1.2; // Bot needs cash
+        if(bot.money < 100) offerValue *= 1.2; 
         
         if(offerValue >= giveValue) {
             ui.toast("CPU ACEITOU!");
             play('cash');
-            // Execute Trade
             players[0].money -= moneyOffer;
             bot.money += moneyOffer;
             props[getIndex].owner = 0;
