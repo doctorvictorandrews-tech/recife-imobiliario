@@ -3,15 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: Versão V9 (Final)</title>
+    <title>Recife Imobiliário: V10 Final</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        /* --- CSS BASE --- */
         :root { --wood: #5d4037; --paper: #fff8e1; --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d; --c-dark: #263238; --board-bg: #c5e1a5; --space-bg: #ffffff; --border-col: #1a1a1a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Nunito', sans-serif; background: linear-gradient(120deg, #1565c0, #fbc02d, #c62828, #1565c0); background-size: 400% 400%; animation: frevoBG 15s ease infinite; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        body { 
+            margin: 0; font-family: 'Nunito', sans-serif; 
+            background: linear-gradient(120deg, #1565c0, #fbc02d, #c62828, #1565c0);
+            background-size: 400% 400%;
+            animation: frevoBG 15s ease infinite;
+            height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
+        }
         @keyframes frevoBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
         /* FX */
@@ -31,17 +40,19 @@
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
         .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #01579b; }
+
         .player-list { list-style: none; padding: 0; margin: 20px 0; max-height: 200px; overflow-y: auto; text-align: left; }
         .player-li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 800; align-items: center; }
         .player-li.ready { background: #c8e6c9; border: 2px solid var(--c-green); }
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
-        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 10px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; transition: 0.2s; }
+        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 10px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; position: relative; transition: 0.2s; }
         .char-opt.selected { border-color: var(--c-blue); background: #e3f2fd; transform: scale(1.1); z-index: 10; }
         .char-opt.taken { opacity: 0.4; pointer-events: none; filter: grayscale(1); background: #cfd8dc; }
 
-        /* LAYOUT JOGO */
+        /* JOGO LAYOUT */
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; flex-direction: column; }
         #game-layout.active { display: flex; }
+
         #board-area { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); flex: 1; padding: 5px; }
         #board-container { position: relative; width: 1000px; height: 1000px; transform-origin: center center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
         #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); }
@@ -114,7 +125,7 @@
         /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
         #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
-        .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
+        .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 11000; position:relative; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
@@ -334,7 +345,6 @@
 </div>
 
 <script>
-// --- DADOS ---
 const CHARS=[{id:'rt',i:'💅',n:'A Ratona'},{id:'as',i:'🗿',n:'Bilola'},{id:'bt',i:'🛶',n:'Celta'},{id:'c',i:'🦀',n:'Caranguejo'},{id:'s',i:'🦈',n:'Tubarão'},{id:'u',i:'☂️',n:'Sombrinha'},{id:'pd',i:'🐀',n:'Gabiru'},{id:'bb',i:'🌽',n:'Milho'},{id:'gl',i:'🐔',n:'Galo'},{id:'brt',i:'🚌',n:'BRT'},{id:'bdr',i:'🍥',n:'Bolo Rolo'},{id:'lu',i:'🐻',n:'La Ursa'},{id:'hmn',i:'🎩',n:'Meia-Noite'},{id:'rp',i:'🚔',n:'Rádio P.'},{id:'srr',i:'🐚',n:'Sururu'},{id:'and',i:'😎',n:'Anderson'}];
 const BD=[
     {t:'st',n:'MARCO ZERO',i:'🚩'},{t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',i:'💸'},
@@ -381,11 +391,12 @@ function resizeBoard() {
     const area = document.getElementById('board-area');
     if(!el || !area) return;
     
-    // Zoom seguro para mobile
+    // Zoom seguro para mobile e desktop
     let scale;
     if(window.innerWidth < 900) {
+        // Mobile: 1000px base com scale down para width da tela
         const size = Math.min(area.offsetWidth, area.offsetHeight) * 0.98;
-        el.style.width = '1000px'; el.style.height = '1000px'; // Base reference
+        el.style.width = '1000px'; el.style.height = '1000px'; 
         scale = size / 1000;
     } else {
         el.style.width = '1300px'; el.style.height = '1000px';
@@ -481,7 +492,6 @@ const gameHost = {
         if(gameState.players.every(p => p.confirmed) && gameState.players.length>0) {
             gameState.phase = 'GAME'; gameState.players.sort(() => Math.random() - 0.5);
             gameState.turnIdx = 0; gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false; gameState.canDraw = false;
-            // Delay to ensure clients have state
             setTimeout(() => { net.broadcastState(); net.broadcastState(); }, 500); 
         }
     },
@@ -848,6 +858,8 @@ const ui = {
     },
     updateHUD: () => {
         const curP = gameState.players[gameState.turnIdx];
+        if (!curP) return; // Proteção contra crash se a lista não estiver pronta
+        
         const me = gameState.players.find(p => p.id === myId);
         if(!me || !me.active) { document.getElementById('turn-display').innerText="FALIDO"; return; }
 
@@ -1027,6 +1039,12 @@ const tradeUI = {
         net.sendTradeProposal(offer); tradeUI.close(); ui.toast("Proposta enviada!");
     }
 };
+
+// EXPOSE TO WINDOW FOR INLINE HANDLERS
+window.ui = ui;
+window.game = game;
+window.net = net;
+window.tradeUI = tradeUI;
 </script>
 </body>
 </html>
