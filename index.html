@@ -2,14 +2,19 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V8 Finalíssima</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Recife Imobiliário: V7 Fixada</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* --- CSS --- */
-        :root { --wood: #5d4037; --paper: #fff8e1; --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d; --c-dark: #263238; --board-bg: #c5e1a5; --space-bg: #ffffff; --border-col: #1a1a1a; }
+        /* --- CSS GERAL --- */
+        :root {
+            --wood: #5d4037; --paper: #fff8e1;
+            --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
+            --c-dark: #263238; --board-bg: #c5e1a5; 
+            --space-bg: #ffffff; --border-col: #1a1a1a;
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
@@ -17,124 +22,93 @@
             background: linear-gradient(120deg, #1565c0, #fbc02d, #c62828, #1565c0);
             background-size: 400% 400%;
             animation: frevoBG 15s ease infinite;
-            height: 100dvh; width: 100vw; overflow: hidden; display: flex; flex-direction: column;
+            height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
         }
         @keyframes frevoBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
-        /* FX */
-        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
-        .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
-        .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
-        @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
+        /* FX LAYER ATUALIZADO */
+        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        
+        /* Tubarão Mordida */
+        .shark-bite-anim { position: absolute; font-size: 20rem; animation: biteSnap 0.5s ease-in-out; display:none; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+        @keyframes biteSnap { 0%{transform:scale(0) rotate(20deg); opacity:0;} 50%{transform:scale(1.2) rotate(-10deg); opacity:1;} 100%{transform:scale(1) rotate(0deg); opacity:0;} }
+        
+        /* Proteção Ratão */
+        .ratao-shield-anim { position: absolute; display:none; flex-direction: column; align-items: center; animation: shieldPop 3s forwards; }
+        .rs-icon { font-size: 10rem; }
+        .rs-text { font-family: 'Titan One'; color: #fff; font-size: 2rem; -webkit-text-stroke: 1px #000; text-shadow: 0 4px 0 #000; margin-top: -20px; text-align: center; }
+        @keyframes shieldPop { 0%{transform:scale(0);} 20%{transform:scale(1.2);} 30%{transform:scale(1);} 80%{opacity:1;} 100%{opacity:0; transform:translateY(-50px);} }
+
+        /* Bloqueio (Escudo Quebrando) */
+        .shield-break-anim { position: absolute; font-size: 15rem; display:none; animation: shieldBreak 2s forwards; }
+        @keyframes shieldBreak { 0%{transform:scale(1); opacity:1;} 50%{transform:scale(1.2) rotate(10deg); filter:grayscale(1);} 100%{transform:scale(0); opacity:0;} }
+
+        /* Agamenon Trânsito */
         .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
-        /* MODAIS */
+        /* BK Cupom */
+        .bk-anim { position: absolute; display:none; flex-direction: column; align-items: center; animation: popUp 3s forwards; z-index: 8600; }
+        .bk-ticket { background: #ffeb3b; border: 4px solid #d32f2f; padding: 20px; transform: rotate(-5deg); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; border-radius: 10px; }
+        @keyframes popUp { 0%{transform:scale(0) rotate(0deg);} 20%{transform:scale(1.1) rotate(-5deg);} 100%{transform:scale(1) rotate(-5deg); opacity:0; top: -100px;} }
+
+        /* MODAIS DE SISTEMA */
         #screen-login, #screen-lobby, #screen-char, #screen-end, #screen-trade { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
         #screen-lobby, #screen-char, #screen-end, #screen-trade { display: none; }
+
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
         .inp-box { width: 100%; padding: 15px; margin: 10px 0; border: 3px solid var(--c-dark); border-radius: 10px; font-size: 1.2rem; font-family: 'Nunito'; font-weight: 800; text-align: center; }
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
         .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #01579b; }
 
-        .player-list { list-style: none; padding: 0; margin: 20px 0; max-height: 200px; overflow-y: auto; text-align: left; }
-        .player-li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 800; align-items: center; }
-        .player-li.ready { background: #c8e6c9; border: 2px solid var(--c-green); }
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
-        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 10px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; position: relative; transition: 0.2s; }
-        .char-opt.selected { border-color: var(--c-blue); background: #e3f2fd; transform: scale(1.1); z-index: 10; }
-        .char-opt.taken { opacity: 0.4; pointer-events: none; filter: grayscale(1); background: #cfd8dc; }
-
         /* JOGO LAYOUT */
-        #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; flex-direction: column; }
+        #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; }
         #game-layout.active { display: flex; }
 
-        /* TABULEIRO - AJUSTE DE TAMANHO */
-        #board-area { 
-            position: relative; 
-            overflow: hidden; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background: rgba(0,0,0,0.1); 
-            flex: 1;
-            width: 100%;
-        }
-        
-        #board-container { 
-            position: absolute;
-            width: 1000px; 
-            height: 1000px; 
-            transform-origin: center center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        #board-area { position: relative; overflow: auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); flex: 1; min-height: 0; padding: 20px; }
+        #board-container { position: relative; transform-origin: center center; }
+        #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; }
+
+        @media (max-width: 899px) {
+            #game-layout { flex-direction: column; }
+            #board-container { width: 900px; height: 1250px; }
+            #hud-panel { width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark); }
+            .hud-content, .desktop-only { display: none; }
+            .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
+            #action-btns { display: flex; gap: 5px; width: 100%; height: 60px; }
+            #b-roll { flex: 1.5; font-size: 1.3rem; }
+            #b-buy, #b-pass { flex: 1; font-size: 0.9rem; line-height: 1.1; }
+            .btn-inv { height: 45px; font-size: 1rem; }
         }
 
-        #board { 
-            width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            background: var(--board-bg); 
-            border: 4px solid var(--border-col); 
-        }
-
-        #hud-panel { 
-            background: #fff; 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 5000; 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2); 
-            flex-shrink: 0; 
-            width: 100%; 
-            border-top: 4px solid var(--c-dark); 
-        }
-
-        /* MOBILE (Default) */
-        .hud-content, .desktop-only { display: none; }
-        .hud-top-bar { background: #fff; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; }
-        #action-btns { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: #eee; justify-content: center; }
-        #b-roll, #b-buy, #b-pass { flex: 1 1 30%; height: 55px; font-size: 0.9rem; padding: 0; }
-        .btn-inv { flex: 1 1 100%; height: 40px; font-size: 1rem; background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
-
-        /* DESKTOP */
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
-            #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); border-top: none; padding: 0; }
-            #board-area { background: rgba(0,0,0,0.2); }
-            .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; }
-            .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; display: flex !important;}
+            #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; }
+            #board-container { width: 1300px; height: 1000px; }
+            .hud-top-bar { order: -1; padding: 15px; background: #eceff1; border-bottom: 2px dashed #cfd8dc; display: flex; justify-content: space-between; align-items: center; }
+            .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; }
-            #action-btns { flex-direction: column; flex-wrap: nowrap; background: transparent; }
-            #b-roll, #b-buy, #b-pass, .btn-inv { flex: auto; width: 100%; height: auto; font-size: 1.3rem; padding: 18px; }
+            #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+            .btn-game { padding: 18px; font-size: 1.3rem; } 
             .btn-inv { display: none; }
         }
 
-        /* DESIGN DO TABULEIRO (CORRIGIDO PARA NÃO VAZAR) */
-        .space { 
-            background: var(--space-bg); 
-            border: 1px solid var(--border-col); 
-            position: relative; 
-            display: flex; 
-            flex-direction: column; 
-            font-size: 0.55rem; /* Fonte menor para caber */
-            font-weight: 800; 
-            color: #000; 
-            overflow: hidden; /* Corta o excesso */
-        }
-        @media (min-width:900px) { .space { font-size: 0.75rem; } }
-
+        /* SPACE DESIGN */
+        .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; }
         .rot-left { transform: rotate(90deg); } .rot-top { transform: rotate(180deg); } .rot-right { transform: rotate(-90deg); }
-        .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 1px; }
-        .color-strip { height: 18%; width: 100%; border-bottom: 2px solid #000; }
-        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; line-height: 1.0; font-weight: 900; padding:0 1px; word-break: break-word; }
-        .sp-price { font-family: 'Nunito'; font-weight: 700; padding-bottom: 2px; font-size: 0.8rem; }
-        .sp-icon { font-size: 2rem; display: flex; align-items: center; justify-content: center; height: 100%; }
-        @media (min-width:900px) { .sp-icon { font-size: 2.5rem; } }
+        .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 2px; }
+        .color-strip { height: 20%; width: 100%; border-bottom: 2px solid #000; }
+        .sp-name { flex: 1; display: flex; align-items: center; justify-content: center; line-height: 1.1; font-weight: 900; padding:0 2px; }
+        .sp-price { font-family: 'Nunito'; font-weight: 700; padding-bottom: 5px; font-size: 0.85rem; }
+        .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
         .space.owned { border: 4px solid !important; z-index: 5; }
 
-        /* ASSETS */
+        /* CENTER HUB */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: transparent; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .brennand-tower { position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(10px 10px 20px rgba(0,0,0,0.5)); transform: scale(1.5); }
         .bt-head { font-size: 5rem; line-height: 0.6; z-index: 2; color: #546e7a; text-shadow: 2px 2px 0 #000; }
@@ -142,6 +116,7 @@
         .bt-ring { width: 100%; height: 5px; background: #000; }
         .bt-base { width: 100px; height: 40px; background: #5d4037; border: 3px solid #000; border-radius: 5px; margin-top: -5px; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 0.6rem; font-family:'Titan One'; }
 
+        /* DECKS */
         .deck { position: absolute; width: 110px; height: 150px; border-radius: 15px; cursor: pointer; box-shadow: 0 10px 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1px rgba(0,0,0,0.3); pointer-events: auto; border: 2px solid rgba(255,255,255,0.4); transition: transform 0.1s; }
         .deck:active { transform: translateY(4px); box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
         .deck.chance { top: 20%; left: 15%; background: linear-gradient(135deg, #ab47bc, #7b1fa2); transform: rotate(-5deg); }
@@ -150,12 +125,40 @@
         .deck.highlight { animation: pulseDeck 1s infinite; border-color: #ffeb3b; box-shadow: 0 0 40px #ffeb3b; z-index: 9000; }
         @keyframes pulseDeck { 0%{transform:scale(1);} 50%{transform:scale(1.1);} 100%{transform:scale(1);} }
 
-        .token { width: 40px; height: 40px; position: absolute; z-index: 50; font-size: 2.5rem; text-align: center; line-height: 40px; transition: top 0.25s linear, left 0.25s linear; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
-        @media (min-width:900px) { .token { width: 50px; height: 50px; font-size: 3rem; line-height: 50px; } }
+        /* TOKENS */
+        .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: top 0.25s linear, left 0.25s linear; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
+        .protection-badge { position:absolute; top:-10px; right:-10px; width:20px; height:20px; background:#fff; border-radius:50%; font-size:1rem; border:2px solid gold; z-index:51; display:flex; align-items:center; justify-content:center; }
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
-        .house-3d { width: 10px; height: 10px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
-        .hotel-3d { width: 16px; height: 16px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
-        .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 1.5rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
+        .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
+        .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
+        .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
+
+        /* UI ELEMENTS */
+        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
+        .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        .money-display.debt { color: #d32f2f; animation: pulseRed 1s infinite; }
+        @keyframes pulseRed { 0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1} }
+        
+        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+        .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
+        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
+        .btn-buy { background: var(--c-green); }
+        .btn-pass { background: var(--c-red); }
+        .btn-trade { background: #7b1fa2; color: #fff; }
+        .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
+
+        .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
+        .p-stat.active-turn { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
+        .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; background: #ffebee; }
+
+        .player-list { list-style: none; padding: 0; margin: 20px 0; max-height: 200px; overflow-y: auto; text-align: left; }
+        .player-li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 800; align-items: center; }
+        .player-li.ready { background: #c8e6c9; border: 2px solid var(--c-green); }
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
+        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
+        .char-opt.selected { border-color: var(--c-blue); background: #e3f2fd; transform: scale(1.1); z-index: 10; }
+        .char-opt.taken { opacity: 0.4; pointer-events: none; filter: grayscale(1); background: #cfd8dc; }
 
         /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
@@ -192,13 +195,25 @@
 <body>
 
 <div id="fx-layer">
-    <div class="shark-anim">🦈</div>
-    <div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div>
+    <div class="shark-bite-anim">🦈</div>
+    <div class="ratao-shield-anim">
+        <div class="rs-icon">🐭🛡️</div>
+        <div class="rs-text">TUBARÃO RATÃO!</div>
+    </div>
+    <div class="shield-break-anim">🛡️💥</div>
+    <div class="bk-anim">
+        <div class="bk-ticket">
+            <h2 style="margin:0">🍔 BK 🍔</h2>
+            <p style="font-weight:900; font-size:2rem; margin:0">$50</p>
+            <small>CUPOM VÁLIDO!</small>
+        </div>
+    </div>
+    <div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div><small>PERDE A VEZ!</small></div>
 </div>
 
 <div id="screen-login">
     <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE ONLINE<br><span style="font-size:1rem; color:#000;">MULTIPLAYER</span></h1>
+        <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE ONLINE<br><span style="font-size:1rem; color:#000;">MULTIPLAYER V7</span></h1>
         <input type="text" id="my-name" class="inp-box" placeholder="Seu Nome" maxlength="10">
         <hr style="border:1px dashed #ccc; margin: 15px 0;">
         <button class="btn-main" onclick="net.initAndCreate()">CRIAR SALA</button>
@@ -237,7 +252,7 @@
 <div id="screen-trade">
     <div class="handshake-anim">🤝</div>
     <div class="trade-board">
-        <div class="trade-header">NEGOCIAÇÃO</div>
+        <div class="trade-header" style="background:var(--c-dark); color:#fff; padding:10px; text-align:center; font-family:'Titan One';">NEGOCIAÇÃO</div>
         <div style="padding:10px; text-align:center; background:#fff;">
             <label style="font-weight:bold;">COM QUEM?</label>
             <select id="trade-target" class="inp-box" style="padding:5px; width:auto;" onchange="tradeUI.updateLists()"></select>
@@ -290,11 +305,13 @@
         </div>
 
         <div class="hud-content">
-            <div id="players-scroll"></div>
+            <div id="players-scroll">
+                <div id="players-hud-list"></div>
+            </div>
             <div id="desktop-props-container"></div>
         </div>
 
-        <div id="action-btns">
+        <div id="action-btns" style="padding:10px;">
             <button id="b-roll" class="btn-game btn-roll" disabled onclick="net.sendAction('ROLL')">🎲 ROLAR DADOS</button>
             <div style="display:flex; gap:5px; width:100%;">
                 <button id="b-buy" class="btn-game btn-buy" style="flex:1;" disabled onclick="net.sendAction('BUY')">COMPRAR</button>
@@ -382,7 +399,6 @@
 </div>
 
 <script>
-// --- CONSTANTES ---
 const CHARS=[{id:'rt',i:'💅',n:'A Ratona'},{id:'as',i:'🗿',n:'Bilola'},{id:'bt',i:'🛶',n:'Celta'},{id:'c',i:'🦀',n:'Caranguejo'},{id:'s',i:'🦈',n:'Tubarão'},{id:'u',i:'☂️',n:'Sombrinha'},{id:'pd',i:'🐀',n:'Gabiru'},{id:'bb',i:'🌽',n:'Milho'},{id:'gl',i:'🐔',n:'Galo'},{id:'brt',i:'🚌',n:'BRT'},{id:'bdr',i:'🍥',n:'Bolo Rolo'},{id:'lu',i:'🐻',n:'La Ursa'},{id:'hmn',i:'🎩',n:'Meia-Noite'},{id:'rp',i:'🚔',n:'Rádio P.'},{id:'srr',i:'🐚',n:'Sururu'},{id:'and',i:'😎',n:'Anderson'}];
 const BD=[
     {t:'st',n:'MARCO ZERO',i:'🚩'},{t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',i:'💸'},
@@ -419,7 +435,9 @@ const SFX = {
     cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
     win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
     dice: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'),
-    bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3')
+    bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'),
+    bite: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'), // Placeholder
+    horn: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3') // Placeholder
 };
 const play = (k) => { try { SFX[k].volume=0.5; SFX[k].currentTime=0; SFX[k].play().catch(()=>{}); } catch(e){} };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -428,19 +446,7 @@ function resizeBoard() {
     const el = document.getElementById('board-container');
     const area = document.getElementById('board-area');
     if(!el || !area) return;
-    
-    // Zoom seguro para mobile
-    let scale;
-    if(window.innerWidth < 900) {
-        // Mobile: Tenta maximizar a largura (98%) mantendo a proporção quadrada
-        const size = Math.min(area.offsetWidth, area.offsetHeight) * 0.98;
-        // Ajuste manual da escala se necessário, ou usar width fixo
-        el.style.width = '1000px'; el.style.height = '1000px'; // Base reference
-        scale = size / 1000;
-    } else {
-        el.style.width = '1300px'; el.style.height = '1000px';
-        scale = Math.min(area.offsetWidth / 1300, area.offsetHeight / 1000) * 0.95;
-    }
+    const scale = Math.min(area.offsetWidth, area.offsetHeight) * 0.95 / 950; 
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
@@ -454,7 +460,7 @@ const net = {
         peer = new Peer(null, { debug: 1 });
         peer.on('open', (id) => {
             myId = id;
-            gameState.players.push({ id: myId, name: myName, char: null, confirmed: false, money: 500, pos: 0, active: true, color: '#f00', protection: false, doubles: 0, jailed: false, jailAttempts: 0 });
+            gameState.players.push({ id: myId, name: myName, char: null, confirmed: false, money: 1500, pos: 0, active: true, color: '#f00', sharkProtection: false, stuckInTraffic: false, doubles: 0, jailed: false, jailAttempts: 0 });
             gameState.nextGalo = 20 + Math.floor(Math.random()*11);
             navigator.clipboard.writeText(id);
             ui.toLobby(id);
@@ -481,7 +487,7 @@ const net = {
     handleData: (data, senderId) => {
         if(isHost) {
             if(data.type === 'JOIN' && gameState.phase === 'LOBBY') {
-                gameState.players.push({ id: senderId, name: data.name, char: null, confirmed: false, money: 500, pos: 0, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16), protection: false, doubles: 0, jailed: false, jailAttempts: 0 });
+                gameState.players.push({ id: senderId, name: data.name, char: null, confirmed: false, money: 1500, pos: 0, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16), sharkProtection: false, stuckInTraffic: false, doubles: 0, jailed: false, jailAttempts: 0 });
                 net.broadcastState();
             }
             if(data.type === 'SELECT_CHAR') { const p = gameState.players.find(x=>x.id===senderId); if(p) { p.char = data.charId; net.broadcastState(); } }
@@ -531,13 +537,7 @@ const gameHost = {
         if(gameState.players.every(p => p.confirmed) && gameState.players.length>0) {
             gameState.phase = 'GAME'; gameState.players.sort(() => Math.random() - 0.5);
             gameState.turnIdx = 0; gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false; gameState.canDraw = false;
-            
-            // GARANTIR QUE OS CLIENTES RECEBAM O ESTADO DE JOGO
-            setTimeout(() => {
-                 net.broadcastState();
-                 // Força um update para garantir que IDs batam
-                 net.broadcastState();
-            }, 500); 
+            net.broadcastState();
         }
     },
     handleRoll: (pid) => {
@@ -549,15 +549,13 @@ const gameHost = {
         gameState.lastDice = [d1, d2];
         const isDouble = (d1 === d2);
 
-        // JAILED LOGIC
         if(p.jailed) {
             if(isDouble) {
                 p.jailed = false; p.jailAttempts = 0;
                 net.broadcastEvent('FX', {anim:'good', msg:'Saiu da cadeia com duplos!'});
-                // Continua o turno para andar
             } else {
                 p.jailAttempts++;
-                net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: p.pos }); // Só mostra dados
+                net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: p.pos }); 
                 if(p.jailAttempts >= 3) {
                     net.broadcastEvent('FX', {anim:'bad', msg:'Não conseguiu sair.'});
                     gameState.canRoll = false; gameState.canPass = true;
@@ -572,57 +570,87 @@ const gameHost = {
             }
         }
 
-        // REGULAR ROLL
         if(isDouble) p.doubles++; else p.doubles = 0;
-        
         if(p.doubles === 3) {
             p.pos = 10; p.jailed = true; p.doubles = 0;
             gameState.canRoll = false; gameState.canPass = true;
             net.broadcastEvent('FX', {anim:'bad', msg:'3 Duplos! Cadeia!'});
-            net.broadcastState();
-            return;
+            net.broadcastState(); return;
         }
 
         const steps = d1+d2;
         const oldPos = p.pos;
         const newPos = (p.pos + steps) % 40;
-        
-        // SUSPENSE: Manda dados e posição, mas só resolve depois
         net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: newPos });
         
+        // --- DELAY AUMENTADO PARA SINCRONIA ---
         setTimeout(() => {
             p.pos = newPos;
             gameState.totalTurns++;
 
-            // MARCO ZERO & GALO
             if(newPos < oldPos) {
                 p.money += 200;
                 if(gameState.totalTurns >= gameState.nextGalo) {
-                    p.money += 200; // Bônus do Galo
+                    p.money += 200; 
                     gameState.nextGalo = gameState.totalTurns + 20 + Math.floor(Math.random()*11);
-                    net.broadcastEvent('FX', {anim:'good', msg:'O GALO PASSOU! +$200 (Só para você)'});
+                    net.broadcastEvent('FX', {anim:'good', msg:'O GALO PASSOU! +$200'});
                 } else {
                     net.broadcastEvent('FX', {anim:'cash', msg:'Passou no Marco Zero! +$200'});
                 }
             }
 
             gameHost.resolveLanding(p, d1, d2);
-        }, 4000); // Tempo da animação dos dados + movimento
+        }, 4500); // 4.5s (seguro para animação)
     },
     resolveLanding: (p, d1, d2) => {
         const s = BD[p.pos];
         const pr = gameState.props[p.pos];
+        const isDouble = (d1 === d2);
+        let forceEndTurn = false;
         
-        // EVENTOS DO TABULEIRO
-        if(s.n === "Agamenon") { if(Math.random()<0.5) { net.broadcastEvent('FX',{anim:'traffic'}); p.money-=50; } }
-        if((s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina") && !p.protection) { if(Math.random()<0.33) { net.broadcastEvent('FX',{anim:'shark'}); p.money-=100; } }
+        // --- EVENTO AGAMENON ---
+        if(s.n === "Agamenon") {
+            const evRoll = Math.floor(Math.random()*12)+1; // 1 a 12
+            if(evRoll <= 6) { // 1-6 Trânsito
+                if(isDouble) {
+                    forceEndTurn = true; // Perde o turno atual (extra dos dados)
+                    net.broadcastEvent('FX',{anim:'traffic', msg:'Preso no trânsito! (Perdeu o turno)'});
+                } else {
+                    p.stuckInTraffic = true; // Perde o próximo
+                    net.broadcastEvent('FX',{anim:'traffic', msg:'Preso no trânsito! (Perde a próxima)'});
+                }
+            } else { // 7-12 BK
+                p.money += 50;
+                net.broadcastEvent('FX',{anim:'bk', msg:'Ganhou Cupom BK! +$50'});
+            }
+        }
+
+        // --- EVENTO TUBARÃO ---
+        if(s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina") {
+            const evRoll = Math.floor(Math.random()*12)+1; // 1 a 12
+            if(evRoll <= 6) { // 1-6 Ataque
+                if(p.sharkProtection) {
+                    p.sharkProtection = false;
+                    net.broadcastEvent('FX',{anim:'shield_break', msg:'O Ratão te salvou! (Escudo quebrou)'});
+                } else {
+                    p.money -= 100;
+                    net.broadcastEvent('FX',{anim:'shark', msg:'MORDIDA DE TUBARÃO! -$100'});
+                }
+            } else { // 7-12 Proteção
+                if(!p.sharkProtection) {
+                    p.sharkProtection = true;
+                    net.broadcastEvent('FX',{anim:'shield', msg:'Ganhou Proteção do Ratão!'});
+                } else {
+                    net.broadcastEvent('FX',{anim:'good', msg:'O mar está calmo...'});
+                }
+            }
+        }
+
         if(s.t === 'tx') { const tax = Math.floor(p.money * 0.10); p.money -= tax; net.broadcastEvent('FX', {anim:'bad', msg:`IPTU! Pagou $${tax}`}); }
         if(s.t === 'gj') { p.pos=10; p.jailed=true; net.broadcastEvent('FX', {anim:'bad', msg:'VÁ PARA A CADEIA!'}); }
 
-        // HABILITA CARTA
         if(s.t === 'ch' || s.t === 'rev') gameState.canDraw = true; else gameState.canDraw = false;
 
-        // COBRANÇA DE ALUGUEL
         if((s.t==='pr'||s.t==='rr'||s.t==='ut') && pr && pr.ownerId !== p.id && !pr.loan) {
             let rent = 0;
             if(s.t==='pr') rent = s.r[pr.level];
@@ -630,19 +658,22 @@ const gameHost = {
                 const count = gameState.props.filter((x,i)=>x && x.ownerId===pr.ownerId && BD[i].t==='rr').length;
                 rent = 25 * Math.pow(2, count-1);
             }
-            if(s.t==='ut') rent = (d1+d2) * 4; // Simplificado
-            
+            if(s.t==='ut') rent = (d1+d2) * 4; 
             p.money -= rent;
             const owner = gameState.players.find(x=>x.id===pr.ownerId);
             if(owner) owner.money += rent;
             net.broadcastEvent('FX', {anim:'cash', msg:`Pagou aluguel $${rent}`});
         }
 
-        const isDouble = (d1 === d2);
-        gameState.canRoll = isDouble; 
-        gameState.canPass = !isDouble;
-        gameState.canBuy = (s.t==='pr' || s.t==='rr' || s.t==='ut') && !pr && p.money >= s.p;
+        if(forceEndTurn) {
+            gameState.canRoll = false; 
+            gameState.canPass = true;
+        } else {
+            gameState.canRoll = isDouble; 
+            gameState.canPass = !isDouble;
+        }
         
+        gameState.canBuy = (s.t==='pr' || s.t==='rr' || s.t==='ut') && !pr && p.money >= s.p;
         net.broadcastState();
     },
     handleBuy: (pid) => {
@@ -659,12 +690,12 @@ const gameHost = {
     handlePass: (pid) => {
         if(gameState.players[gameState.turnIdx].id !== pid || !gameState.canPass) return;
         
-        // LÓGICA DE HIPOTECA VENCIDA
+        // CHECK LOANS
         gameState.props.forEach((pr, i) => {
             if(pr && pr.ownerId === pid && pr.loan) {
                 pr.loan.turns--;
                 if(pr.loan.turns <= 0) {
-                    gameState.props[i] = null; // Perdeu a propriedade
+                    gameState.props[i] = null; // Lost property
                     net.broadcastEvent('FX', {anim:'bad', msg:`Perdeu ${BD[i].n} (Hipoteca Vencida)`});
                 }
             }
@@ -674,21 +705,30 @@ const gameHost = {
         const curP = gameState.players[gameState.turnIdx];
         const assets = gameState.props.filter(pr => pr && pr.ownerId === curP.id);
         if(curP.money < 0 && assets.length === 0) {
-            curP.active = false;
-            curP.money = 0;
+            curP.active = false; curP.money = 0;
             net.broadcastEvent('FX', {anim:'bad', msg:`${curP.name} FALIU!`});
         }
         
-        // CHECK WIN
         const actives = gameState.players.filter(p=>p.active);
-        if(actives.length === 1) {
-            net.broadcastEvent('WIN', {name: actives[0].name});
-            return;
-        }
+        if(actives.length === 1) { net.broadcastEvent('WIN', {name: actives[0].name}); return; }
 
         let loop=0;
-        do { gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length; loop++; } 
-        while(!gameState.players[gameState.turnIdx].active && loop < gameState.players.length);
+        let nextP;
+        do { 
+            gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length; 
+            nextP = gameState.players[gameState.turnIdx];
+            
+            // Lógica de Pular Turno (Agamenon)
+            if(nextP.active && nextP.stuckInTraffic) {
+                nextP.stuckInTraffic = false; // Limpa o status
+                net.broadcastEvent('FX', {anim:'traffic', msg:`${nextP.name} pulou a vez (Trânsito)`});
+                // Continua o loop para o próximo
+                continue; 
+            }
+            
+            loop++; 
+        } 
+        while((!nextP.active || nextP.stuckInTraffic) && loop < gameState.players.length * 2); // Safety break
         
         gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false; gameState.canDraw = false;
         net.broadcastState();
@@ -700,35 +740,22 @@ const gameHost = {
         const card = deck[Math.floor(Math.random()*deck.length)];
         net.broadcastEvent('EVENT_CARD', { ctype: type==='ch'?'sorte':'vixe', msg: card.txt });
         
-        // AÇÕES DAS CARTAS
-        if(card.act === 'jail') { p.pos = 10; p.jailed = true; }
-        else if(card.act === 'go_start') { p.pos = 0; p.money += 200; }
+        if(card.act === 'jail') { p.pos = 10; p.jailed = true; gameState.canPass = true; }
+        else if(card.act === 'go_start') { p.pos = 0; p.money += 200; gameState.canPass = true; }
         else if(card.act === 'pay_all') {
             gameState.players.forEach(pl => { if(pl.id !== pid && pl.active) { pl.money += 50; p.money -= 50; }});
+            gameState.canPass = true;
         }
-        else if(card.act === 'repairs') {
-            // Calcula custo: $40/casa, $115/hotel
-            let cost = 0;
-            gameState.props.forEach(pr => {
-                if(pr && pr.ownerId === pid) {
-                    if(pr.level === 5) cost += 115; else cost += pr.level * 40;
-                }
-            });
-            p.money -= cost;
-        }
-        else {
-            p.money += card.val;
-        }
+        else if(card.act === 'repairs') { p.money -= 100; gameState.canPass = true; }
+        else { p.money += card.val; gameState.canPass = true; }
         
         gameState.canDraw = false; 
-        gameState.canPass = true; // Cartas terminam o turno (regra simplificada)
         setTimeout(() => net.broadcastState(), 1000);
     },
     handleBuild: (pid, idx) => {
         const p = gameState.players.find(x=>x.id===pid);
         const s = BD[idx]; const pr = gameState.props[idx];
         if(!pr || pr.ownerId!==pid || s.t!=='pr' || pr.level >= 5) return;
-        // Monopoly Check
         const group = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1);
         const hasAll = group.every(i => gameState.props[i] && gameState.props[i].ownerId === pid);
         if(hasAll && p.money >= s.h) {
@@ -741,20 +768,17 @@ const gameHost = {
         const p = gameState.players.find(x=>x.id===pid);
         const s = BD[idx]; const pr = gameState.props[idx];
         if(pr && pr.ownerId===pid && !pr.loan) {
-            const mortgageValue = Math.floor(s.p * 0.8); // 80% do valor
-            p.money += mortgageValue;
-            pr.loan = { val: mortgageValue, turns: 5 }; // Prazo de 5 rodadas
+            p.money += Math.floor(s.p * 0.8);
+            pr.loan = { val: Math.floor(s.p * 0.8), turns: 5 };
             net.broadcastState();
         }
     },
     handlePayLoan: (pid, idx) => {
         const p = gameState.players.find(x=>x.id===pid);
         const pr = gameState.props[idx];
-        // Paga valor da hipoteca + 50% de juros
         const cost = Math.floor(pr.loan.val * 1.5); 
         if(pr && pr.ownerId===pid && pr.loan && p.money >= cost) {
-            p.money -= cost;
-            pr.loan = false;
+            p.money -= cost; pr.loan = false;
             net.broadcastState();
         }
     },
@@ -773,10 +797,22 @@ const gameHost = {
             if(acc) {
                 const p1 = gameState.players.find(x=>x.id===t.from);
                 const p2 = gameState.players.find(x=>x.id===t.to);
+                
+                // --- FIX: VALIDAÇÃO DE FUNDOS ---
+                if (p1.money < t.offerM) {
+                    net.broadcastEvent('FX', {anim:'bad', msg:'Negócio cancelado: Falta de fundos do ofertante!'});
+                    gameState.trade = null; net.broadcastState(); return;
+                }
+                if (p2.money < t.reqM) {
+                    net.broadcastEvent('FX', {anim:'bad', msg:'Negócio cancelado: Você não tem dinheiro suficiente!'});
+                    gameState.trade = null; net.broadcastState(); return;
+                }
+
                 p1.money = p1.money - t.offerM + t.reqM;
                 p2.money = p2.money + t.offerM - t.reqM;
                 t.offerP.forEach(idx => { if(gameState.props[idx]) gameState.props[idx].ownerId = t.to; });
                 t.reqP.forEach(idx => { if(gameState.props[idx]) gameState.props[idx].ownerId = t.from; });
+                net.broadcastEvent('FX', {anim:'good', msg:'Negócio Fechado!'});
             }
             gameState.trade = null; net.broadcastState();
         }
@@ -891,11 +927,7 @@ const ui = {
     forceTokenPos: (pid, pos) => {
         const el = document.getElementById(`tok_${pid}`);
         const cell = document.getElementById(`s${pos}`);
-        if(el && cell) { 
-            // Posicionamento ajustado para não sair da casa
-            el.style.left = (cell.offsetLeft + 5) + 'px'; 
-            el.style.top = (cell.offsetTop + 5) + 'px'; 
-        }
+        if(el && cell) { el.style.left = (cell.offsetLeft + 10) + 'px'; el.style.top = (cell.offsetTop + 10) + 'px'; }
     },
     updateTokens: () => {
         document.querySelectorAll('.token').forEach(e=>e.remove());
@@ -906,7 +938,8 @@ const ui = {
             t.className='token';
             t.id = `tok_${p.id}`;
             const charObj = CHARS.find(c=>c.id===p.char);
-            t.innerHTML = charObj ? charObj.i : '👤';
+            t.innerHTML = `${charObj ? charObj.i : '👤'}`;
+            if(p.sharkProtection) t.innerHTML += `<div class="protection-badge">🐭</div>`;
             b.appendChild(t);
             ui.forceTokenPos(p.id, p.pos);
         });
@@ -927,10 +960,8 @@ const ui = {
     },
     updateHUD: () => {
         const curP = gameState.players[gameState.turnIdx];
-        if (!curP) return; // Proteção contra crash se a lista não estiver pronta
-        
         const me = gameState.players.find(p => p.id === myId);
-        if(!me || !me.active) { document.getElementById('turn-display').innerText="FALIDO"; return; }
+        if(!me.active) { document.getElementById('turn-display').innerText="FALIDO"; return; }
 
         const turnTxt = `VEZ DE: ${curP.name.toUpperCase()}`;
         document.getElementById('turn-display').innerText = turnTxt;
@@ -941,7 +972,7 @@ const ui = {
         
         document.getElementById('players-hud-list').innerHTML = gameState.players.map((p,i) => {
             const charObj = CHARS.find(c=>c.id===p.char);
-            return `<div class="p-stat ${gameState.turnIdx===i?'active-turn':''} ${!p.active?'bankrupt':''}"><div>${charObj?charObj.i:''} ${p.name}</div><div>${p.active?'$'+p.money:'💀'}</div></div>`;
+            return `<div class="p-stat ${gameState.turnIdx===i?'active-turn':''} ${!p.active?'bankrupt':''}"><div>${charObj?charObj.i:''} ${p.name} ${p.sharkProtection?'🐭':''}</div><div>${p.active?'$'+p.money:'💀'}</div></div>`;
         }).join('');
 
         const isMyTurn = (curP.id === myId);
@@ -966,6 +997,21 @@ const ui = {
             const s = BD[me.pos];
             if(s.t==='ch') document.getElementById('d-chance').classList.add('highlight');
             if(s.t==='rev') document.getElementById('d-reves').classList.add('highlight');
+        }
+    },
+    checkTrade: () => {
+        if(gameState.trade && gameState.trade.to === myId) {
+            document.getElementById('tp-msg').innerText = `${gameState.players.find(x=>x.id===gameState.trade.from).name} quer negociar!`;
+            document.getElementById('tp-give').innerHTML = `💰 $${gameState.trade.offerM}<br>` + gameState.trade.offerP.map(i=>BD[i].n).join(', ');
+            document.getElementById('tp-get').innerHTML = `💰 $${gameState.trade.reqM}<br>` + gameState.trade.reqP.map(i=>BD[i].n).join(', ');
+            document.getElementById('trade-proposal-modal').style.display='block';
+            document.getElementById('overlay-bg').style.display='block';
+            document.getElementById('tp-btns').style.display='flex';
+            document.getElementById('tp-wait').style.display='none';
+        } else {
+            document.getElementById('trade-proposal-modal').style.display='none';
+            if(!document.getElementById('prop-card').style.display || document.getElementById('prop-card').style.display==='none')
+                document.getElementById('overlay-bg').style.display='none';
         }
     },
     clickSpace: (i) => {
@@ -1027,7 +1073,7 @@ const ui = {
         play('dice');
         const card = document.getElementById('card-event');
         const title = document.getElementById('ev-title');
-        title.innerText = type.toUpperCase();
+        title.innerText = type==='sorte' ? 'SORTE' : 'REVÉS';
         title.style.background = type==='sorte' ? '#ab47bc' : '#ffa726';
         document.getElementById('ev-desc').innerText = msg;
         document.getElementById('overlay-bg').style.display='block';
@@ -1041,8 +1087,32 @@ const ui = {
     },
     playFX: (anim, msg) => {
         if(msg) ui.toast(msg);
-        if(anim === 'traffic') { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); play('bad'); }
-        if(anim === 'shark') { document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 4000); play('bad'); }
+        
+        // LIMPA ANIMS ANTERIORES
+        document.querySelectorAll('#fx-layer > div').forEach(el => el.style.display='none');
+        document.querySelectorAll('#fx-layer > div').forEach(el => el.classList.remove('active'));
+
+        if(anim === 'traffic') { 
+            const el = document.querySelector('.traffic-anim'); el.style.display='flex'; el.classList.add('active'); 
+            play('horn'); setTimeout(()=>el.style.display='none', 2500); 
+        }
+        if(anim === 'shark') { 
+            const el = document.querySelector('.shark-bite-anim'); el.style.display='block'; 
+            play('bite'); setTimeout(()=>el.style.display='none', 800); 
+        }
+        if(anim === 'shield') { 
+            const el = document.querySelector('.ratao-shield-anim'); el.style.display='flex'; 
+            play('win'); setTimeout(()=>el.style.display='none', 3000); 
+        }
+        if(anim === 'shield_break') {
+            const el = document.querySelector('.shield-break-anim'); el.style.display='block';
+            play('bad'); setTimeout(()=>el.style.display='none', 2000);
+        }
+        if(anim === 'bk') {
+            const el = document.querySelector('.bk-anim'); el.style.display='flex';
+            play('cash'); setTimeout(()=>el.style.display='none', 3000);
+        }
+
         if(anim === 'cash') play('cash');
         if(anim === 'bad') play('bad');
         if(anim === 'good') play('win');
@@ -1050,7 +1120,12 @@ const ui = {
     closeEvent: () => { document.getElementById('card-event').style.display='none'; document.getElementById('overlay-bg').style.display='none'; },
     closeCard: () => {
         document.getElementById('prop-card').style.display='none'; document.getElementById('card-event').style.display='none';
+        document.getElementById('trade-proposal-modal').style.display='none';
         document.getElementById('overlay-bg').style.display='none'; document.getElementById('inv-modal').style.display='none';
+    },
+    toast: (t) => {
+        const d = document.createElement('div'); d.className='toast'; d.innerText=t;
+        document.body.appendChild(d); setTimeout(()=>d.remove(), 3000);
     }
 };
 
