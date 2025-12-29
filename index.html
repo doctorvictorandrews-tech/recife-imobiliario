@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: Multiplayer Completo</title>
+    <title>Recife Imobiliário: Multiplayer Final</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* --- CSS ORIGINAL (VISUAL V65.1) --- */
+        /* --- ESTILOS VISUAIS ORIGINAIS (V65.1) --- */
         :root {
             --wood: #5d4037; --paper: #fff8e1;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
@@ -37,7 +37,7 @@
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
-        /* MODAIS DE REDE E LOBBY */
+        /* MODAIS DE LOGIN/LOBBY (Sistema Antigo Restaurado) */
         #screen-login, #screen-lobby, #screen-char, #screen-end, #screen-trade { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
         #screen-lobby, #screen-char, #screen-end, #screen-trade { display: none; }
 
@@ -47,7 +47,6 @@
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
         .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #01579b; }
 
-        /* LOBBY LISTAS */
         .player-list { list-style: none; padding: 0; margin: 20px 0; max-height: 200px; overflow-y: auto; text-align: left; }
         .player-li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 800; align-items: center; }
         .player-li.ready { background: #c8e6c9; border: 2px solid var(--c-green); }
@@ -56,19 +55,16 @@
         .char-opt.selected { border-color: var(--c-blue); background: #e3f2fd; transform: scale(1.1); z-index: 10; }
         .char-opt.taken { opacity: 0.4; pointer-events: none; filter: grayscale(1); background: #cfd8dc; }
 
-        /* --- LAYOUT JOGO --- */
+        /* JOGO LAYOUT */
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; }
         #game-layout.active { display: flex; }
 
-        /* TABULEIRO E CÂMERA */
         #board-area { position: relative; overflow: auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); flex: 1; padding: 20px; }
         #board-container { position: relative; transform-origin: center center; }
         #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); box-shadow: 0 0 50px rgba(0,0,0,0.5); }
 
-        /* HUD */
         #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; }
         
-        /* RESPONSIBILIDADE */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
             #board-container { width: 900px; height: 1250px; }
@@ -86,7 +82,6 @@
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
         }
 
-        /* SPACE DESIGN */
         .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; }
         .rot-left { transform: rotate(90deg); } .rot-top { transform: rotate(180deg); } .rot-right { transform: rotate(-90deg); }
         .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 2px; }
@@ -96,7 +91,7 @@
         .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
         .space.owned { border: 4px solid !important; z-index: 5; }
 
-        /* CENTER HUB & DECKS (RESTAURADOS) */
+        /* ELEMENTOS 3D E DECKS */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: transparent; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .brennand-tower { position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(10px 10px 20px rgba(0,0,0,0.5)); transform: scale(1.5); }
         .bt-head { font-size: 5rem; line-height: 0.6; z-index: 2; color: #546e7a; text-shadow: 2px 2px 0 #000; }
@@ -110,13 +105,11 @@
         .deck.reves { bottom: 20%; right: 15%; background: linear-gradient(135deg, #ffa726, #f57c00); transform: rotate(5deg); }
         .deck-label { font-size: 3rem; opacity: 0.8; }
 
-        /* TOKENS & BUILDINGS */
         .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: top 0.2s linear, left 0.2s linear; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
 
-        /* UI ELEMENTS */
         .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
         .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
         
@@ -131,14 +124,13 @@
         .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; margin-bottom: 5px; }
         .p-stat.active-turn { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
 
-        /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
         #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
-        /* DADOS (BOLINHAS) & ANIMAÇÃO */
+        /* DADOS (BOLINHAS) */
         #dice-container { position: absolute; top:35%; left:50%; transform:translateX(-50%); display:flex; gap:20px; z-index: 7000; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
         .die-box { width: 80px; height: 80px; background: #fff; border-radius: 12px; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
         .die-face { display: grid; width: 100%; height: 100%; padding: 8px; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
@@ -146,14 +138,12 @@
         .shake-dice { animation: shakeAnim 0.5s infinite; }
         @keyframes shakeAnim { 0%{transform:rotate(0deg);} 25%{transform:rotate(10deg);} 75%{transform:rotate(-10deg);} }
 
-        /* TOAST E INVENTÁRIO */
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 10000; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; text-align: center; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         
         #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; align-items: center; justify-content: center; }
         #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; background: #fff; padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; }
 
-        /* TRADE UI */
         .trade-board { background: #fff; border: 6px solid var(--c-dark); border-radius: 20px; width: 95%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
         .trade-cols { display: flex; flex: 1; overflow: hidden; background: #eee; }
         .trade-side { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #ccc; padding: 10px; }
@@ -175,10 +165,10 @@
         <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE ONLINE<br><span style="font-size:1rem; color:#000;">MULTIPLAYER</span></h1>
         <input type="text" id="my-name" class="inp-box" placeholder="Seu Nome" maxlength="10">
         <hr style="border:1px dashed #ccc; margin: 15px 0;">
-        <button class="btn-main" onclick="net.createRoom()">CRIAR SALA</button>
+        <button class="btn-main" onclick="net.initAndCreate()">CRIAR SALA</button>
         <p style="font-weight:900; margin:10px;">OU</p>
         <input type="text" id="room-code" class="inp-box" placeholder="Código da Sala">
-        <button class="btn-main btn-sec" onclick="net.joinRoom()">ENTRAR NA SALA</button>
+        <button class="btn-main btn-sec" onclick="net.initAndJoin()">ENTRAR NA SALA</button>
     </div>
 </div>
 
@@ -255,7 +245,8 @@
     </div>
 
     <div id="hud-panel">
-        <div id="mobile-controls"> <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#fff;">
+        <div id="mobile-controls">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#fff;">
                 <div>
                      <div class="turn-badge" id="turn-display-mob">Sua Vez</div>
                      <div class="money-display" id="p-money-mob">$500</div>
@@ -356,7 +347,7 @@
 </div>
 
 <script>
-// --- BASE DE DADOS E CONFIG ---
+// --- DADOS ---
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, 
     {id:'c',i:'🦀',n:'Caranguejo'}, {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, 
@@ -411,7 +402,8 @@ const BD=[
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Vó deu dinheiro. +100", val:100}];
 const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a carteira. -100", val:-100}];
 
-// --- ESTADO DO JOGO ---
+// --- ESTADO ---
+let peer = null;
 let myId = null, myName = '', isHost = false, connHost = null, connections = [];
 let gameState = {
     phase: 'LOBBY', 
@@ -420,10 +412,7 @@ let gameState = {
     turnIdx: 0,
     lastDice: [1,1],
     trade: null,
-    // Turn Flags
-    canRoll: false,
-    canBuy: false,
-    canPass: false
+    canRoll: false, canBuy: false, canPass: false
 };
 
 const SFX = {
@@ -448,54 +437,51 @@ function resizeBoard() {
 }
 window.addEventListener('resize', resizeBoard);
 
-// --- PEERJS (REDE) ---
-const peer = new Peer(null, { debug: 1 });
-
+// --- REDE (PEERJS) ---
 const net = {
-    createRoom: () => {
+    initAndCreate: () => {
         const name = document.getElementById('my-name').value.trim();
         if(!name) return alert('Digite seu nome!');
         myName = name; isHost = true;
         
-        gameState.players.push({
-            id: peer.id, name: myName, char: null, confirmed: false,
-            money: 500, pos: 0, active: true, color: '#f00', protection: false
+        peer = new Peer(null, { debug: 1 });
+        peer.on('open', (id) => {
+            myId = id;
+            gameState.players.push({
+                id: myId, name: myName, char: null, confirmed: false,
+                money: 500, pos: 0, active: true, color: '#f00', protection: false
+            });
+            navigator.clipboard.writeText(id);
+            ui.toLobby(id);
         });
-        
-        const code = peer.id; 
-        navigator.clipboard.writeText(code);
-        document.getElementById('screen-login').style.display='none';
-        document.getElementById('screen-lobby').style.display='flex';
-        document.getElementById('lobby-code').innerText = code;
-        document.getElementById('host-ctrl').style.display='block';
-        document.getElementById('client-wait').style.display='none';
-        ui.toast("Código copiado! Mande para os amigos.");
-        ui.renderLobby();
-        
         peer.on('connection', (conn) => {
             connections.push(conn);
             conn.on('data', (data) => net.handleData(data, conn.peer));
-            conn.send({ type: 'UPDATE', state: gameState });
+            conn.on('open', () => conn.send({ type: 'UPDATE', state: gameState }));
         });
+        peer.on('error', (err) => alert(err));
     },
-    joinRoom: () => {
+    initAndJoin: () => {
         const name = document.getElementById('my-name').value.trim();
         const code = document.getElementById('room-code').value.trim();
         if(!name || !code) return alert('Preencha nome e código!');
         myName = name; isHost = false;
         
-        connHost = peer.connect(code);
-        connHost.on('open', () => {
-            connHost.send({ type: 'JOIN', name: myName });
-            document.getElementById('screen-login').style.display='none';
-            document.getElementById('screen-lobby').style.display='flex';
+        peer = new Peer(null, { debug: 1 });
+        peer.on('open', (id) => {
+            myId = id;
+            connHost = peer.connect(code);
+            connHost.on('open', () => {
+                connHost.send({ type: 'JOIN', name: myName });
+                ui.toLobby();
+            });
+            connHost.on('data', (data) => net.handleData(data));
         });
-        connHost.on('data', (data) => net.handleData(data));
-        connHost.on('error', (err) => alert('Erro: '+err));
+        peer.on('error', (err) => alert('Erro na conexão: ' + err));
     },
     handleData: (data, senderId) => {
         if(isHost) {
-            // --- HOST LOGIC ---
+            // HOST LOGIC
             if(data.type === 'JOIN' && gameState.phase === 'LOBBY') {
                 gameState.players.push({
                     id: senderId, name: data.name, char: null, confirmed: false,
@@ -520,7 +506,7 @@ const net = {
             if(data.type === 'TRADE_RESPONSE') gameHost.handleTradeResponse(senderId, data.accepted);
 
         } else {
-            // --- CLIENT LOGIC ---
+            // CLIENT LOGIC
             if(data.type === 'UPDATE') {
                 gameState = data.state;
                 ui.syncState();
@@ -547,7 +533,7 @@ const net = {
         if(!isHost) return;
         const msg = { type: type, ...payload };
         connections.forEach(c => c.send(msg));
-        // Host roda o evento localmente
+        // Host roda local
         if(type === 'EVENT_ROLL') ui.animateDiceAndMove(payload.d1, payload.d2, payload.playerId, payload.targetPos);
         if(type === 'EVENT_CARD') ui.showEvent(payload.ctype, payload.msg);
         if(type === 'FX') {
@@ -555,20 +541,19 @@ const net = {
             if(payload.anim === 'shark') { document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 4000); }
         }
     },
-    // Client Actions
     sendStartCharSelect: () => { if(isHost) { gameState.phase='CHAR'; net.broadcastState(); } },
-    sendSelectChar: (cid) => { if(isHost) net.handleData({type:'SELECT_CHAR', charId:cid}, peer.id); else connHost.send({type:'SELECT_CHAR', charId:cid}); },
-    sendConfirmChar: () => { if(isHost) net.handleData({type:'CONFIRM_CHAR'}, peer.id); else connHost.send({type:'CONFIRM_CHAR'}); },
-    sendAction: (act) => { if(isHost) { if(act==='ROLL') gameHost.handleRoll(peer.id); if(act==='BUY') gameHost.handleBuy(peer.id); if(act==='PASS') gameHost.handlePass(peer.id); } else connHost.send({type:act}); },
-    sendDrawCard: (deckType) => { if(isHost) gameHost.handleDrawCard(peer.id, deckType); else connHost.send({type:'DRAW_CARD', deckType: deckType}); },
+    sendSelectChar: (cid) => { if(isHost) net.handleData({type:'SELECT_CHAR', charId:cid}, myId); else connHost.send({type:'SELECT_CHAR', charId:cid}); },
+    sendConfirmChar: () => { if(isHost) net.handleData({type:'CONFIRM_CHAR'}, myId); else connHost.send({type:'CONFIRM_CHAR'}); },
+    sendAction: (act) => { if(isHost) { if(act==='ROLL') gameHost.handleRoll(myId); if(act==='BUY') gameHost.handleBuy(myId); if(act==='PASS') gameHost.handlePass(myId); } else connHost.send({type:act}); },
+    sendDrawCard: (dt) => { if(isHost) gameHost.handleDrawCard(myId, dt); else connHost.send({type:'DRAW_CARD', deckType:dt}); },
     sendTradeProposal: (off) => { if(isHost) gameHost.handleTradePropose(off); else connHost.send({type:'TRADE_PROPOSE', offer:off}); },
     respondTrade: (acc) => { 
         document.getElementById('tp-btns').style.display='none'; document.getElementById('tp-wait').style.display='block';
-        if(isHost) gameHost.handleTradeResponse(peer.id, acc); else connHost.send({type:'TRADE_RESPONSE', accepted:acc}); 
+        if(isHost) gameHost.handleTradeResponse(myId, acc); else connHost.send({type:'TRADE_RESPONSE', accepted:acc}); 
     }
 };
 
-// --- GAME HOST LOGIC (O CÉREBRO) ---
+// --- GAME LOGIC (HOST) ---
 const gameHost = {
     checkAllReady: () => {
         if(gameState.players.every(p => p.confirmed) && gameState.players.length>0) {
@@ -583,7 +568,6 @@ const gameHost = {
         const p = gameState.players[gameState.turnIdx];
         if(p.id !== pid || !gameState.canRoll) return;
 
-        // 1. Calcular Dados e Posição
         const d1 = Math.ceil(Math.random()*6);
         const d2 = Math.ceil(Math.random()*6);
         gameState.lastDice = [d1, d2];
@@ -591,14 +575,12 @@ const gameHost = {
         const oldPos = p.pos;
         const newPos = (p.pos + steps) % 40;
         
-        // 2. Avisar a todos para ANIMAR (Visual apenas)
         net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: newPos });
 
-        // 3. Atualizar Estado Lógico (Silenciosamente)
         p.pos = newPos;
-        if(newPos < oldPos) p.money += 200; // Passou inicio
+        if(newPos < oldPos) p.money += 200; 
 
-        // Eventos de Casa Especial
+        // FX
         const s = BD[p.pos];
         if(s.n === "Agamenon") {
              const chk = Math.ceil(Math.random()*6);
@@ -622,7 +604,7 @@ const gameHost = {
         gameState.canPass = !isDouble; 
         gameState.canBuy = (s.t==='pr' || s.t==='rr' || s.t==='ut') && !pr && p.money >= s.p;
         
-        // Espera a animação acabar para enviar o estado novo (Sync)
+        // Delay para update do estado (esperar animação)
         setTimeout(() => net.broadcastState(), 4000); 
     },
     handleBuy: (pid) => {
@@ -638,27 +620,22 @@ const gameHost = {
     },
     handlePass: (pid) => {
         if(gameState.players[gameState.turnIdx].id !== pid || !gameState.canPass) return;
-        
         let loop=0;
         do {
             gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length;
             loop++;
         } while(!gameState.players[gameState.turnIdx].active && loop < gameState.players.length);
-
         gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false;
         net.broadcastState();
     },
     handleDrawCard: (pid, type) => {
         const p = gameState.players[gameState.turnIdx];
         if(p.id !== pid) return;
-        
         const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
         const card = deck[Math.floor(Math.random()*deck.length)];
-        
         net.broadcastEvent('EVENT_CARD', { ctype: type==='ch'?'sorte':'vixe', msg: card.txt });
-        
         if(card.val) p.money += card.val;
-        gameState.canPass = true; // Libera passar após carta
+        gameState.canPass = true; 
         setTimeout(() => net.broadcastState(), 1000);
     },
     handleTradePropose: (off) => { gameState.trade = off; net.broadcastState(); },
@@ -678,11 +655,20 @@ const gameHost = {
     }
 };
 
-// --- UI (INTERFACE E ANIMAÇÃO) ---
+// --- UI ---
 const ui = {
+    toLobby: (code) => {
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('screen-lobby').style.display = 'flex';
+        if(code) {
+            document.getElementById('lobby-code').innerText = code;
+            document.getElementById('host-ctrl').style.display = 'block';
+            document.getElementById('client-wait').style.display = 'none';
+        }
+    },
     renderLobby: () => {
         document.getElementById('lobby-list').innerHTML = gameState.players.map(p => 
-            `<li class="player-li ${p.confirmed?'ready':''}">${p.name} ${p.id===peer.id?'(Você)':''}</li>`
+            `<li class="player-li ${p.confirmed?'ready':''}">${p.name} ${p.id===myId?'(Você)':''}</li>`
         ).join('');
     },
     syncState: () => {
@@ -702,12 +688,12 @@ const ui = {
         }
     },
     renderChars: () => {
-        const me = gameState.players.find(p=>p.id===peer.id);
+        const me = gameState.players.find(p=>p.id===myId);
         document.getElementById('char-grid').innerHTML = CHARS.map(c => {
             const taken = gameState.players.find(p=>p.char===c.id);
             let cls = 'char-opt', badge = '';
             if(taken) {
-                if(taken.id===peer.id) cls += ' selected'; else cls += ' taken';
+                if(taken.id===myId) cls += ' selected'; else cls += ' taken';
                 badge = `<div class="char-badge">${taken.name}</div>`;
             }
             return `<div class="${cls}" onclick="ui.clickChar('${c.id}')">${c.i}${badge}</div>`;
@@ -718,13 +704,12 @@ const ui = {
         document.getElementById('char-status').innerText = `${gameState.players.filter(p=>p.confirmed).length}/${gameState.players.length} Confirmados`;
     },
     clickChar: (cid) => {
-        const me = gameState.players.find(p=>p.id===peer.id);
+        const me = gameState.players.find(p=>p.id===myId);
         if(!me.confirmed) net.sendSelectChar(cid);
     },
     renderBoard: () => {
         const b = document.getElementById('board');
-        if(b.children.length > 5) { ui.updateTokens(); return; } // Já montado (tem torres e decks)
-        
+        if(b.children.length > 5) { ui.updateTokens(); return; }
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
             let r,c, rot;
@@ -739,9 +724,7 @@ const ui = {
         });
         ui.updateTokens();
     },
-    // ANIMAÇÃO DE MOVIMENTO REALISTA
     animateDiceAndMove: async (d1, d2, pid, targetPos) => {
-        // 1. Mostrar e Agitar Dados
         const diceCont = document.getElementById('dice-container');
         const d1Face = document.getElementById('d1-face');
         const d2Face = document.getElementById('d2-face');
@@ -751,33 +734,21 @@ const ui = {
         document.getElementById('d2-box').classList.add('shake-dice');
         play('dice');
 
-        await sleep(1000); // Suspense
+        await sleep(1000); 
         
         document.getElementById('d1-box').classList.remove('shake-dice');
         document.getElementById('d2-box').classList.remove('shake-dice');
-        
         d1Face.innerHTML = ui.getDots(d1);
         d2Face.innerHTML = ui.getDots(d2);
 
         await sleep(800); 
         diceCont.style.opacity = 0;
 
-        // 2. Mover o Peão Pulo a Pulo
-        // Encontrar posição atual visual
-        const p = gameState.players.find(x=>x.id===pid);
-        const el = document.getElementById(`tok_${pid}`);
-        
-        // No client, o gameState pode já ter atualizado a pos se a rede foi rápida, 
-        // mas precisamos calcular visualmente do ponto anterior.
-        // Truque: Calcular "reverso" baseando nos dados
-        let steps = d1+d2;
-        let startPos = targetPos - steps;
+        // PULO A PULO
+        let startPos = targetPos - (d1+d2);
         if(startPos < 0) startPos += 40;
-        
-        let curr = startPos; 
-        
-        // Loop de pulo
-        for(let i=0; i<steps; i++) {
+        let curr = startPos;
+        for(let i=0; i<(d1+d2); i++) {
             curr = (curr + 1) % 40;
             ui.forceTokenPos(pid, curr);
             play('step');
@@ -801,10 +772,8 @@ const ui = {
         }
     },
     updateTokens: () => {
-        // Redesenhar todos
         document.querySelectorAll('.token').forEach(e=>e.remove());
         const b = document.getElementById('board');
-        
         gameState.players.forEach((p) => {
             const t = document.createElement('div');
             t.className='token';
@@ -814,8 +783,6 @@ const ui = {
             b.appendChild(t);
             ui.forceTokenPos(p.id, p.pos);
         });
-
-        // Casas
         gameState.props.forEach((pr, i) => {
             const el = document.getElementById(`s${i}`);
             if(!el) return;
@@ -833,9 +800,8 @@ const ui = {
     },
     updateHUD: () => {
         const curP = gameState.players[gameState.turnIdx];
-        const me = gameState.players.find(p => p.id === peer.id);
+        const me = gameState.players.find(p => p.id === myId);
         
-        // Desktop e Mobile updates
         const turnTxt = `VEZ DE: ${curP.name.toUpperCase()}`;
         document.getElementById('turn-display').innerText = turnTxt;
         if(document.getElementById('turn-display-mob')) document.getElementById('turn-display-mob').innerText = turnTxt;
@@ -851,8 +817,7 @@ const ui = {
             </div>`;
         }).join('');
 
-        const isMyTurn = (curP.id === peer.id);
-        
+        const isMyTurn = (curP.id === myId);
         document.getElementById('b-roll').disabled = !(isMyTurn && gameState.canRoll);
         document.getElementById('b-buy').disabled = !(isMyTurn && gameState.canBuy);
         document.getElementById('b-pass').disabled = !(isMyTurn && gameState.canPass);
@@ -868,12 +833,11 @@ const ui = {
         if(s.r) s.r.forEach((val, k) => html += `<tr><td>${k===0?'Aluguel':k===5?'Hotel':k+' Casa'}</td><td style="text-align:right">$${val}</td></tr>`);
         document.getElementById('rent-table-body').innerHTML = html;
         
-        const me = gameState.players.find(p=>p.id===peer.id);
-        const myTurn = (gameState.players[gameState.turnIdx].id === peer.id);
+        const me = gameState.players.find(p=>p.id===myId);
+        const myTurn = (gameState.players[gameState.turnIdx].id === myId);
         const btnBuy = document.getElementById('act-buy');
         
         btnBuy.style.display = 'none';
-        // Botão comprar só aparece se for minha vez, eu tiver grana e eu estiver na casa
         if(myTurn && gameState.canBuy && me.pos === i) btnBuy.style.display = 'block';
 
         document.getElementById('prop-card').style.display = 'block';
@@ -881,13 +845,13 @@ const ui = {
     },
     toggleInv: () => {
         const d = document.getElementById('inv-modal'); d.style.display = 'flex';
-        const me = peer.id;
+        const me = myId;
         document.getElementById('inv-list').innerHTML = gameState.props.map((pr, i) => {
             if(pr && pr.ownerId === me) return `<div class="t-item" onclick="ui.clickSpace(${i})">${BD[i].n} (Nível ${pr.level})</div>`;
         }).join('') || '<div style="background:#fff; padding:10px; border-radius:5px;">Sem propriedades.</div>';
     },
     showEvent: (type, msg) => {
-        play('dice'); // Som de card
+        play('dice');
         const card = document.getElementById('card-event');
         const title = document.getElementById('ev-title');
         title.innerText = type.toUpperCase();
@@ -912,25 +876,20 @@ const game = {
     confirmChar: () => { net.sendConfirmChar(); document.getElementById('btn-conf-char').innerText = "ESPERANDO..."; },
     confirmBuy: () => { net.sendAction('BUY'); ui.closeCard(); },
     clickDeck: (type) => {
-        // Verifica se é minha vez e se estou em casa de sorte/reves
-        const me = gameState.players.find(p=>p.id===peer.id);
+        const me = gameState.players.find(p=>p.id===myId);
         const curP = gameState.players[gameState.turnIdx];
-        if(curP.id !== peer.id) return;
-        
+        if(curP.id !== myId) return;
         const s = BD[me.pos];
-        if((s.t==='ch' && type==='ch') || (s.t==='rev' && type==='rev')) {
-             net.sendDrawCard(type);
-        }
+        if((s.t==='ch' && type==='ch') || (s.t==='rev' && type==='rev')) { net.sendDrawCard(type); }
     }
 };
 
-// TRADE UI (Negociação)
 const tradeUI = {
     selectedGiveProps: [], selectedGetProps: [],
     open: () => {
         document.getElementById('screen-trade').style.display = 'flex';
         const sel = document.getElementById('trade-target');
-        sel.innerHTML = gameState.players.filter(p => p.id !== peer.id).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        sel.innerHTML = gameState.players.filter(p => p.id !== myId).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
         tradeUI.updateLists();
     },
     close: () => { document.getElementById('screen-trade').style.display = 'none'; tradeUI.selectedGiveProps=[]; tradeUI.selectedGetProps=[]; },
@@ -939,7 +898,7 @@ const tradeUI = {
         const myPropsDiv = document.getElementById('list-give');
         const theirPropsDiv = document.getElementById('list-get');
         myPropsDiv.innerHTML = gameState.props.map((pr, i) => {
-            if(pr && pr.ownerId === peer.id) {
+            if(pr && pr.ownerId === myId) {
                 const isSel = tradeUI.selectedGiveProps.includes(i);
                 return `<div class="t-item ${isSel?'selected':''}" onclick="tradeUI.toggle(true, ${i})">${BD[i].n}</div>`;
             }
@@ -958,7 +917,7 @@ const tradeUI = {
     },
     sendProposal: () => {
         const offer = {
-            from: peer.id, to: document.getElementById('trade-target').value,
+            from: myId, to: document.getElementById('trade-target').value,
             offerM: parseInt(document.getElementById('trade-give-money').value) || 0, offerP: tradeUI.selectedGiveProps,
             reqM: parseInt(document.getElementById('trade-get-money').value) || 0, reqP: tradeUI.selectedGetProps
         };
