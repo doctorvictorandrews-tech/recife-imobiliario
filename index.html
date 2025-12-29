@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: Multiplayer Final</title>
+    <title>Recife Imobiliário: Multiplayer Final V3</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* --- CSS ORIGINAL (VISUAL V65.1) --- */
         :root {
             --wood: #5d4037; --paper: #fff8e1;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
@@ -28,7 +27,7 @@
 
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
-        /* FX LAYERS */
+        /* FX */
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
         .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
@@ -37,7 +36,7 @@
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
-        /* MODAIS (LOGIN, LOBBY, TRADE) */
+        /* MODAIS */
         #screen-login, #screen-lobby, #screen-char, #screen-end, #screen-trade { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
         #screen-lobby, #screen-char, #screen-end, #screen-trade { display: none; }
 
@@ -82,7 +81,6 @@
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
         }
 
-        /* TABULEIRO */
         .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; }
         .rot-left { transform: rotate(90deg); } .rot-top { transform: rotate(180deg); } .rot-right { transform: rotate(-90deg); }
         .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 2px; }
@@ -92,7 +90,7 @@
         .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
         .space.owned { border: 4px solid !important; z-index: 5; }
 
-        /* CENTER HUB & DECKS 3D */
+        /* CENTER HUB */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: transparent; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .brennand-tower { position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(10px 10px 20px rgba(0,0,0,0.5)); transform: scale(1.5); }
         .bt-head { font-size: 5rem; line-height: 0.6; z-index: 2; color: #546e7a; text-shadow: 2px 2px 0 #000; }
@@ -100,13 +98,15 @@
         .bt-ring { width: 100%; height: 5px; background: #000; }
         .bt-base { width: 100px; height: 40px; background: #5d4037; border: 3px solid #000; border-radius: 5px; margin-top: -5px; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 0.6rem; font-family:'Titan One'; }
 
+        /* DECKS */
         .deck { position: absolute; width: 110px; height: 150px; border-radius: 15px; cursor: pointer; box-shadow: 0 10px 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.4); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; font-size: 1.5rem; color: #fff; -webkit-text-stroke: 1px rgba(0,0,0,0.3); pointer-events: auto; border: 2px solid rgba(255,255,255,0.4); transition: transform 0.1s; }
         .deck:active { transform: translateY(4px); box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
         .deck.chance { top: 20%; left: 15%; background: linear-gradient(135deg, #ab47bc, #7b1fa2); transform: rotate(-5deg); }
         .deck.reves { bottom: 20%; right: 15%; background: linear-gradient(135deg, #ffa726, #f57c00); transform: rotate(5deg); }
         .deck-label { font-size: 3rem; opacity: 0.8; }
+        .deck.highlight { animation: pulseDeck 1s infinite; border-color: #ffeb3b; box-shadow: 0 0 40px #ffeb3b; z-index: 9000; }
+        @keyframes pulseDeck { 0%{transform:scale(1);} 50%{transform:scale(1.1);} 100%{transform:scale(1);} }
 
-        /* TOKENS & BUILDINGS */
         .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: top 0.2s linear, left 0.2s linear; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
@@ -127,14 +127,12 @@
         .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; margin-bottom: 5px; }
         .p-stat.active-turn { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
 
-        /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
         #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
-        /* DADOS COM BOLINHAS */
         #dice-container { position: absolute; top:35%; left:50%; transform:translateX(-50%); display:flex; gap:20px; z-index: 7000; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
         .die-box { width: 80px; height: 80px; background: #fff; border-radius: 12px; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
         .die-face { display: grid; width: 100%; height: 100%; padding: 8px; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
@@ -145,13 +143,17 @@
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 10000; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; text-align: center; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         
+        /* INVENTARIO MELHORADO */
         #inv-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; align-items: center; justify-content: center; }
-        #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; background: #fff; padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; }
+        #inv-list { flex:1; overflow-y:auto; width:100%; max-width:600px; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; align-content: start; }
+        .inv-card { background: #fff; border: 2px solid #000; border-radius: 8px; padding: 5px; text-align: center; font-size: 0.8rem; box-shadow: 0 4px 0 rgba(0,0,0,0.2); cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; height: 100px; transition: transform 0.1s; }
+        .inv-card:active { transform: scale(0.95); }
+        .inv-head { height: 15px; border-bottom: 2px solid #000; margin-bottom: 5px; width: 100%; }
 
         .trade-board { background: #fff; border: 6px solid var(--c-dark); border-radius: 20px; width: 95%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
         .trade-cols { display: flex; flex: 1; overflow: hidden; background: #eee; }
         .trade-side { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #ccc; padding: 10px; }
-        .t-item { background: #fff; padding: 8px; border-radius: 5px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: 2px solid transparent; }
+        .t-item { background: #fff; padding: 8px; border-radius: 5px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: 2px solid transparent; margin-bottom: 5px; }
         .t-item.selected { border-color: var(--c-green); background: #e8f5e9; }
         .handshake-anim { position: fixed; inset: 0; pointer-events: none; z-index: 9850; display: none; justify-content: center; align-items: center; font-size: 15rem; animation: shakeHands 1s ease-in-out; text-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         @keyframes shakeHands { 0%{transform: scale(0) rotate(-20deg);} 50%{transform: scale(1.2) rotate(10deg);} 100%{transform: scale(1) rotate(0deg);} }
@@ -169,10 +171,10 @@
         <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE ONLINE<br><span style="font-size:1rem; color:#000;">MULTIPLAYER</span></h1>
         <input type="text" id="my-name" class="inp-box" placeholder="Seu Nome" maxlength="10">
         <hr style="border:1px dashed #ccc; margin: 15px 0;">
-        <button class="btn-main" onclick="net.createRoom()">CRIAR SALA</button>
+        <button class="btn-main" onclick="net.initAndCreate()">CRIAR SALA</button>
         <p style="font-weight:900; margin:10px;">OU</p>
         <input type="text" id="room-code" class="inp-box" placeholder="Código da Sala">
-        <button class="btn-main btn-sec" onclick="net.joinRoom()">ENTRAR NA SALA</button>
+        <button class="btn-main btn-sec" onclick="net.initAndJoin()">ENTRAR NA SALA</button>
     </div>
 </div>
 
@@ -242,8 +244,8 @@
                         <div class="bt-base">RECIFE</div>
                     </div>
                 </div>
-                <div class="deck chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div></div>
-                <div class="deck reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div></div>
+                <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div></div>
+                <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div></div>
             </div>
         </div>
     </div>
@@ -351,80 +353,32 @@
 </div>
 
 <script>
-// --- DADOS ---
-const CHARS=[
-    {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, 
-    {id:'c',i:'🦀',n:'Caranguejo'}, {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, 
-    {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'}, {id:'gl',i:'🐔',n:'Galo'}, 
-    {id:'brt',i:'🚌',n:'BRT'}, {id:'bdr',i:'🍥',n:'Bolo Rolo'}, {id:'lu',i:'🐻',n:'La Ursa'},
-    {id:'hmn',i:'🎩',n:'Meia-Noite'}, {id:'rp',i:'🚔',n:'Rádio P.'}, {id:'srr',i:'🐚',n:'Sururu'}, {id:'and',i:'😎',n:'Anderson'}
-];
-
+// --- CONSTANTES ---
+const CHARS=[{id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, {id:'c',i:'🦀',n:'Caranguejo'}, {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'}, {id:'gl',i:'🐔',n:'Galo'}, {id:'brt',i:'🚌',n:'BRT'}, {id:'bdr',i:'🍥',n:'Bolo Rolo'}, {id:'lu',i:'🐻',n:'La Ursa'}, {id:'hmn',i:'🎩',n:'Meia-Noite'}, {id:'rp',i:'🚔',n:'Rádio P.'}, {id:'srr',i:'🐚',n:'Sururu'}, {id:'and',i:'😎',n:'Anderson'}];
 const BD=[
-    {t:'st',n:'MARCO ZERO',i:'🚩'}, 
-    {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]}, 
-    {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]}, 
-    {t:'tx',n:'IPTU',i:'💸'},
-    {t:'rr',n:'Est. Joana B.',p:200,i:'🚆'},
-    {t:'pr',g:'#03a9f4',n:'Agamenon',p:100,h:50,r:[6,30,90,270,400,550]},
-    {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270,400,550]}, 
-    {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300,450,600]},
-    {t:'jl',n:'LEI SECA',i:'👮'}, 
-    {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450,750,950]}, 
-    {t:'ut',n:'Celpe',p:150,i:'💡'}, 
-    {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450,750,950]}, 
-    {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500,700,900]}, 
-    {t:'rr',n:'Est. Coqueiral',p:200,i:'🚆'}, 
-    {t:'pr',g:'#ff5722',n:'Rosarinho',p:180,h:100,r:[14,70,200,550,750,950]}, 
-    {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550,750,950]}, 
-    {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600,800,1000]},
-    {t:'pk',n:'Pq. Jaqueira',i:'🌳'}, 
-    {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]}, 
-    {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]}, 
-    {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]}, 
-    {t:'rr',n:'Est. Barro',p:200,i:'🚆'}, 
-    {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]}, 
-    {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,r:[22,110,330,800,975,1150]}, 
-    {t:'ut',n:'Compesa',p:150,i:'💧'}, 
-    {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},
-    {t:'gj',n:'CADEIA!',i:'🚓'}, 
-    {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900,1100,1275]}, 
-    {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900,1100,1275]}, 
-    {t:'ch',n:'Sorte',i:'🍀'}, 
-    {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000,1200,1400]}, 
-    {t:'rr',n:'Est. Afogados',p:200,i:'🚆'}, 
-    {t:'rev',n:'Revés',i:'⚠️'}, 
-    {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100,1300,1500]}, 
-    {t:'tx',n:'Taxa',i:'🧾'}, 
-    {t:'pr',g:'#1565c0',n:'Pina',p:400,h:200,r:[50,200,600,1400,1700,2000]}
+    {t:'st',n:'MARCO ZERO',i:'🚩'}, {t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]}, {t:'ch',n:'Sorte',i:'🍀'}, {t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]}, {t:'tx',n:'IPTU',i:'💸'},
+    {t:'rr',n:'Est. Joana B.',p:200,i:'🚆'}, {t:'pr',g:'#03a9f4',n:'Agamenon',p:100,h:50,r:[6,30,90,270,400,550]}, {t:'rev',n:'Revés',i:'⚠️'}, {t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270,400,550]}, {t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300,450,600]},
+    {t:'jl',n:'LEI SECA',i:'👮'}, {t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450,750,950]}, {t:'ut',n:'Celpe',p:150,i:'💡'}, {t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450,750,950]}, {t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500,700,900]}, 
+    {t:'rr',n:'Est. Coqueiral',p:200,i:'🚆'}, {t:'pr',g:'#ff5722',n:'Rosarinho',p:180,h:100,r:[14,70,200,550,750,950]}, {t:'ch',n:'Sorte',i:'🍀'}, {t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550,750,950]}, {t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600,800,1000]},
+    {t:'pk',n:'Pq. Jaqueira',i:'🌳'}, {t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]}, {t:'rev',n:'Revés',i:'⚠️'}, {t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]}, {t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]}, 
+    {t:'rr',n:'Est. Barro',p:200,i:'🚆'}, {t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]}, {t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,r:[22,110,330,800,975,1150]}, {t:'ut',n:'Compesa',p:150,i:'💧'}, {t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},
+    {t:'gj',n:'CADEIA!',i:'🚓'}, {t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900,1100,1275]}, {t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900,1100,1275]}, {t:'ch',n:'Sorte',i:'🍀'}, {t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000,1200,1400]}, 
+    {t:'rr',n:'Est. Afogados',p:200,i:'🚆'}, {t:'rev',n:'Revés',i:'⚠️'}, {t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100,1300,1500]}, {t:'tx',n:'Taxa',i:'🧾'}, {t:'pr',g:'#1565c0',n:'Pina',p:400,h:200,r:[50,200,600,1400,1700,2000]}
 ];
-
 const CARDS_SORTE = [{txt:"Achasse 200 conto! +200", val:200}, {txt:"Ganhasse na rifa! +50", val:50}, {txt:"Vó deu dinheiro. +100", val:100}];
 const CARDS_REVES = [{txt:"Multa na Agamenon. -50", val:-50}, {txt:"Perdeu a carteira. -100", val:-100}];
 
 // --- ESTADO ---
-let peer = null;
-let myId = null, myName = '', isHost = false, connHost = null, connections = [];
+let peer = null, myId = null, myName = '', isHost = false, connHost = null, connections = [];
 let gameState = {
-    phase: 'LOBBY', 
-    players: [], 
-    props: Array(40).fill(null),
-    turnIdx: 0,
-    lastDice: [1,1],
-    trade: null,
-    canRoll: false, canBuy: false, canPass: false
+    phase: 'LOBBY', players: [], props: Array(40).fill(null), turnIdx: 0, lastDice: [1,1], trade: null,
+    canRoll: false, canBuy: false, canPass: false, canDraw: false
 };
 
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
     cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
-    win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
-    dice: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'),
-    bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3')
+    dice: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3')
 };
 const play = (k) => { try { SFX[k].volume=0.5; SFX[k].currentTime=0; SFX[k].play().catch(()=>{}); } catch(e){} };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -433,126 +387,72 @@ function resizeBoard() {
     const el = document.getElementById('board-container');
     const area = document.getElementById('board-area');
     if(!el || !area) return;
-    const w = area.offsetWidth;
-    const h = area.offsetHeight;
-    const minDim = Math.min(w, h) * 0.95; 
-    const scale = minDim / 950; 
+    const scale = Math.min(area.offsetWidth, area.offsetHeight) * 0.95 / 950; 
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
 
 // --- REDE (PEERJS) ---
 const net = {
-    createRoom: () => {
+    initAndCreate: () => {
         const name = document.getElementById('my-name').value.trim();
         if(!name) return alert('Digite seu nome!');
         myName = name; isHost = true;
-        
         peer = new Peer(null, { debug: 1 });
-        
         peer.on('open', (id) => {
             myId = id;
-            gameState.players.push({
-                id: myId, name: myName, char: null, confirmed: false,
-                money: 500, pos: 0, active: true, color: '#f00', protection: false
-            });
+            gameState.players.push({ id: myId, name: myName, char: null, confirmed: false, money: 500, pos: 0, active: true, color: '#f00', protection: false, doubles: 0, jailed: false });
             navigator.clipboard.writeText(id);
-            document.getElementById('screen-login').style.display='none';
-            document.getElementById('screen-lobby').style.display='flex';
-            document.getElementById('lobby-code').innerText = id;
-            document.getElementById('host-ctrl').style.display='block';
-            document.getElementById('client-wait').style.display='none';
-            ui.toast("Código copiado! Mande para os amigos.");
-            ui.renderLobby();
+            ui.toLobby(id);
         });
-
         peer.on('connection', (conn) => {
             connections.push(conn);
             conn.on('data', (data) => net.handleData(data, conn.peer));
             conn.on('open', () => conn.send({ type: 'UPDATE', state: gameState }));
         });
-        peer.on('error', (err) => alert(err));
     },
-    joinRoom: () => {
+    initAndJoin: () => {
         const name = document.getElementById('my-name').value.trim();
         const code = document.getElementById('room-code').value.trim();
-        if(!name || !code) return alert('Preencha nome e código!');
+        if(!name || !code) return alert('Preencha!');
         myName = name; isHost = false;
-        
         peer = new Peer(null, { debug: 1 });
         peer.on('open', (id) => {
             myId = id;
             connHost = peer.connect(code);
-            connHost.on('open', () => {
-                connHost.send({ type: 'JOIN', name: myName });
-                document.getElementById('screen-login').style.display='none';
-                document.getElementById('screen-lobby').style.display='flex';
-            });
+            connHost.on('open', () => { connHost.send({ type: 'JOIN', name: myName }); ui.toLobby(); });
             connHost.on('data', (data) => net.handleData(data));
         });
-        peer.on('error', (err) => alert('Erro na conexão: ' + err));
     },
     handleData: (data, senderId) => {
         if(isHost) {
-            // HOST LOGIC
             if(data.type === 'JOIN' && gameState.phase === 'LOBBY') {
-                gameState.players.push({
-                    id: senderId, name: data.name, char: null, confirmed: false,
-                    money: 500, pos: 0, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16), protection: false
-                });
+                gameState.players.push({ id: senderId, name: data.name, char: null, confirmed: false, money: 500, pos: 0, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16), protection: false, doubles: 0, jailed: false });
                 net.broadcastState();
             }
-            if(data.type === 'SELECT_CHAR') {
-                const p = gameState.players.find(x=>x.id === senderId);
-                if(p && !p.confirmed) { p.char = data.charId; net.broadcastState(); }
-            }
-            if(data.type === 'CONFIRM_CHAR') {
-                const p = gameState.players.find(x=>x.id === senderId);
-                if(p && p.char) { p.confirmed = true; net.broadcastState(); gameHost.checkAllReady(); }
-            }
+            if(data.type === 'SELECT_CHAR') { const p = gameState.players.find(x=>x.id===senderId); if(p) { p.char = data.charId; net.broadcastState(); } }
+            if(data.type === 'CONFIRM_CHAR') { const p = gameState.players.find(x=>x.id===senderId); if(p) { p.confirmed = true; net.broadcastState(); gameHost.checkAllReady(); } }
             if(data.type === 'ROLL') gameHost.handleRoll(senderId);
             if(data.type === 'BUY') gameHost.handleBuy(senderId);
             if(data.type === 'PASS') gameHost.handlePass(senderId);
             if(data.type === 'DRAW_CARD') gameHost.handleDrawCard(senderId, data.deckType);
-            
             if(data.type === 'TRADE_PROPOSE') gameHost.handleTradePropose(data.offer);
             if(data.type === 'TRADE_RESPONSE') gameHost.handleTradeResponse(senderId, data.accepted);
-
         } else {
-            // CLIENT LOGIC
-            if(data.type === 'UPDATE') {
-                gameState = data.state;
-                ui.syncState();
-            }
-            if(data.type === 'EVENT_ROLL') {
-                ui.animateDiceAndMove(data.d1, data.d2, data.playerId, data.targetPos);
-            }
-            if(data.type === 'EVENT_CARD') {
-                ui.showEvent(data.ctype, data.msg);
-            }
-            if(data.type === 'FX') {
-                if(data.anim === 'traffic') { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); }
-                if(data.anim === 'shark') { document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 4000); }
-            }
+            if(data.type === 'UPDATE') { gameState = data.state; ui.syncState(); }
+            if(data.type === 'EVENT_ROLL') ui.animateDiceAndMove(data.d1, data.d2, data.playerId, data.targetPos);
+            if(data.type === 'EVENT_CARD') ui.showEvent(data.ctype, data.msg);
+            if(data.type === 'FX') ui.playFX(data.anim);
         }
     },
-    broadcastState: () => {
-        if(!isHost) return;
-        const msg = { type: 'UPDATE', state: gameState };
-        connections.forEach(c => c.send(msg));
-        ui.syncState();
-    },
+    broadcastState: () => { if(!isHost) return; const msg = { type: 'UPDATE', state: gameState }; connections.forEach(c => c.send(msg)); ui.syncState(); },
     broadcastEvent: (type, payload) => {
         if(!isHost) return;
         const msg = { type: type, ...payload };
         connections.forEach(c => c.send(msg));
-        // Host roda local
         if(type === 'EVENT_ROLL') ui.animateDiceAndMove(payload.d1, payload.d2, payload.playerId, payload.targetPos);
         if(type === 'EVENT_CARD') ui.showEvent(payload.ctype, payload.msg);
-        if(type === 'FX') {
-            if(payload.anim === 'traffic') { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); }
-            if(payload.anim === 'shark') { document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 4000); }
-        }
+        if(type === 'FX') ui.playFX(payload.anim);
     },
     sendStartCharSelect: () => { if(isHost) { gameState.phase='CHAR'; net.broadcastState(); } },
     sendSelectChar: (cid) => { if(isHost) net.handleData({type:'SELECT_CHAR', charId:cid}, myId); else connHost.send({type:'SELECT_CHAR', charId:cid}); },
@@ -560,20 +460,15 @@ const net = {
     sendAction: (act) => { if(isHost) { if(act==='ROLL') gameHost.handleRoll(myId); if(act==='BUY') gameHost.handleBuy(myId); if(act==='PASS') gameHost.handlePass(myId); } else connHost.send({type:act}); },
     sendDrawCard: (dt) => { if(isHost) gameHost.handleDrawCard(myId, dt); else connHost.send({type:'DRAW_CARD', deckType:dt}); },
     sendTradeProposal: (off) => { if(isHost) gameHost.handleTradePropose(off); else connHost.send({type:'TRADE_PROPOSE', offer:off}); },
-    respondTrade: (acc) => { 
-        document.getElementById('tp-btns').style.display='none'; document.getElementById('tp-wait').style.display='block';
-        if(isHost) gameHost.handleTradeResponse(myId, acc); else connHost.send({type:'TRADE_RESPONSE', accepted:acc}); 
-    }
+    respondTrade: (acc) => { document.getElementById('tp-btns').style.display='none'; document.getElementById('tp-wait').style.display='block'; if(isHost) gameHost.handleTradeResponse(myId, acc); else connHost.send({type:'TRADE_RESPONSE', accepted:acc}); }
 };
 
 // --- GAME LOGIC (HOST) ---
 const gameHost = {
     checkAllReady: () => {
         if(gameState.players.every(p => p.confirmed) && gameState.players.length>0) {
-            gameState.phase = 'GAME';
-            gameState.players.sort(() => Math.random() - 0.5);
-            gameState.turnIdx = 0;
-            gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false;
+            gameState.phase = 'GAME'; gameState.players.sort(() => Math.random() - 0.5);
+            gameState.turnIdx = 0; gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false; gameState.canDraw = false;
             net.broadcastState();
         }
     },
@@ -584,27 +479,33 @@ const gameHost = {
         const d1 = Math.ceil(Math.random()*6);
         const d2 = Math.ceil(Math.random()*6);
         gameState.lastDice = [d1, d2];
+        
+        // 3 DOUBLES RULE
+        if(d1 === d2) p.doubles++; else p.doubles = 0;
+        
+        if(p.doubles === 3) {
+            p.pos = 30; // Jail pos index if exists or virtual
+            p.jailed = true; p.doubles = 0;
+            gameState.canRoll = false; gameState.canPass = true;
+            net.broadcastState();
+            return;
+        }
+
         const steps = d1+d2;
         const oldPos = p.pos;
         const newPos = (p.pos + steps) % 40;
         
         net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: newPos });
-
         p.pos = newPos;
-        if(newPos < oldPos) p.money += 200; 
+        if(newPos < oldPos) p.money += 200;
 
-        // FX
         const s = BD[p.pos];
-        if(s.n === "Agamenon") {
-             const chk = Math.ceil(Math.random()*6);
-             if(chk<=3) { net.broadcastEvent('FX',{anim:'traffic'}); p.money-=50; }
-        }
-        if(s.n === "Boa Viagem" || s.n === "Paiva") {
-             const chk = Math.ceil(Math.random()*6);
-             if(chk<=2 && !p.protection) { net.broadcastEvent('FX',{anim:'shark'}); p.money-=100; }
-        }
-
         const pr = gameState.props[p.pos];
+        
+        // Cards Logic Highlight
+        if(s.t === 'ch' || s.t === 'rev') gameState.canDraw = true; else gameState.canDraw = false;
+
+        // Rent
         if(s.t==='pr' && pr && pr.ownerId !== pid && !pr.loan) {
             let rent = s.r[pr.level];
             p.money -= rent;
@@ -614,10 +515,10 @@ const gameHost = {
 
         const isDouble = (d1 === d2);
         gameState.canRoll = isDouble; 
-        gameState.canPass = !isDouble; 
+        gameState.canPass = !isDouble;
+        // Só compra se não tiver dono e for propriedade
         gameState.canBuy = (s.t==='pr' || s.t==='rr' || s.t==='ut') && !pr && p.money >= s.p;
         
-        // Delay para update do estado (esperar animação)
         setTimeout(() => net.broadcastState(), 4000); 
     },
     handleBuy: (pid) => {
@@ -634,20 +535,19 @@ const gameHost = {
     handlePass: (pid) => {
         if(gameState.players[gameState.turnIdx].id !== pid || !gameState.canPass) return;
         let loop=0;
-        do {
-            gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length;
-            loop++;
-        } while(!gameState.players[gameState.turnIdx].active && loop < gameState.players.length);
-        gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false;
+        do { gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length; loop++; } 
+        while(!gameState.players[gameState.turnIdx].active && loop < gameState.players.length);
+        gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false; gameState.canDraw = false;
         net.broadcastState();
     },
     handleDrawCard: (pid, type) => {
+        if(!gameState.canDraw) return;
         const p = gameState.players[gameState.turnIdx];
-        if(p.id !== pid) return;
         const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
         const card = deck[Math.floor(Math.random()*deck.length)];
         net.broadcastEvent('EVENT_CARD', { ctype: type==='ch'?'sorte':'vixe', msg: card.txt });
         if(card.val) p.money += card.val;
+        gameState.canDraw = false; // Prevent spam
         gameState.canPass = true; 
         setTimeout(() => net.broadcastState(), 1000);
     },
@@ -670,14 +570,19 @@ const gameHost = {
 
 // --- UI ---
 const ui = {
-    renderLobby: () => {
-        document.getElementById('lobby-list').innerHTML = gameState.players.map(p => 
-            `<li class="player-li ${p.confirmed?'ready':''}">${p.name} ${p.id===myId?'(Você)':''}</li>`
-        ).join('');
+    toLobby: (code) => {
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('screen-lobby').style.display = 'flex';
+        if(code) {
+            document.getElementById('lobby-code').innerText = code;
+            document.getElementById('host-ctrl').style.display = 'block';
+            document.getElementById('client-wait').style.display = 'none';
+        }
     },
     syncState: () => {
-        if(gameState.phase === 'LOBBY') ui.renderLobby();
-        else if (gameState.phase === 'CHAR') {
+        if(gameState.phase === 'LOBBY') {
+            document.getElementById('lobby-list').innerHTML = gameState.players.map(p => `<li class="player-li ${p.confirmed?'ready':''}">${p.name}</li>`).join('');
+        } else if (gameState.phase === 'CHAR') {
             document.getElementById('screen-lobby').style.display='none';
             document.getElementById('screen-char').style.display='flex';
             ui.renderChars();
@@ -707,10 +612,7 @@ const ui = {
         else if(me && me.confirmed) { btn.disabled=true; btn.style.background='#ccc'; btn.innerText="AGUARDANDO..."; }
         document.getElementById('char-status').innerText = `${gameState.players.filter(p=>p.confirmed).length}/${gameState.players.length} Confirmados`;
     },
-    clickChar: (cid) => {
-        const me = gameState.players.find(p=>p.id===myId);
-        if(!me.confirmed) net.sendSelectChar(cid);
-    },
+    clickChar: (cid) => { const me = gameState.players.find(p=>p.id===myId); if(!me.confirmed) net.sendSelectChar(cid); },
     renderBoard: () => {
         const b = document.getElementById('board');
         if(b.children.length > 5) { ui.updateTokens(); return; }
@@ -732,31 +634,35 @@ const ui = {
         const diceCont = document.getElementById('dice-container');
         const d1Face = document.getElementById('d1-face');
         const d2Face = document.getElementById('d2-face');
-        
         diceCont.style.opacity = 1;
         document.getElementById('d1-box').classList.add('shake-dice');
         document.getElementById('d2-box').classList.add('shake-dice');
         play('dice');
-
         await sleep(1000); 
-        
         document.getElementById('d1-box').classList.remove('shake-dice');
         document.getElementById('d2-box').classList.remove('shake-dice');
         d1Face.innerHTML = ui.getDots(d1);
         d2Face.innerHTML = ui.getDots(d2);
-
         await sleep(800); 
         diceCont.style.opacity = 0;
 
-        // PULO A PULO
-        let startPos = targetPos - (d1+d2);
-        if(startPos < 0) startPos += 40;
+        let startPos = targetPos - (d1+d2); if(startPos < 0) startPos += 40;
         let curr = startPos;
         for(let i=0; i<(d1+d2); i++) {
             curr = (curr + 1) % 40;
             ui.forceTokenPos(pid, curr);
             play('step');
             await sleep(250);
+        }
+        
+        // Auto Open Property Card if Unowned
+        const me = gameState.players.find(p=>p.id===myId);
+        if(me && me.id === pid && targetPos === me.pos) {
+             const s = BD[targetPos];
+             const pr = gameState.props[targetPos];
+             if((s.t==='pr'||s.t==='rr'||s.t==='ut') && !pr && me.money >= s.p) {
+                 ui.clickSpace(targetPos);
+             }
         }
     },
     getDots: (n) => {
@@ -770,10 +676,7 @@ const ui = {
     forceTokenPos: (pid, pos) => {
         const el = document.getElementById(`tok_${pid}`);
         const cell = document.getElementById(`s${pos}`);
-        if(el && cell) {
-            el.style.left = (cell.offsetLeft + 10) + 'px';
-            el.style.top = (cell.offsetTop + 10) + 'px';
-        }
+        if(el && cell) { el.style.left = (cell.offsetLeft + 10) + 'px'; el.style.top = (cell.offsetTop + 10) + 'px'; }
     },
     updateTokens: () => {
         document.querySelectorAll('.token').forEach(e=>e.remove());
@@ -796,16 +699,12 @@ const ui = {
                 el.style.borderColor = owner ? owner.color : '#000';
                 const be = document.getElementById(`b${i}`);
                 if(be) be.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join('');
-            } else {
-                el.classList.remove('owned');
-                el.style.borderColor = '#1a1a1a';
-            }
+            } else { el.classList.remove('owned'); el.style.borderColor = '#1a1a1a'; }
         });
     },
     updateHUD: () => {
         const curP = gameState.players[gameState.turnIdx];
         const me = gameState.players.find(p => p.id === myId);
-        
         const turnTxt = `VEZ DE: ${curP.name.toUpperCase()}`;
         document.getElementById('turn-display').innerText = turnTxt;
         if(document.getElementById('turn-display-mob')) document.getElementById('turn-display-mob').innerText = turnTxt;
@@ -815,24 +714,29 @@ const ui = {
         
         document.getElementById('players-hud-list').innerHTML = gameState.players.map((p,i) => {
             const charObj = CHARS.find(c=>c.id===p.char);
-            return `<div class="p-stat ${gameState.turnIdx===i?'active-turn':''}">
-                <div>${charObj?charObj.i:''} ${p.name}</div>
-                <div>$${p.money}</div>
-            </div>`;
+            return `<div class="p-stat ${gameState.turnIdx===i?'active-turn':''}"><div>${charObj?charObj.i:''} ${p.name}</div><div>$${p.money}</div></div>`;
         }).join('');
 
         const isMyTurn = (curP.id === myId);
         document.getElementById('b-roll').disabled = !(isMyTurn && gameState.canRoll);
         document.getElementById('b-buy').disabled = !(isMyTurn && gameState.canBuy);
         document.getElementById('b-pass').disabled = !(isMyTurn && gameState.canPass);
+
+        // Deck Highlight Logic
+        document.getElementById('d-chance').classList.remove('highlight');
+        document.getElementById('d-reves').classList.remove('highlight');
+        if(isMyTurn && gameState.canDraw) {
+            const s = BD[me.pos];
+            if(s.t==='ch') document.getElementById('d-chance').classList.add('highlight');
+            if(s.t==='rev') document.getElementById('d-reves').classList.add('highlight');
+        }
     },
     clickSpace: (i) => {
-        const s = BD[i]; if(s.t!=='pr') return;
+        const s = BD[i]; if(s.t!=='pr' && s.t!=='rr' && s.t!=='ut') return;
         const pr = gameState.props[i];
         document.getElementById('pc-name').innerText = s.n;
-        document.getElementById('pc-name').style.background = s.g;
+        document.getElementById('pc-name').style.background = s.g||'#333';
         document.getElementById('pc-price').innerText = `$${s.p}`;
-        
         let html = '';
         if(s.r) s.r.forEach((val, k) => html += `<tr><td>${k===0?'Aluguel':k===5?'Hotel':k+' Casa'}</td><td style="text-align:right">$${val}</td></tr>`);
         document.getElementById('rent-table-body').innerHTML = html;
@@ -850,9 +754,16 @@ const ui = {
     toggleInv: () => {
         const d = document.getElementById('inv-modal'); d.style.display = 'flex';
         const me = myId;
-        document.getElementById('inv-list').innerHTML = gameState.props.map((pr, i) => {
-            if(pr && pr.ownerId === me) return `<div class="t-item" onclick="ui.clickSpace(${i})">${BD[i].n} (Nível ${pr.level})</div>`;
-        }).join('') || '<div style="background:#fff; padding:10px; border-radius:5px;">Sem propriedades.</div>';
+        const list = document.getElementById('inv-list');
+        list.innerHTML = gameState.props.map((pr, i) => {
+            if(pr && pr.ownerId === me) {
+                return `<div class="inv-card" onclick="ui.clickSpace(${i})">
+                    <div class="inv-head" style="background:${BD[i].g||'#333'}"></div>
+                    <strong>${BD[i].n}</strong>
+                    <small>Nível ${pr.level}</small>
+                </div>`;
+            }
+        }).join('') || '<div style="color:#fff;">Sem propriedades.</div>';
     },
     showEvent: (type, msg) => {
         play('dice');
@@ -864,15 +775,14 @@ const ui = {
         document.getElementById('overlay-bg').style.display='block';
         card.style.display='block';
     },
-    closeEvent: () => {
-        document.getElementById('card-event').style.display='none';
-        document.getElementById('overlay-bg').style.display='none';
+    playFX: (anim) => {
+        if(anim === 'traffic') { document.querySelector('.traffic-anim').classList.add('active'); setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); }
+        if(anim === 'shark') { document.querySelector('.shark-anim').classList.add('active'); setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 4000); }
     },
+    closeEvent: () => { document.getElementById('card-event').style.display='none'; document.getElementById('overlay-bg').style.display='none'; },
     closeCard: () => {
-        document.getElementById('prop-card').style.display='none';
-        document.getElementById('card-event').style.display='none';
-        document.getElementById('overlay-bg').style.display='none';
-        document.getElementById('inv-modal').style.display='none';
+        document.getElementById('prop-card').style.display='none'; document.getElementById('card-event').style.display='none';
+        document.getElementById('overlay-bg').style.display='none'; document.getElementById('inv-modal').style.display='none';
     }
 };
 
@@ -882,7 +792,7 @@ const game = {
     clickDeck: (type) => {
         const me = gameState.players.find(p=>p.id===myId);
         const curP = gameState.players[gameState.turnIdx];
-        if(curP.id !== myId) return;
+        if(curP.id !== myId || !gameState.canDraw) return; // FIX DE SPAM
         const s = BD[me.pos];
         if((s.t==='ch' && type==='ch') || (s.t==='rev' && type==='rev')) { net.sendDrawCard(type); }
     }
