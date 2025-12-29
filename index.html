@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: Multiplayer Online</title>
+    <title>Recife Imobiliário: Multiplayer V2 (Corrigido)</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
@@ -27,47 +27,38 @@
 
         h1, h2, h3, button, .brand, .deck, .token { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
 
-        /* --- UI MODALS --- */
-        #screen-login, #screen-lobby, #screen-char, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
-        #screen-lobby, #screen-char, #screen-end { display: none; }
+        /* --- UI MODALS (Lobby, Login, Trade) --- */
+        #screen-login, #screen-lobby, #screen-char, #screen-end, #screen-trade { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
+        #screen-lobby, #screen-char, #screen-end, #screen-trade { display: none; }
         
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
         .inp-box { width: 100%; padding: 15px; margin: 10px 0; border: 3px solid var(--c-dark); border-radius: 10px; font-size: 1.2rem; font-family: 'Nunito'; font-weight: 800; text-align: center; }
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
         .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #01579b; }
-        .btn-sec:active { box-shadow: 0 3px 0 #01579b; }
 
         /* LOBBY & CHAR SELECT */
         .player-list { list-style: none; padding: 0; margin: 20px 0; max-height: 200px; overflow-y: auto; text-align: left; }
         .player-li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 800; align-items: center; }
         .player-li.ready { background: #c8e6c9; border: 2px solid var(--c-green); }
-        
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
         .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 10px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; position: relative; transition: 0.2s; }
         .char-opt.selected { border-color: var(--c-blue); background: #e3f2fd; transform: scale(1.1); z-index: 10; }
         .char-opt.taken { opacity: 0.4; pointer-events: none; filter: grayscale(1); background: #cfd8dc; }
         .char-badge { position: absolute; bottom: -5px; right: -5px; font-size: 0.8rem; background: var(--c-dark); color: #fff; padding: 2px 5px; border-radius: 5px; font-family: 'Nunito'; }
 
-        /* NEGOCIACAO */
-        #screen-trade { display: none; position: fixed; inset: 0; z-index: 9800; background: rgba(0,0,0,0.92); flex-direction: column; justify-content: center; align-items: center; }
-        .trade-board { background: #fff; border: 6px solid var(--c-dark); border-radius: 20px; width: 95%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        /* --- TRADE UI --- */
+        .trade-board { background: #fff; border: 6px solid var(--c-dark); border-radius: 20px; width: 95%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
         .trade-header { background: var(--c-yel); padding: 15px; text-align: center; font-size: 1.5rem; border-bottom: 4px solid var(--c-dark); }
         .trade-cols { display: flex; flex: 1; overflow: hidden; background: #eee; }
         .trade-side { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #ccc; padding: 10px; }
-        .trade-side:last-child { border-right: none; }
-        .t-title { text-align: center; font-size: 1.2rem; margin-bottom: 10px; color: var(--c-blue); }
-        .t-money-box { display: flex; align-items: center; gap: 5px; background: #fff; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 2px solid #aaa; }
         .t-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .t-item { background: #fff; padding: 8px; border-radius: 5px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: 2px solid transparent; display: flex; justify-content: space-between; }
+        .t-item { background: #fff; padding: 8px; border-radius: 5px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: 2px solid transparent; }
         .t-item.selected { border-color: var(--c-green); background: #e8f5e9; }
-        .t-actions { padding: 15px; background: #fff; border-top: 4px solid var(--c-dark); display: flex; gap: 10px; justify-content: center; }
-
-        /* ANIMATION FX */
         .handshake-anim { position: fixed; inset: 0; pointer-events: none; z-index: 9850; display: none; justify-content: center; align-items: center; font-size: 15rem; animation: shakeHands 1s ease-in-out; text-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         @keyframes shakeHands { 0%{transform: scale(0) rotate(-20deg);} 50%{transform: scale(1.2) rotate(10deg);} 100%{transform: scale(1) rotate(0deg);} }
 
-        /* --- JOGO UI (CÓDIGO ORIGINAL ADAPTADO) --- */
+        /* --- JOGO: LAYOUT --- */
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; flex-direction: column; }
         @media (min-width: 900px) { #game-layout { flex-direction: row; } }
         
@@ -79,7 +70,7 @@
         @media (max-width: 899px) { #hud-panel { width: 100%; padding: 10px; background: #f5f5f5; border-top: 4px solid var(--c-dark); } }
         @media (min-width: 900px) { #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); padding: 0; } }
 
-        /* Componentes do Jogo */
+        /* Tabuleiro */
         .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; }
         .rot-left { transform: rotate(90deg); } .rot-top { transform: rotate(180deg); } .rot-right { transform: rotate(-90deg); }
         .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 2px; }
@@ -89,12 +80,11 @@
         .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
         .space.owned { border: 4px solid !important; z-index: 5; }
         
-        .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: all 0.4s; pointer-events: none; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); }
+        .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: top 0.25s linear, left 0.25s linear; pointer-events: none; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); }
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; }
         .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; }
-        .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
-        
+
         /* Botoes HUD */
         .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; padding: 15px; margin-bottom: 5px; }
         .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
@@ -104,18 +94,24 @@
         .btn-pass { background: var(--c-red); }
         .btn-trade { background: #7b1fa2; color: #fff; }
 
-        /* Lista Players HUD */
         .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; margin-bottom: 5px;}
         .p-stat.active-turn { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
-        
-        /* Cards & Overlay */
+
+        /* DADOS (BOLINHAS) */
+        #dice-container { position: absolute; top:35%; left:50%; transform:translateX(-50%); display:flex; gap:20px; z-index: 7000; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+        .die-box { width: 80px; height: 80px; background: #fff; border-radius: 12px; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
+        .die-face { display: grid; width: 100%; height: 100%; padding: 8px; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
+        .dot { background: var(--c-dark); border-radius: 50%; width: 12px; height: 12px; align-self: center; justify-self: center; }
+        .shake-dice { animation: shakeAnim 0.5s infinite; }
+        @keyframes shakeAnim { 0%{transform:rotate(0deg);} 25%{transform:rotate(10deg);} 75%{transform:rotate(-10deg);} }
+
+        /* Card overlay */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
         #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
         
-        /* Utilitarios */
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 10000; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; text-align: center; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         
@@ -173,17 +169,17 @@
         </div>
         <div class="trade-cols">
             <div class="trade-side" style="background:#e3f2fd;">
-                <div class="t-title">VOCÊ OFERECE</div>
-                <div class="t-money-box">💰 <input type="number" id="trade-give-money" value="0" min="0" step="10" style="border:none; width:100%; font-weight:bold;"></div>
+                <div class="t-title" style="text-align:center; font-weight:bold; color:var(--c-blue)">VOCÊ OFERECE</div>
+                <div style="padding:5px;">💰 <input type="number" id="trade-give-money" value="0" min="0" step="10" style="width:80px;"></div>
                 <div class="t-list" id="list-give"></div>
             </div>
             <div class="trade-side" style="background:#ffebee;">
-                <div class="t-title">VOCÊ QUER</div>
-                <div class="t-money-box">💰 <input type="number" id="trade-get-money" value="0" min="0" step="10" style="border:none; width:100%; font-weight:bold;"></div>
+                <div class="t-title" style="text-align:center; font-weight:bold; color:var(--c-red)">VOCÊ QUER</div>
+                <div style="padding:5px;">💰 <input type="number" id="trade-get-money" value="0" min="0" step="10" style="width:80px;"></div>
                 <div class="t-list" id="list-get"></div>
             </div>
         </div>
-        <div class="t-actions">
+        <div style="padding:15px; background:#fff; display:flex; gap:10px; justify-content:center;">
             <button class="btn-game btn-pass" style="width:auto; padding:10px 30px;" onclick="tradeUI.close()">CANCELAR</button>
             <button class="btn-game btn-buy" style="width:auto; padding:10px 30px;" onclick="tradeUI.sendProposal()">ENVIAR PROPOSTA</button>
         </div>
@@ -205,7 +201,7 @@
         <div style="padding:10px; border-bottom:2px solid #ccc; background:#fff; display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <div class="turn-badge" id="turn-display" style="background:#333; color:#fff; padding:5px 10px; border-radius:15px; font-size:0.8rem;">AGUARDANDO...</div>
-                <div class="money-display" id="p-money" style="font-size:1.5rem; color:var(--c-green); font-weight:900;">$0</div>
+                <div class="money-display" id="p-money" style="font-size:1.5rem; color:var(--c-green); font-weight:900;">$500</div>
             </div>
             <button class="btn-game btn-trade" style="width:auto; padding:8px 15px; font-size:0.8rem;" onclick="tradeUI.open()">🤝 NEGOCIAR</button>
         </div>
@@ -226,9 +222,9 @@
 <div id="overlay-layer">
     <div id="overlay-bg" onclick="ui.closeCard()"></div>
     
-    <div id="dice-visual" style="display:flex; gap:20px; pointer-events:none; opacity:0; transition:0.2s;">
-        <div id="d1" style="width:80px; height:80px; background:#fff; border:4px solid #000; border-radius:15px; display:grid; place-items:center; font-size:3rem; font-family:'Titan One';">1</div>
-        <div id="d2" style="width:80px; height:80px; background:#fff; border:4px solid #000; border-radius:15px; display:grid; place-items:center; font-size:3rem; font-family:'Titan One';">1</div>
+    <div id="dice-container">
+        <div id="d1-box" class="die-box"><div class="die-face" id="d1-face"></div></div>
+        <div id="d2-box" class="die-box"><div class="die-face" id="d2-face"></div></div>
     </div>
 
     <div id="prop-card" class="prop-card">
@@ -241,8 +237,6 @@
                 <button class="btn-game" style="background:#546e7a;" onclick="ui.closeCard()">NÃO QUERO</button>
             </div>
             <div id="act-manage" style="display:none; margin-top:10px; gap:5px;">
-                <button id="btn-mtg" class="btn-game btn-roll" onclick="game.doMortgage()">HIPOTECAR</button>
-                <button id="btn-bld" class="btn-game btn-buy" onclick="game.doBuild()">CONSTRUIR</button>
                 <button class="btn-game" style="background:#333;" onclick="ui.closeCard()">FECHAR</button>
             </div>
         </div>
@@ -251,7 +245,7 @@
     <div id="trade-proposal-modal" class="prop-card" style="border-color:#7b1fa2; width:95%; max-width:500px;">
         <div class="pc-head" style="background:#7b1fa2;">PROPOSTA!</div>
         <div style="padding:20px; text-align:center;">
-            <h3 id="tp-msg">João quer trocar...</h3>
+            <h3 id="tp-msg">...</h3>
             <div style="display:flex; justify-content:space-between; margin:15px 0;">
                 <div style="flex:1; background:#e3f2fd; padding:5px; border-radius:5px;">
                     <small>ELE DÁ:</small><div id="tp-give"></div>
@@ -285,7 +279,7 @@
 </div>
 
 <script>
-// --- DADOS ---
+// --- CONSTANTES ---
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, 
     {id:'c',i:'🦀',n:'Caranguejo'}, {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, 
@@ -337,49 +331,57 @@ const BD=[
     {t:'pr',g:'#1565c0',n:'Pina',p:400,h:200,r:[50,200,600,1400,1700,2000]}
 ];
 
-// --- ESTADO GLOBAL ---
-let myId = null;
-let myName = '';
-let isHost = false;
-let connHost = null;
-let connections = []; // Apenas Host usa
-let myCharTemp = null;
-let activePropIdx = -1;
-
-// O estado do jogo sincronizado
+// --- VARS GLOBAIS ---
+let myId = null, myName = '', isHost = false, connHost = null, connections = [];
 let gameState = {
-    phase: 'LOBBY', // LOBBY, CHAR, GAME
-    players: [], // {id, name, char, confirmed, money, pos, jailed, active, color}
-    props: Array(40).fill(null), // {ownerId, level, loan}
+    phase: 'LOBBY', 
+    players: [], 
+    props: Array(40).fill(null),
     turnIdx: 0,
     lastDice: [1,1],
-    trade: null // {from, to, offerMoney, offerProps, reqMoney, reqProps}
+    trade: null,
+    // Turn Flags
+    canRoll: false,
+    canBuy: false,
+    canPass: false
 };
 
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
     cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
-    win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3')
+    win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
+    dice: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3')
 };
 const play = (k) => { try { SFX[k].volume=0.5; SFX[k].currentTime=0; SFX[k].play().catch(()=>{}); } catch(e){} };
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-// --- REDE (PEERJS) ---
+function resizeBoard() {
+    const el = document.getElementById('board-container');
+    const area = document.getElementById('board-area');
+    if(!el || !area) return;
+    const w = area.offsetWidth;
+    const h = area.offsetHeight;
+    const minDim = Math.min(w, h) * 0.95; 
+    const scale = minDim / 950; 
+    el.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', resizeBoard);
+
+// --- PEERJS ---
 const peer = new Peer(null, { debug: 1 });
 
 const net = {
     createRoom: () => {
         const name = document.getElementById('my-name').value.trim();
         if(!name) return alert('Digite seu nome!');
-        myName = name;
-        isHost = true;
+        myName = name; isHost = true;
         
-        // Host se adiciona como player
+        // CORREÇÃO: Dinheiro inicial 500
         gameState.players.push({
             id: peer.id, name: myName, char: null, confirmed: false,
-            money: 1500, pos: 0, jailed: false, active: true, color: '#f00'
+            money: 500, pos: 0, active: true, color: '#f00'
         });
         
-        // UI Code
         const code = peer.id; 
         navigator.clipboard.writeText(code);
         document.getElementById('screen-login').style.display='none';
@@ -390,12 +392,9 @@ const net = {
         ui.toast("Código copiado! Mande para os amigos.");
         ui.renderLobby();
         
-        // Host ouve conexões
         peer.on('connection', (conn) => {
             connections.push(conn);
             conn.on('data', (data) => net.handleData(data, conn.peer));
-            conn.on('close', () => { /* Player dropou */ });
-            // Manda estado atual pro novo player
             conn.send({ type: 'UPDATE', state: gameState });
         });
     },
@@ -403,8 +402,7 @@ const net = {
         const name = document.getElementById('my-name').value.trim();
         const code = document.getElementById('room-code').value.trim();
         if(!name || !code) return alert('Preencha nome e código!');
-        myName = name;
-        isHost = false;
+        myName = name; isHost = false;
         
         connHost = peer.connect(code);
         connHost.on('open', () => {
@@ -413,39 +411,41 @@ const net = {
             document.getElementById('screen-lobby').style.display='flex';
         });
         connHost.on('data', (data) => net.handleData(data));
-        connHost.on('error', (err) => alert('Erro ao conectar: '+err));
+        connHost.on('error', (err) => alert('Erro: '+err));
     },
     handleData: (data, senderId) => {
         if(isHost) {
-            // LÓGICA DO HOST (SERVER)
-            switch(data.type) {
-                case 'JOIN':
-                    if(gameState.phase !== 'LOBBY') return;
-                    gameState.players.push({
-                        id: senderId, name: data.name, char: null, confirmed: false,
-                        money: 1500, pos: 0, jailed: false, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16)
-                    });
-                    net.broadcastState();
-                    break;
-                case 'SELECT_CHAR':
-                    const p = gameState.players.find(x=>x.id === senderId);
-                    if(p && !p.confirmed) { p.char = data.charId; net.broadcastState(); }
-                    break;
-                case 'CONFIRM_CHAR':
-                    const p2 = gameState.players.find(x=>x.id === senderId);
-                    if(p2 && p2.char) { p2.confirmed = true; net.broadcastState(); }
-                    break;
-                case 'ROLL': gameHost.handleRoll(senderId); break;
-                case 'BUY': gameHost.handleBuy(senderId); break;
-                case 'PASS': gameHost.handlePass(senderId); break;
-                case 'TRADE_PROPOSE': gameHost.handleTradePropose(data.offer); break;
-                case 'TRADE_RESPONSE': gameHost.handleTradeResponse(senderId, data.accepted); break;
+            // --- HOST LOGIC ---
+            if(data.type === 'JOIN' && gameState.phase === 'LOBBY') {
+                gameState.players.push({
+                    id: senderId, name: data.name, char: null, confirmed: false,
+                    money: 500, pos: 0, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16)
+                });
+                net.broadcastState();
             }
+            if(data.type === 'SELECT_CHAR') {
+                const p = gameState.players.find(x=>x.id === senderId);
+                if(p && !p.confirmed) { p.char = data.charId; net.broadcastState(); }
+            }
+            if(data.type === 'CONFIRM_CHAR') {
+                const p = gameState.players.find(x=>x.id === senderId);
+                if(p && p.char) { p.confirmed = true; net.broadcastState(); gameHost.checkAllReady(); }
+            }
+            if(data.type === 'ROLL') gameHost.handleRoll(senderId);
+            if(data.type === 'BUY') gameHost.handleBuy(senderId);
+            if(data.type === 'PASS') gameHost.handlePass(senderId);
+            
+            if(data.type === 'TRADE_PROPOSE') gameHost.handleTradePropose(data.offer);
+            if(data.type === 'TRADE_RESPONSE') gameHost.handleTradeResponse(senderId, data.accepted);
+
         } else {
-            // LÓGICA DO CLIENTE
+            // --- CLIENT LOGIC ---
             if(data.type === 'UPDATE') {
                 gameState = data.state;
                 ui.syncState();
+            }
+            if(data.type === 'EVENT_ROLL') {
+                ui.animateDiceAndMove(data.d1, data.d2, data.playerId, data.targetPos);
             }
         }
     },
@@ -453,233 +453,274 @@ const net = {
         if(!isHost) return;
         const msg = { type: 'UPDATE', state: gameState };
         connections.forEach(c => c.send(msg));
-        ui.syncState(); // Atualiza a tela do host também
+        ui.syncState();
     },
-    // Ações do Client enviando para Host
-    sendStartCharSelect: () => {
+    broadcastEvent: (type, payload) => {
         if(!isHost) return;
-        gameState.phase = 'CHAR';
-        net.broadcastState();
+        const msg = { type: type, ...payload };
+        connections.forEach(c => c.send(msg));
+        // Host also runs event
+        if(type === 'EVENT_ROLL') ui.animateDiceAndMove(payload.d1, payload.d2, payload.playerId, payload.targetPos);
     },
-    sendSelectChar: (charId) => {
-        if(isHost) { 
-            const p = gameState.players.find(x=>x.id===peer.id);
-            if(p && !p.confirmed) p.char = charId;
-            net.broadcastState();
-        } else connHost.send({type:'SELECT_CHAR', charId: charId});
-    },
-    sendConfirmChar: () => {
-        if(isHost) {
-            const p = gameState.players.find(x=>x.id===peer.id);
-            if(p && p.char) p.confirmed = true;
-            net.broadcastState();
-            gameHost.checkAllReady();
-        } else connHost.send({type:'CONFIRM_CHAR'});
-    },
-    sendAction: (act) => {
-        if(isHost) {
-            if(act==='ROLL') gameHost.handleRoll(peer.id);
-            if(act==='BUY') gameHost.handleBuy(peer.id);
-            if(act==='PASS') gameHost.handlePass(peer.id);
-        } else connHost.send({type:act});
-    },
-    sendTradeProposal: (offer) => {
-        if(isHost) gameHost.handleTradePropose(offer);
-        else connHost.send({type:'TRADE_PROPOSE', offer: offer});
-    },
-    respondTrade: (accepted) => {
-        document.getElementById('tp-btns').style.display='none';
-        document.getElementById('tp-wait').style.display='block';
-        if(isHost) gameHost.handleTradeResponse(peer.id, accepted);
-        else connHost.send({type:'TRADE_RESPONSE', accepted: accepted});
+    // Client Actions
+    sendStartCharSelect: () => { if(isHost) { gameState.phase='CHAR'; net.broadcastState(); } },
+    sendSelectChar: (cid) => { if(isHost) net.handleData({type:'SELECT_CHAR', charId:cid}, peer.id); else connHost.send({type:'SELECT_CHAR', charId:cid}); },
+    sendConfirmChar: () => { if(isHost) net.handleData({type:'CONFIRM_CHAR'}, peer.id); else connHost.send({type:'CONFIRM_CHAR'}); },
+    sendAction: (act) => { if(isHost) { if(act==='ROLL') gameHost.handleRoll(peer.id); if(act==='BUY') gameHost.handleBuy(peer.id); if(act==='PASS') gameHost.handlePass(peer.id); } else connHost.send({type:act}); },
+    sendTradeProposal: (off) => { if(isHost) gameHost.handleTradePropose(off); else connHost.send({type:'TRADE_PROPOSE', offer:off}); },
+    respondTrade: (acc) => { 
+        document.getElementById('tp-btns').style.display='none'; document.getElementById('tp-wait').style.display='block';
+        if(isHost) gameHost.handleTradeResponse(peer.id, acc); else connHost.send({type:'TRADE_RESPONSE', accepted:acc}); 
     }
 };
 
-// --- LÓGICA DO HOST (GAME ENGINE) ---
+// --- GAME HOST LOGIC ---
 const gameHost = {
     checkAllReady: () => {
-        const all = gameState.players.every(p => p.confirmed);
-        if(all && gameState.players.length > 0) {
-            // Iniciar Jogo
+        if(gameState.players.every(p => p.confirmed) && gameState.players.length>0) {
             gameState.phase = 'GAME';
-            // Shuffle
             gameState.players.sort(() => Math.random() - 0.5);
             gameState.turnIdx = 0;
+            gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false;
             net.broadcastState();
         }
     },
     handleRoll: (pid) => {
-        if(gameState.players[gameState.turnIdx].id !== pid) return;
+        const p = gameState.players[gameState.turnIdx];
+        if(p.id !== pid || !gameState.canRoll) return;
+
+        // 1. Calculate logic
         const d1 = Math.ceil(Math.random()*6);
         const d2 = Math.ceil(Math.random()*6);
+        // Debug doubles:
+        // const d1=1, d2=1; 
+        
         gameState.lastDice = [d1, d2];
-        const p = gameState.players[gameState.turnIdx];
-        
-        // Move
         const steps = d1+d2;
-        p.pos = (p.pos + steps) % 40;
-        if(p.pos < steps) p.money += 200; // Passou inicio
+        const newPos = (p.pos + steps) % 40;
         
-        // Verifica aluguel automatico
+        if(newPos < p.pos) p.money += 200; // Start bonus
+        
+        // 2. Broadcast Animation Event (Critical for hopping)
+        net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: newPos });
+
+        // 3. Update State Logic (Wait for animation roughly)
+        // We update internal state but controls depend on animation time
+        p.pos = newPos;
+
+        const isDouble = (d1 === d2);
+        
+        // Handle Rent
         const s = BD[p.pos];
         const pr = gameState.props[p.pos];
-        if(s.t==='pr' && pr && pr.ownerId !== pid && pr.ownerId && !pr.loan) {
-            // Pagar aluguel
+        if(s.t==='pr' && pr && pr.ownerId !== pid && !pr.loan) {
             let rent = s.r[pr.level];
             p.money -= rent;
             const owner = gameState.players.find(x=>x.id===pr.ownerId);
             if(owner) owner.money += rent;
         }
 
-        net.broadcastState();
+        // Logic Flags for UI
+        if(isDouble) {
+            gameState.canRoll = true; 
+            gameState.canPass = false; // Must roll again
+            gameState.canBuy = (s.t==='pr' || s.t==='rr' || s.t==='ut') && !pr && p.money >= s.p;
+        } else {
+            gameState.canRoll = false;
+            gameState.canPass = true;
+            gameState.canBuy = (s.t==='pr' || s.t==='rr' || s.t==='ut') && !pr && p.money >= s.p;
+        }
+
+        // Delay state update slightly so animation starts
+        setTimeout(() => net.broadcastState(), 500);
     },
     handleBuy: (pid) => {
         const p = gameState.players[gameState.turnIdx];
-        if(p.id !== pid) return;
+        if(p.id !== pid || !gameState.canBuy) return;
         const s = BD[p.pos];
         if(!gameState.props[p.pos] && p.money >= s.p) {
             p.money -= s.p;
             gameState.props[p.pos] = { ownerId: pid, level: 0, loan: false };
+            gameState.canBuy = false; // Bought it
             net.broadcastState();
         }
     },
     handlePass: (pid) => {
-        if(gameState.players[gameState.turnIdx].id !== pid) return;
-        gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length;
-        if(!gameState.players[gameState.turnIdx].active) gameHost.handlePass(gameState.players[gameState.turnIdx].id); // Skip dead
+        if(gameState.players[gameState.turnIdx].id !== pid || !gameState.canPass) return;
+        
+        let loop=0;
+        do {
+            gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length;
+            loop++;
+        } while(!gameState.players[gameState.turnIdx].active && loop < gameState.players.length);
+
+        gameState.canRoll = true; gameState.canBuy = false; gameState.canPass = false;
         net.broadcastState();
     },
-    handleTradePropose: (offer) => {
-        gameState.trade = offer; // {from: id, to: id, offerM, offerP:[], reqM, reqP:[]}
-        net.broadcastState();
-    },
-    handleTradeResponse: (responderId, accepted) => {
+    handleTradePropose: (off) => { gameState.trade = off; net.broadcastState(); },
+    handleTradeResponse: (rid, acc) => {
         const t = gameState.trade;
-        if(!t || t.to !== responderId) return;
-
-        if(accepted) {
-            // Execute trade
-            const pFrom = gameState.players.find(x=>x.id===t.from);
-            const pTo = gameState.players.find(x=>x.id===t.to);
-            
-            pFrom.money = pFrom.money - t.offerM + t.reqM;
-            pTo.money = pTo.money + t.offerM - t.reqM;
-
-            t.offerP.forEach(idx => { if(gameState.props[idx]) gameState.props[idx].ownerId = t.to; });
-            t.reqP.forEach(idx => { if(gameState.props[idx]) gameState.props[idx].ownerId = t.from; });
+        if(t && t.to === rid) {
+            if(acc) {
+                const p1 = gameState.players.find(x=>x.id===t.from);
+                const p2 = gameState.players.find(x=>x.id===t.to);
+                p1.money = p1.money - t.offerM + t.reqM;
+                p2.money = p2.money + t.offerM - t.reqM;
+                t.offerP.forEach(idx => { if(gameState.props[idx]) gameState.props[idx].ownerId = t.to; });
+                t.reqP.forEach(idx => { if(gameState.props[idx]) gameState.props[idx].ownerId = t.from; });
+            }
+            gameState.trade = null; net.broadcastState();
         }
-        gameState.trade = null;
-        net.broadcastState();
     }
 };
 
-// --- UI CONTROLLER ---
+// --- UI ---
 const ui = {
     renderLobby: () => {
-        const list = document.getElementById('lobby-list');
-        list.innerHTML = gameState.players.map(p => 
+        document.getElementById('lobby-list').innerHTML = gameState.players.map(p => 
             `<li class="player-li ${p.confirmed?'ready':''}">${p.name} ${p.id===peer.id?'(Você)':''}</li>`
         ).join('');
     },
     syncState: () => {
-        // Roteamento de telas
-        if(gameState.phase === 'LOBBY') {
-            ui.renderLobby();
-        } else if (gameState.phase === 'CHAR') {
+        if(gameState.phase === 'LOBBY') ui.renderLobby();
+        else if (gameState.phase === 'CHAR') {
             document.getElementById('screen-lobby').style.display='none';
             document.getElementById('screen-char').style.display='flex';
             ui.renderChars();
         } else if (gameState.phase === 'GAME') {
             document.getElementById('screen-char').style.display='none';
             document.getElementById('game-layout').style.display='flex';
-            document.getElementById('game-layout').classList.add('active'); // CSS trigger
+            document.getElementById('game-layout').classList.add('active');
+            resizeBoard();
             ui.renderBoard();
             ui.updateHUD();
             ui.checkTrade();
         }
     },
     renderChars: () => {
-        const grid = document.getElementById('char-grid');
-        grid.innerHTML = CHARS.map(c => {
-            const taker = gameState.players.find(p => p.char === c.id);
-            let cls = 'char-opt';
-            let badge = '';
-            
-            if(taker) {
-                if(taker.id === peer.id) cls += ' selected';
-                else cls += ' taken';
-                badge = `<div class="char-badge">${taker.name}</div>`;
+        const me = gameState.players.find(p=>p.id===peer.id);
+        document.getElementById('char-grid').innerHTML = CHARS.map(c => {
+            const taken = gameState.players.find(p=>p.char===c.id);
+            let cls = 'char-opt', badge = '';
+            if(taken) {
+                if(taken.id===peer.id) cls += ' selected'; else cls += ' taken';
+                badge = `<div class="char-badge">${taken.name}</div>`;
             }
             return `<div class="${cls}" onclick="ui.clickChar('${c.id}')">${c.i}${badge}</div>`;
         }).join('');
-
-        const me = gameState.players.find(p => p.id === peer.id);
         const btn = document.getElementById('btn-conf-char');
-        if(me && me.char && !me.confirmed) {
-            btn.disabled = false; btn.style.background = 'var(--c-green)'; btn.innerText = "CONFIRMAR";
-        } else if (me && me.confirmed) {
-            btn.disabled = true; btn.style.background = '#ccc'; btn.innerText = "AGUARDANDO...";
-        }
+        if(me && me.char && !me.confirmed) { btn.disabled=false; btn.style.background='var(--c-green)'; btn.innerText="CONFIRMAR"; }
+        else if(me && me.confirmed) { btn.disabled=true; btn.style.background='#ccc'; btn.innerText="AGUARDANDO..."; }
         document.getElementById('char-status').innerText = `${gameState.players.filter(p=>p.confirmed).length}/${gameState.players.length} Confirmados`;
     },
     clickChar: (cid) => {
-        const me = gameState.players.find(p => p.id === peer.id);
+        const me = gameState.players.find(p=>p.id===peer.id);
         if(!me.confirmed) net.sendSelectChar(cid);
     },
     renderBoard: () => {
-        // Renderizar tabuleiro apenas uma vez ou se necessario
         const b = document.getElementById('board');
-        if(b.children.length > 2) { ui.updateTokens(); return; } // Já montado
-
+        if(b.children.length > 2) { ui.updateTokens(); return; } 
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
             let r,c, rot;
-            if(i<=10){ r=11; c=11-i; rot='rot-bottom'; } 
-            else if(i<=20){ r=11-(i-10); c=1; rot='rot-left'; } 
-            else if(i<=30){ r=1; c=1+(i-20); rot='rot-top'; } 
-            else { r=1+(i-30); c=11; rot='rot-right'; }
+            if(i<=10){ r=11; c=11-i; rot='rot-bottom'; } else if(i<=20){ r=11-(i-10); c=1; rot='rot-left'; } 
+            else if(i<=30){ r=1; c=1+(i-20); rot='rot-top'; } else { r=1+(i-30); c=11; rot='rot-right'; }
             if(i%10===0) rot='';
             d.style.gridRow=r; d.style.gridColumn=c;
-
-            if(s.t==='pr') {
-                d.innerHTML = `<div class="space-content ${rot}"><div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>`;
-            } else {
-                d.innerHTML = `<div class="space-content ${rot}"><div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div></div>`;
-            }
+            if(s.t==='pr') d.innerHTML = `<div class="space-content ${rot}"><div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>`;
+            else d.innerHTML = `<div class="space-content ${rot}"><div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div></div>`;
             d.onclick = () => ui.clickSpace(i);
             b.appendChild(d);
         });
         ui.updateTokens();
     },
+    // MOVEMENT ANIMATION LOGIC
+    animateDiceAndMove: async (d1, d2, pid, targetPos) => {
+        const diceCont = document.getElementById('dice-container');
+        const d1Face = document.getElementById('d1-face');
+        const d2Face = document.getElementById('d2-face');
+        
+        diceCont.style.opacity = 1;
+        document.getElementById('d1-box').classList.add('shake-dice');
+        document.getElementById('d2-box').classList.add('shake-dice');
+        play('dice');
+
+        // Suspense
+        await sleep(1000);
+        
+        document.getElementById('d1-box').classList.remove('shake-dice');
+        document.getElementById('d2-box').classList.remove('shake-dice');
+        
+        d1Face.innerHTML = ui.getDots(d1);
+        d2Face.innerHTML = ui.getDots(d2);
+
+        await sleep(1000); // Wait so players see the number
+        diceCont.style.opacity = 0;
+
+        // Hopping Animation
+        const p = gameState.players.find(x=>x.id===pid);
+        let curr = p.pos; // This is the old pos because we handle logic async
+        
+        // Calculate steps needed
+        let steps = (targetPos - curr);
+        if(steps < 0) steps += 40;
+
+        for(let i=0; i<steps; i++) {
+            curr = (curr + 1) % 40;
+            ui.forceTokenPos(pid, curr);
+            play('step');
+            await sleep(250);
+        }
+    },
+    getDots: (n) => {
+        // CSS Grid dots logic
+        // 1: 5 (center)
+        // 2: 1, 9
+        // 3: 1, 5, 9
+        // 4: 1, 3, 7, 9
+        // 5: 1, 3, 5, 7, 9
+        // 6: 1, 3, 4, 6, 7, 9
+        let map = [];
+        if(n===1) map=[5];
+        if(n===2) map=[1,9];
+        if(n===3) map=[1,5,9];
+        if(n===4) map=[1,3,7,9];
+        if(n===5) map=[1,3,5,7,9];
+        if(n===6) map=[1,3,4,6,7,9];
+        
+        let html = '';
+        for(let i=1; i<=9; i++) {
+            html += map.includes(i) ? '<div class="dot"></div>' : '<div></div>';
+        }
+        return html;
+    },
+    forceTokenPos: (pid, pos) => {
+        const el = document.getElementById(`tok_${pid}`);
+        const cell = document.getElementById(`s${pos}`);
+        if(el && cell) {
+            // Simple logic: just stack them for animation simplicity
+            el.style.left = (cell.offsetLeft + 10) + 'px';
+            el.style.top = (cell.offsetTop + 10) + 'px';
+        }
+    },
     updateTokens: () => {
-        // Remover tokens antigos
+        // Remove old tokens
         document.querySelectorAll('.token').forEach(e=>e.remove());
         const b = document.getElementById('board');
         
-        // Mapear posições
-        const map = {};
-        gameState.players.forEach(p => {
-             if(!map[p.pos]) map[p.pos]=[]; map[p.pos].push(p); 
+        // Add tokens based on STATE
+        gameState.players.forEach((p, idx) => {
+            const t = document.createElement('div');
+            t.className='token';
+            t.id = `tok_${p.id}`;
+            const charObj = CHARS.find(c=>c.id===p.char);
+            t.innerHTML = charObj ? charObj.i : '👤';
+            b.appendChild(t);
+            // Initial place
+            ui.forceTokenPos(p.id, p.pos);
         });
 
-        Object.keys(map).forEach(pos => {
-            const arr = map[pos];
-            const cell = document.getElementById(`s${pos}`);
-            arr.forEach((p, idx) => {
-                const t = document.createElement('div');
-                t.className='token';
-                const charObj = CHARS.find(c=>c.id===p.char);
-                t.innerHTML = charObj ? charObj.i : '👤';
-                
-                // Calculo de posição pra não encavalar
-                const offset = (idx * 5) - ((arr.length-1)*2.5);
-                t.style.left = (cell.offsetLeft + 10 + offset) + 'px';
-                t.style.top = (cell.offsetTop + 10 + offset) + 'px';
-                b.appendChild(t);
-            });
-        });
-
-        // Casas
+        // Props visual
         gameState.props.forEach((pr, i) => {
             const el = document.getElementById(`s${i}`);
             if(!el) return;
@@ -687,8 +728,6 @@ const ui = {
                 const owner = gameState.players.find(p=>p.id===pr.ownerId);
                 el.classList.add('owned');
                 el.style.borderColor = owner ? owner.color : '#000';
-                
-                // Build visual
                 const be = document.getElementById(`b${i}`);
                 if(be) be.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join('');
             } else {
@@ -704,7 +743,6 @@ const ui = {
         document.getElementById('turn-display').innerText = `VEZ DE: ${curP.name.toUpperCase()}`;
         document.getElementById('p-money').innerText = `$${me.money}`;
         
-        // Lista Lateral
         document.getElementById('players-hud-list').innerHTML = gameState.players.map((p,i) => {
             const charObj = CHARS.find(c=>c.id===p.char);
             return `<div class="p-stat ${gameState.turnIdx===i?'active-turn':''}">
@@ -713,21 +751,15 @@ const ui = {
             </div>`;
         }).join('');
 
-        // Botoes
         const isMyTurn = (curP.id === peer.id);
-        document.getElementById('b-roll').disabled = !isMyTurn;
-        document.getElementById('b-pass').disabled = !isMyTurn;
         
-        // Visual Dados
-        const d1=document.getElementById('d1'); d1.innerText = gameState.lastDice[0];
-        const d2=document.getElementById('d2'); d2.innerText = gameState.lastDice[1];
-        if(isMyTurn) document.getElementById('dice-visual').style.opacity=1;
+        // STRICT BUTTON LOGIC
+        document.getElementById('b-roll').disabled = !(isMyTurn && gameState.canRoll);
+        document.getElementById('b-buy').disabled = !(isMyTurn && gameState.canBuy);
+        document.getElementById('b-pass').disabled = !(isMyTurn && gameState.canPass);
     },
     clickSpace: (i) => {
-        activePropIdx = i;
-        const s = BD[i];
-        if(s.t!=='pr') return;
-        
+        const s = BD[i]; if(s.t!=='pr') return;
         const pr = gameState.props[i];
         document.getElementById('pc-name').innerText = s.n;
         document.getElementById('pc-name').style.background = s.g;
@@ -737,23 +769,13 @@ const ui = {
         if(s.r) s.r.forEach((val, k) => html += `<tr><td>${k===0?'Aluguel':k===5?'Hotel':k+' Casa'}</td><td style="text-align:right">$${val}</td></tr>`);
         document.getElementById('rent-table-body').innerHTML = html;
         
-        // Botões de ação
-        const me = gameState.players.find(p => p.id === peer.id);
-        const myTurn = gameState.players[gameState.turnIdx].id === peer.id;
-        
+        const me = gameState.players.find(p=>p.id===peer.id);
+        const myTurn = (gameState.players[gameState.turnIdx].id === peer.id);
         const btnBuy = document.getElementById('act-buy');
-        const btnMan = document.getElementById('act-manage');
         
         btnBuy.style.display = 'none';
-        btnMan.style.display = 'none';
+        if(myTurn && gameState.canBuy && me.pos === i) btnBuy.style.display = 'block';
 
-        if(!pr && myTurn && me.pos === i && me.money >= s.p) {
-            btnBuy.style.display = 'block';
-        }
-        if(pr && pr.ownerId === peer.id) {
-            btnMan.style.display = 'flex';
-        }
-        
         document.getElementById('prop-card').style.display = 'block';
         document.getElementById('overlay-bg').style.display = 'block';
     },
@@ -765,14 +787,9 @@ const ui = {
     checkTrade: () => {
         const t = gameState.trade;
         const modal = document.getElementById('trade-proposal-modal');
-        const myId = peer.id;
-
-        if(t && t.to === myId) {
-            // Eu estou recebendo proposta
-            play('step'); // som de alerta
+        if(t && t.to === peer.id) {
             document.getElementById('overlay-bg').style.display='block';
             modal.style.display='block';
-            
             const pFrom = gameState.players.find(p=>p.id===t.from);
             document.getElementById('tp-msg').innerText = `${pFrom.name} quer negociar:`;
             
@@ -783,20 +800,13 @@ const ui = {
             let getHTML = t.reqM > 0 ? `<div>💰 $${t.reqM}</div>` : '';
             t.reqP.forEach(idx => getHTML += `<div>🏠 ${BD[idx].n}</div>`);
             document.getElementById('tp-get').innerHTML = getHTML || 'Nada';
-
+            
             document.getElementById('tp-btns').style.display='flex';
             document.getElementById('tp-wait').style.display='none';
-
-            // Animação de Handshake para todos
             document.querySelector('.handshake-anim').style.display='flex';
             setTimeout(()=>document.querySelector('.handshake-anim').style.display='none', 2000);
-
-        } else if (t && t.from === myId) {
-            // Eu enviei, estou esperando
-            // (Poderia mostrar um toast aqui)
         } else {
             modal.style.display='none';
-            if(document.getElementById('prop-card').style.display==='none') document.getElementById('overlay-bg').style.display='none';
         }
     },
     toast: (m) => {
@@ -804,61 +814,38 @@ const ui = {
         document.body.appendChild(d); setTimeout(()=>d.remove(),3000);
     },
     toggleInv: () => {
-        const d = document.getElementById('inv-modal');
-        d.style.display = 'flex';
-        const list = document.getElementById('inv-list');
+        const d = document.getElementById('inv-modal'); d.style.display = 'flex';
         const me = peer.id;
-        list.innerHTML = gameState.props.map((pr, i) => {
+        document.getElementById('inv-list').innerHTML = gameState.props.map((pr, i) => {
             if(pr && pr.ownerId === me) return `<div style="padding:10px; border-bottom:1px solid #eee;">${BD[i].n} (Nível ${pr.level})</div>`;
         }).join('') || 'Sem propriedades.';
     }
 };
 
 const game = {
-    confirmChar: () => {
-        net.sendConfirmChar();
-        document.getElementById('btn-conf-char').disabled=true;
-        document.getElementById('btn-conf-char').innerText = "ESPERANDO...";
-    },
-    confirmBuy: () => {
-        net.sendAction('BUY');
-        ui.closeCard();
-    }
+    confirmChar: () => { net.sendConfirmChar(); document.getElementById('btn-conf-char').innerText = "ESPERANDO..."; },
+    confirmBuy: () => { net.sendAction('BUY'); ui.closeCard(); }
 };
 
-// --- NEGOCIAÇÃO UI ---
 const tradeUI = {
-    selectedGiveProps: [],
-    selectedGetProps: [],
-    
+    selectedGiveProps: [], selectedGetProps: [],
     open: () => {
         document.getElementById('screen-trade').style.display = 'flex';
-        // Popula select de jogadores (menos eu)
         const sel = document.getElementById('trade-target');
-        sel.innerHTML = gameState.players.filter(p => p.id !== peer.id).map(p => 
-            `<option value="${p.id}">${p.name}</option>`
-        ).join('');
+        sel.innerHTML = gameState.players.filter(p => p.id !== peer.id).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
         tradeUI.updateLists();
     },
-    close: () => {
-        document.getElementById('screen-trade').style.display = 'none';
-        tradeUI.selectedGiveProps = [];
-        tradeUI.selectedGetProps = [];
-    },
+    close: () => { document.getElementById('screen-trade').style.display = 'none'; tradeUI.selectedGiveProps=[]; tradeUI.selectedGetProps=[]; },
     updateLists: () => {
         const targetId = document.getElementById('trade-target').value;
         const myPropsDiv = document.getElementById('list-give');
         const theirPropsDiv = document.getElementById('list-get');
-        
-        // Meus bens
         myPropsDiv.innerHTML = gameState.props.map((pr, i) => {
             if(pr && pr.ownerId === peer.id) {
                 const isSel = tradeUI.selectedGiveProps.includes(i);
                 return `<div class="t-item ${isSel?'selected':''}" onclick="tradeUI.toggle(true, ${i})">${BD[i].n}</div>`;
             }
         }).join('');
-
-        // Bens dele
         theirPropsDiv.innerHTML = gameState.props.map((pr, i) => {
             if(pr && pr.ownerId === targetId) {
                 const isSel = tradeUI.selectedGetProps.includes(i);
@@ -868,25 +855,18 @@ const tradeUI = {
     },
     toggle: (isMine, idx) => {
         const arr = isMine ? tradeUI.selectedGiveProps : tradeUI.selectedGetProps;
-        const i = arr.indexOf(idx);
-        if(i > -1) arr.splice(i, 1); else arr.push(idx);
+        const i = arr.indexOf(idx); if(i > -1) arr.splice(i, 1); else arr.push(idx);
         tradeUI.updateLists();
     },
     sendProposal: () => {
         const offer = {
-            from: peer.id,
-            to: document.getElementById('trade-target').value,
-            offerM: parseInt(document.getElementById('trade-give-money').value) || 0,
-            offerP: tradeUI.selectedGiveProps,
-            reqM: parseInt(document.getElementById('trade-get-money').value) || 0,
-            reqP: tradeUI.selectedGetProps
+            from: peer.id, to: document.getElementById('trade-target').value,
+            offerM: parseInt(document.getElementById('trade-give-money').value) || 0, offerP: tradeUI.selectedGiveProps,
+            reqM: parseInt(document.getElementById('trade-get-money').value) || 0, reqP: tradeUI.selectedGetProps
         };
-        net.sendTradeProposal(offer);
-        tradeUI.close();
-        ui.toast("Proposta enviada!");
+        net.sendTradeProposal(offer); tradeUI.close(); ui.toast("Proposta enviada!");
     }
 };
-
 </script>
 </body>
 </html>
