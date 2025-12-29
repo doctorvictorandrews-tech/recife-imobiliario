@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V6 Final</title>
+    <title>Recife Imobiliário: V6 Final Restaurado</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
@@ -46,6 +46,14 @@
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
         .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #01579b; }
+
+        .player-list { list-style: none; padding: 0; margin: 20px 0; max-height: 200px; overflow-y: auto; text-align: left; }
+        .player-li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 800; align-items: center; }
+        .player-li.ready { background: #c8e6c9; border: 2px solid var(--c-green); }
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
+        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 10px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; position: relative; transition: 0.2s; }
+        .char-opt.selected { border-color: var(--c-blue); background: #e3f2fd; transform: scale(1.1); z-index: 10; }
+        .char-opt.taken { opacity: 0.4; pointer-events: none; filter: grayscale(1); background: #cfd8dc; }
 
         /* JOGO LAYOUT (MEDIA QUERIES ORIGINAIS) */
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; }
@@ -133,14 +141,6 @@
         .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; }
         .p-stat.active-turn { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; background: #ffebee; }
-
-        .player-list { list-style: none; padding: 0; margin: 20px 0; max-height: 200px; overflow-y: auto; text-align: left; }
-        .player-li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 800; align-items: center; }
-        .player-li.ready { background: #c8e6c9; border: 2px solid var(--c-green); }
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
-        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
-        .char-opt.selected { border-color: var(--c-blue); background: #e3f2fd; transform: scale(1.1); z-index: 10; }
-        .char-opt.taken { opacity: 0.4; pointer-events: none; filter: grayscale(1); background: #cfd8dc; }
 
         /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
@@ -266,27 +266,31 @@
     </div>
 
     <div id="hud-panel">
-        <div class="hud-top-bar">
-            <div>
-                <div class="turn-badge" id="turn-display">AGUARDANDO...</div>
+        <div id="mobile-controls-wrapper">
+            <div id="action-btns">
+                <button id="b-card" class="btn-game btn-card" onclick="game.forceDrawCard()">🎴 PEGAR CARTA</button>
+                <div id="jail-btns" style="display:none; gap:5px; width:100%; height:100%;">
+                      <button class="btn-game btn-buy" style="flex:1" onclick="game.payJail()">Pagar $50</button>
+                      <button class="btn-game btn-roll" style="flex:1" onclick="game.roll()">Tentar Sorte</button>
+                </div>
+                <div id="normal-btns" style="display:flex; gap:5px; width:100%; height:100%;">
+                    <button id="b-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 ROLAR</button>
+                    <button id="b-buy" class="btn-game btn-buy" disabled onclick="game.buy()">COMPRAR</button>
+                    <button id="b-pass" class="btn-game btn-pass" disabled onclick="game.pass()">PASSAR</button>
+                </div>
+            </div>
+            <div class="hud-top-bar">
+                <div class="turn-badge" id="turn-display">Sua Vez</div>
                 <div class="money-display" id="p-money">$500</div>
             </div>
-            <button class="btn-game btn-trade" style="width:auto; padding:8px 15px; font-size:0.8rem;" onclick="tradeUI.open()">🤝 NEGOCIAR</button>
+            <button class="btn-inv" onclick="ui.toggleInv()">💼 ESCRITURAS</button>
         </div>
 
         <div class="hud-content">
             <div id="players-scroll"></div>
             <div id="desktop-props-container"></div>
         </div>
-
-        <div id="action-btns" style="padding:10px;">
-            <button id="b-roll" class="btn-game btn-roll" disabled onclick="net.sendAction('ROLL')">🎲 ROLAR DADOS</button>
-            <div style="display:flex; gap:5px; width:100%;">
-                <button id="b-buy" class="btn-game btn-buy" style="flex:1;" disabled onclick="net.sendAction('BUY')">COMPRAR</button>
-                <button id="b-pass" class="btn-game btn-pass" style="flex:1;" disabled onclick="net.sendAction('PASS')">PASSAR</button>
-            </div>
-            <button class="btn-inv" onclick="ui.toggleInv()">💼 ESCRITURAS</button>
-        </div>
+        <style> @media (min-width: 900px) { .hud-content { display: flex !important; } } </style>
     </div>
 </div>
 
@@ -367,6 +371,7 @@
 </div>
 
 <script>
+// --- CONSTANTES ---
 const CHARS=[{id:'rt',i:'💅',n:'A Ratona'},{id:'as',i:'🗿',n:'Bilola'},{id:'bt',i:'🛶',n:'Celta'},{id:'c',i:'🦀',n:'Caranguejo'},{id:'s',i:'🦈',n:'Tubarão'},{id:'u',i:'☂️',n:'Sombrinha'},{id:'pd',i:'🐀',n:'Gabiru'},{id:'bb',i:'🌽',n:'Milho'},{id:'gl',i:'🐔',n:'Galo'},{id:'brt',i:'🚌',n:'BRT'},{id:'bdr',i:'🍥',n:'Bolo Rolo'},{id:'lu',i:'🐻',n:'La Ursa'},{id:'hmn',i:'🎩',n:'Meia-Noite'},{id:'rp',i:'🚔',n:'Rádio P.'},{id:'srr',i:'🐚',n:'Sururu'},{id:'and',i:'😎',n:'Anderson'}];
 const BD=[
     {t:'st',n:'MARCO ZERO',i:'🚩'},{t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',i:'💸'},
@@ -426,7 +431,7 @@ const net = {
         peer = new Peer(null, { debug: 1 });
         peer.on('open', (id) => {
             myId = id;
-            gameState.players.push({ id: myId, name: myName, char: null, confirmed: false, money: 1500, pos: 0, active: true, color: '#f00', protection: false, doubles: 0, jailed: false, jailAttempts: 0 });
+            gameState.players.push({ id: myId, name: myName, char: null, confirmed: false, money: 500, pos: 0, active: true, color: '#f00', protection: false, doubles: 0, jailed: false, jailAttempts: 0 });
             gameState.nextGalo = 20 + Math.floor(Math.random()*11);
             navigator.clipboard.writeText(id);
             ui.toLobby(id);
@@ -453,7 +458,7 @@ const net = {
     handleData: (data, senderId) => {
         if(isHost) {
             if(data.type === 'JOIN' && gameState.phase === 'LOBBY') {
-                gameState.players.push({ id: senderId, name: data.name, char: null, confirmed: false, money: 1500, pos: 0, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16), protection: false, doubles: 0, jailed: false, jailAttempts: 0 });
+                gameState.players.push({ id: senderId, name: data.name, char: null, confirmed: false, money: 500, pos: 0, active: true, color: '#'+Math.floor(Math.random()*16777215).toString(16), protection: false, doubles: 0, jailed: false, jailAttempts: 0 });
                 net.broadcastState();
             }
             if(data.type === 'SELECT_CHAR') { const p = gameState.players.find(x=>x.id===senderId); if(p) { p.char = data.charId; net.broadcastState(); } }
@@ -515,13 +520,15 @@ const gameHost = {
         gameState.lastDice = [d1, d2];
         const isDouble = (d1 === d2);
 
+        // JAILED LOGIC
         if(p.jailed) {
             if(isDouble) {
                 p.jailed = false; p.jailAttempts = 0;
                 net.broadcastEvent('FX', {anim:'good', msg:'Saiu da cadeia com duplos!'});
+                // Continua o turno para andar
             } else {
                 p.jailAttempts++;
-                net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: p.pos }); 
+                net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: p.pos }); // Só mostra dados
                 if(p.jailAttempts >= 3) {
                     net.broadcastEvent('FX', {anim:'bad', msg:'Não conseguiu sair.'});
                     gameState.canRoll = false; gameState.canPass = true;
@@ -536,50 +543,57 @@ const gameHost = {
             }
         }
 
+        // REGULAR ROLL
         if(isDouble) p.doubles++; else p.doubles = 0;
+        
         if(p.doubles === 3) {
             p.pos = 10; p.jailed = true; p.doubles = 0;
             gameState.canRoll = false; gameState.canPass = true;
             net.broadcastEvent('FX', {anim:'bad', msg:'3 Duplos! Cadeia!'});
-            net.broadcastState(); return;
+            net.broadcastState();
+            return;
         }
 
         const steps = d1+d2;
         const oldPos = p.pos;
         const newPos = (p.pos + steps) % 40;
+        
+        // SUSPENSE: Manda dados e posição, mas só resolve depois
         net.broadcastEvent('EVENT_ROLL', { d1, d2, playerId: pid, targetPos: newPos });
         
-        // --- DELAYED RESOLUTION (SUSPENSE) ---
         setTimeout(() => {
             p.pos = newPos;
             gameState.totalTurns++;
 
+            // MARCO ZERO & GALO
             if(newPos < oldPos) {
                 p.money += 200;
-                // GALO CHECK
                 if(gameState.totalTurns >= gameState.nextGalo) {
-                    p.money += 200; // Extra
+                    p.money += 200; // Bônus do Galo
                     gameState.nextGalo = gameState.totalTurns + 20 + Math.floor(Math.random()*11);
-                    net.broadcastEvent('FX', {anim:'good', msg:'O GALO PASSOU! +$200'});
+                    net.broadcastEvent('FX', {anim:'good', msg:'O GALO PASSOU! +$200 (Só para você)'});
                 } else {
                     net.broadcastEvent('FX', {anim:'cash', msg:'Passou no Marco Zero! +$200'});
                 }
             }
 
             gameHost.resolveLanding(p, d1, d2);
-        }, 4000); // 4s animation wait
+        }, 4000); // Tempo da animação dos dados + movimento
     },
     resolveLanding: (p, d1, d2) => {
         const s = BD[p.pos];
         const pr = gameState.props[p.pos];
         
+        // EVENTOS DO TABULEIRO
         if(s.n === "Agamenon") { if(Math.random()<0.5) { net.broadcastEvent('FX',{anim:'traffic'}); p.money-=50; } }
         if((s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina") && !p.protection) { if(Math.random()<0.33) { net.broadcastEvent('FX',{anim:'shark'}); p.money-=100; } }
         if(s.t === 'tx') { const tax = Math.floor(p.money * 0.10); p.money -= tax; net.broadcastEvent('FX', {anim:'bad', msg:`IPTU! Pagou $${tax}`}); }
         if(s.t === 'gj') { p.pos=10; p.jailed=true; net.broadcastEvent('FX', {anim:'bad', msg:'VÁ PARA A CADEIA!'}); }
 
+        // HABILITA CARTA
         if(s.t === 'ch' || s.t === 'rev') gameState.canDraw = true; else gameState.canDraw = false;
 
+        // COBRANÇA DE ALUGUEL
         if((s.t==='pr'||s.t==='rr'||s.t==='ut') && pr && pr.ownerId !== p.id && !pr.loan) {
             let rent = 0;
             if(s.t==='pr') rent = s.r[pr.level];
@@ -587,7 +601,8 @@ const gameHost = {
                 const count = gameState.props.filter((x,i)=>x && x.ownerId===pr.ownerId && BD[i].t==='rr').length;
                 rent = 25 * Math.pow(2, count-1);
             }
-            if(s.t==='ut') rent = (d1+d2) * 4; 
+            if(s.t==='ut') rent = (d1+d2) * 4; // Simplificado
+            
             p.money -= rent;
             const owner = gameState.players.find(x=>x.id===pr.ownerId);
             if(owner) owner.money += rent;
@@ -598,6 +613,7 @@ const gameHost = {
         gameState.canRoll = isDouble; 
         gameState.canPass = !isDouble;
         gameState.canBuy = (s.t==='pr' || s.t==='rr' || s.t==='ut') && !pr && p.money >= s.p;
+        
         net.broadcastState();
     },
     handleBuy: (pid) => {
@@ -614,12 +630,12 @@ const gameHost = {
     handlePass: (pid) => {
         if(gameState.players[gameState.turnIdx].id !== pid || !gameState.canPass) return;
         
-        // CHECK LOANS EXPIRY
+        // LÓGICA DE HIPOTECA VENCIDA
         gameState.props.forEach((pr, i) => {
             if(pr && pr.ownerId === pid && pr.loan) {
                 pr.loan.turns--;
                 if(pr.loan.turns <= 0) {
-                    gameState.props[i] = null; // Lost property
+                    gameState.props[i] = null; // Perdeu a propriedade
                     net.broadcastEvent('FX', {anim:'bad', msg:`Perdeu ${BD[i].n} (Hipoteca Vencida)`});
                 }
             }
@@ -629,13 +645,17 @@ const gameHost = {
         const curP = gameState.players[gameState.turnIdx];
         const assets = gameState.props.filter(pr => pr && pr.ownerId === curP.id);
         if(curP.money < 0 && assets.length === 0) {
-            curP.active = false; curP.money = 0;
+            curP.active = false;
+            curP.money = 0;
             net.broadcastEvent('FX', {anim:'bad', msg:`${curP.name} FALIU!`});
         }
         
         // CHECK WIN
         const actives = gameState.players.filter(p=>p.active);
-        if(actives.length === 1) { net.broadcastEvent('WIN', {name: actives[0].name}); return; }
+        if(actives.length === 1) {
+            net.broadcastEvent('WIN', {name: actives[0].name});
+            return;
+        }
 
         let loop=0;
         do { gameState.turnIdx = (gameState.turnIdx + 1) % gameState.players.length; loop++; } 
@@ -651,22 +671,35 @@ const gameHost = {
         const card = deck[Math.floor(Math.random()*deck.length)];
         net.broadcastEvent('EVENT_CARD', { ctype: type==='ch'?'sorte':'vixe', msg: card.txt });
         
-        if(card.act === 'jail') { p.pos = 10; p.jailed = true; gameState.canPass = true; }
-        else if(card.act === 'go_start') { p.pos = 0; p.money += 200; gameState.canPass = true; }
+        // AÇÕES DAS CARTAS
+        if(card.act === 'jail') { p.pos = 10; p.jailed = true; }
+        else if(card.act === 'go_start') { p.pos = 0; p.money += 200; }
         else if(card.act === 'pay_all') {
             gameState.players.forEach(pl => { if(pl.id !== pid && pl.active) { pl.money += 50; p.money -= 50; }});
-            gameState.canPass = true;
         }
-        else if(card.act === 'repairs') { p.money -= 100; gameState.canPass = true; }
-        else { p.money += card.val; gameState.canPass = true; }
+        else if(card.act === 'repairs') {
+            // Calcula custo: $40/casa, $115/hotel
+            let cost = 0;
+            gameState.props.forEach(pr => {
+                if(pr && pr.ownerId === pid) {
+                    if(pr.level === 5) cost += 115; else cost += pr.level * 40;
+                }
+            });
+            p.money -= cost;
+        }
+        else {
+            p.money += card.val;
+        }
         
         gameState.canDraw = false; 
+        gameState.canPass = true; // Cartas terminam o turno (regra simplificada)
         setTimeout(() => net.broadcastState(), 1000);
     },
     handleBuild: (pid, idx) => {
         const p = gameState.players.find(x=>x.id===pid);
         const s = BD[idx]; const pr = gameState.props[idx];
         if(!pr || pr.ownerId!==pid || s.t!=='pr' || pr.level >= 5) return;
+        // Monopoly Check
         const group = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1);
         const hasAll = group.every(i => gameState.props[i] && gameState.props[i].ownerId === pid);
         if(hasAll && p.money >= s.h) {
@@ -679,17 +712,20 @@ const gameHost = {
         const p = gameState.players.find(x=>x.id===pid);
         const s = BD[idx]; const pr = gameState.props[idx];
         if(pr && pr.ownerId===pid && !pr.loan) {
-            p.money += Math.floor(s.p * 0.8);
-            pr.loan = { val: Math.floor(s.p * 0.8), turns: 5 };
+            const mortgageValue = Math.floor(s.p * 0.8); // 80% do valor
+            p.money += mortgageValue;
+            pr.loan = { val: mortgageValue, turns: 5 }; // Prazo de 5 rodadas
             net.broadcastState();
         }
     },
     handlePayLoan: (pid, idx) => {
         const p = gameState.players.find(x=>x.id===pid);
         const pr = gameState.props[idx];
+        // Paga valor da hipoteca + 50% de juros
         const cost = Math.floor(pr.loan.val * 1.5); 
         if(pr && pr.ownerId===pid && pr.loan && p.money >= cost) {
-            p.money -= cost; pr.loan = false;
+            p.money -= cost;
+            pr.loan = false;
             net.broadcastState();
         }
     },
@@ -872,7 +908,7 @@ const ui = {
         
         document.getElementById('players-hud-list').innerHTML = gameState.players.map((p,i) => {
             const charObj = CHARS.find(c=>c.id===p.char);
-            return `<div class="p-stat ${gameState.turnIdx===i?'active-turn':''} ${!p.active?'bankrupt':''}"><div>${charObj?charObj.i:''} ${p.name}</div><div>${p.active?'$'+p.money:'💀'}</div></div>`;
+            return `<div class="p-stat ${gameState.turnIdx===i?'active-turn':''}"><div>${charObj?charObj.i:''} ${p.name}</div><div>$${p.money}</div></div>`;
         }).join('');
 
         const isMyTurn = (curP.id === myId);
@@ -918,7 +954,6 @@ const ui = {
         
         const me = gameState.players.find(p=>p.id===myId);
         const myTurn = (gameState.players[gameState.turnIdx].id === myId);
-        
         const btnBuy = document.getElementById('act-buy');
         const btnMan = document.getElementById('act-manage');
         btnBuy.style.display = 'none'; btnMan.style.display = 'none';
@@ -958,7 +993,7 @@ const ui = {
         play('dice');
         const card = document.getElementById('card-event');
         const title = document.getElementById('ev-title');
-        title.innerText = type==='sorte' ? 'SORTE' : 'REVÉS';
+        title.innerText = type.toUpperCase();
         title.style.background = type==='sorte' ? '#ab47bc' : '#ffa726';
         document.getElementById('ev-desc').innerText = msg;
         document.getElementById('overlay-bg').style.display='block';
