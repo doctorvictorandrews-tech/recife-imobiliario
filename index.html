@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V68.1 (Desktop Fix)</title>
+    <title>Recife Imobiliário: V68.3 (Desktop Full)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -56,10 +56,20 @@
             background: rgba(0,0,0,0.1); 
             flex: 1; 
             width: 100%;
+            min-height: 0; 
         }
-        #board-container { position: relative; transform-origin: center center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #board-container { 
+            position: relative; 
+            transform-origin: center center; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); 
+            display: block;
+        }
         
-        #board { width: 900px; height: 1125px; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); }
+        #board { 
+            width: 900px; height: 1125px; 
+            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
+            background: var(--board-bg); border: 4px solid var(--border-col); 
+        }
 
         /* PAINEL HUD */
         #hud-panel { 
@@ -105,21 +115,32 @@
             font-weight: 800; text-transform: uppercase; height: 35px; width: 100%; font-size: 0.8rem;
         }
 
+        /* Default mobile: Hide detailed content */
+        .hud-content { display: none; }
+
         /* --- DESKTOP OVERRIDES --- */
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); border-top: none; padding: 0; }
-            #board { width: 1300px; height: 1000px; } /* Retoma formato wide no PC */
             
+            /* No Desktop, volta a ser largo e horizontal */
+            #board { width: 1300px; height: 1000px; } 
+            
+            /* Show content on Desktop */
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-            .hud-top-bar { padding: 15px; margin: 0; border: none; border-bottom: 2px dashed #cfd8dc; border-radius: 0; }
-            #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; padding: 20px;}
+            
+            .hud-top-bar { padding: 15px; margin: 0; border: none; border-bottom: 2px dashed #cfd8dc; border-radius: 0; order: -1; }
+            #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; padding: 20px; }
             #normal-btns, #jail-btns { display: flex; flex-direction: column; gap: 10px; }
             .btn-game { min-height: 60px; font-size: 1.3rem; padding: 18px; } 
-            .btn-inv { display: none; }
-            #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; padding: 0 20px;}
-            #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; padding: 20px;}
+            .btn-inv { display: none; } /* Hide mobile inventory button */
+            
+            #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 20vh; overflow-y: auto; gap: 5px; padding: 0 10px; border-bottom: 2px dashed #ccc; padding-bottom:10px;}
+            
+            /* Propriedades Visíveis no Desktop */
+            #desktop-props-container { display: block; flex: 1; overflow-y: auto; padding-top: 10px; }
         }
+        
         @media (max-width: 899px) {
             #players-scroll, #desktop-props-container { display: none; }
             #mobile-controls-wrapper { display: flex; flex-direction: column; width: 100%; }
@@ -170,8 +191,8 @@
         .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
         
-        .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
-        .prop-item:hover { background: #f5f5f5; }
+        .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; transition:0.2s;}
+        .prop-item:hover { background: #f5f5f5; transform:translateX(2px); }
         .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
         .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
 
@@ -286,7 +307,7 @@
             <button class="btn-inv" onclick="ui.toggleInv()">💼 ESCRITURAS</button>
         </div>
 
-        <div class="hud-content" style="display:none;">
+        <div class="hud-content">
             <div id="players-scroll"></div>
             <div id="desktop-props-container"></div>
         </div>
@@ -480,21 +501,33 @@ function resizeBoard() {
     
     // DETECT MOBILE
     const isMobile = window.innerWidth < 900;
-    const baseWidth = isMobile ? 900 : 1300;
-    const baseHeight = isMobile ? 1125 : 1000;
     
-    const availableW = isMobile ? window.innerWidth : area.offsetWidth;
-    // On mobile, subtract HUD height from window height
-    const hudHeight = isMobile ? (document.getElementById('hud-panel').offsetHeight || 100) : 0;
-    const availableH = isMobile ? (window.innerHeight - hudHeight) : area.offsetHeight;
+    if (isMobile) {
+        // LÓGICA MOBILE (Vertical 1:1.25)
+        const baseWidth = 900;
+        const baseHeight = 1125;
+        
+        // Calcula o espaço disponível (Altura da janela - Altura do HUD)
+        const hudHeight = document.getElementById('hud-panel').offsetHeight || 100;
+        const availableH = window.innerHeight - hudHeight;
+        const availableW = window.innerWidth;
 
-    const scaleW = availableW / baseWidth;
-    const scaleH = availableH / baseHeight;
-    
-    // Use smaller scale to fit
-    const scale = Math.min(scaleW, scaleH) * 0.95;
-    
-    el.style.transform = `scale(${scale})`;
+        const scaleW = availableW / baseWidth;
+        const scaleH = availableH / baseHeight;
+        
+        // Use smaller scale to fit
+        const scale = Math.min(scaleW, scaleH) * 0.95;
+        el.style.transform = `scale(${scale})`;
+        
+    } else {
+        // LÓGICA DESKTOP (Horizontal 1.3:1)
+        const baseWidth = 1300;
+        const baseHeight = 1000;
+        
+        // No desktop, o HUD é lateral, então usamos a largura e altura do #board-area
+        const scale = Math.min(area.offsetWidth / baseWidth, area.offsetHeight / baseHeight) * 0.95;
+        el.style.transform = `scale(${scale})`;
+    }
 }
 window.addEventListener('resize', resizeBoard);
 window.onload = resizeBoard;
@@ -667,7 +700,7 @@ const ui = {
 
         } else if (hum) {
             jailedArea.style.display = 'none';
-            normalArea.style.display = 'grid'; // Grid for mobile, Flex for desktop via CSS
+            normalArea.style.display = 'grid';
             
             const doubles = players[0].lastD1 === players[0].lastD2 && players[0].lastD1 !== undefined;
             const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
@@ -942,6 +975,7 @@ const game = {
         play('jail'); animating = false; rolled = true; 
         setTimeout(game.pass, 2000); 
     },
+    // CORREÇÃO: Atualiza a interface imediatamente
     payJail: () => { const p = players[0]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); play('cash'); ui.hud(); } },
     aiTurn: () => {
         const p = players[turn];
