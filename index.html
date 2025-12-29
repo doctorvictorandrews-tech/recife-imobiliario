@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: V66.2 (Mobile Ajustado)</title>
+    <title>Recife Imobiliário: V67.5 (Vertical Pro)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -49,34 +49,38 @@
         #game-layout.active { display: flex; }
 
         /* ÁREA DO TABULEIRO */
-        #board-area { position: relative; overflow: auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); flex: 1; min-height: 0; padding: 20px; }
+        #board-area { position: relative; overflow: auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); flex: 1; min-height: 0; padding: 10px; }
         #board-container { position: relative; transform-origin: center center; }
         #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); box-shadow: 0 0 50px rgba(0,0,0,0.5); }
 
         /* PAINEL HUD */
         #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 0 30px rgba(0,0,0,0.5); flex-shrink: 0; }
         
-        #action-btns { width: 100%; margin-bottom: 10px; }
+        #action-btns { width: 100%; margin-bottom: 5px; }
         
         #normal-btns {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 5px; /* Gap reduzido */
             width: 100%;
         }
 
         /* --- MEDIA QUERIES --- */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
-            #board-container { width: 1000px; height: 1250px; } 
             
-            #hud-panel { width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark); }
-            /* Mobile Buttons */
+            /* --- AJUSTE VERTICAL 1:1.25 --- */
+            /* 900 x 1.25 = 1125px */
+            #board-container { width: 900px; height: 1125px; } 
+            
+            #hud-panel { width: 100%; padding: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); gap: 5px; background: #f5f5f5; border-top: 4px solid var(--c-dark); }
+            
+            /* Mobile Buttons Compactos */
             #jail-btns { display: flex; gap:5px; width: 100%; }
-            .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; }
-            .btn-inv { height: 45px; font-size: 1rem; }
+            .hud-top-bar { background: #fff; border: 2px solid #ccc; border-radius: 10px; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+            .btn-inv { height: 35px; font-size: 0.9rem; margin-top: 0; } /* Botão menor */
             #players-scroll, #desktop-props-container { display: none; }
-            #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+            #mobile-controls-wrapper { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         }
 
         @media (min-width: 900px) {
@@ -92,7 +96,7 @@
             #normal-btns { display: flex; flex-direction: column; gap: 10px; }
             #jail-btns { display: flex; flex-direction: column; gap: 10px; }
             
-            .btn-game { padding: 18px; font-size: 1.2rem; } 
+            .btn-game { padding: 18px; font-size: 1.2rem; min-height: 50px; } 
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
             .btn-inv { display: none; }
         }
@@ -149,8 +153,8 @@
         .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
 
         /* UI ELEMENTS */
-        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
-        .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
+        .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-family: 'Titan One'; }
+        .money-display { font-size: 1.4rem; color: var(--c-green); font-family: 'Titan One'; }
         .money-display.debt { color: #d32f2f; animation: pulseRed 1s infinite; }
         @keyframes pulseRed { 0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1} }
         
@@ -158,16 +162,25 @@
         .p-stat.active { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
         .p-stat.bankrupt { opacity: 0.5; text-decoration: line-through; }
         
-        .btn-game { border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.9rem; padding: 5px; }
-        .btn-game:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+        /* BOTÕES COMPACTOS */
+        .btn-game { 
+            border: none; border-radius: 12px; font-family: 'Titan One'; cursor: pointer; color: #fff; 
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2); text-transform: uppercase; position: relative; 
+            width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; 
+            text-align: center; 
+            min-height: 35px; /* Reduzido de 50px */
+            font-size: 0.8rem; /* Reduzido */
+            padding: 2px 5px; /* Reduzido */
+        }
+        .btn-game:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
         .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; }
         .btn-roll { background: var(--c-yel); color: var(--c-dark); }
         .btn-buy { background: var(--c-green); }
         .btn-pass { background: var(--c-red); }
         .btn-trade { background: #1976d2; }
-        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 15px; }
+        .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; padding: 10px; }
         @keyframes pulseBtn { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
-        .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-inv { background: #37474f; color: white; border-radius: 12px; cursor: pointer; border: none; font-weight: 900; box-shadow: 0 3px 0 rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px; }
 
         .prop-item { background:#fff; border-left:8px solid #333; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; margin-bottom:5px; border:1px solid #eee; font-size: 0.85rem; align-items: center; }
         .prop-item:hover { background: #f5f5f5; }
@@ -476,7 +489,13 @@ function resizeBoard() {
     const el = document.getElementById('board-container');
     const area = document.getElementById('board-area');
     if(!el || !area) return;
-    const scale = Math.min(area.offsetWidth, area.offsetHeight) * 0.95 / 950; 
+    
+    // DETECT MOBILE
+    const isMobile = window.innerWidth < 900;
+    const baseWidth = isMobile ? 900 : 1300;
+    const baseHeight = isMobile ? 1125 : 1000;
+    
+    const scale = Math.min(area.offsetWidth / baseWidth, area.offsetHeight / baseHeight) * 0.95; 
     el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
@@ -637,7 +656,7 @@ const ui = {
             
             if(rolled) {
                 jailedArea.style.display = 'none';
-                normalArea.style.display = 'flex';
+                normalArea.style.display = 'grid';
                 document.getElementById('b-roll').disabled = true;
                 document.getElementById('b-buy').disabled = true;
                 document.getElementById('b-trade').disabled = true;
@@ -647,7 +666,7 @@ const ui = {
 
         } else if (hum) {
             jailedArea.style.display = 'none';
-            normalArea.style.display = 'flex'; // Mudança para grid no CSS mobile
+            normalArea.style.display = 'grid'; // Grid for mobile, Flex for desktop via CSS
             
             const doubles = players[0].lastD1 === players[0].lastD2 && players[0].lastD1 !== undefined;
             const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
@@ -677,7 +696,7 @@ const ui = {
             if(pendingCardType) {
                 btnCard.style.display = 'block'; normalArea.style.display = 'none';
             } else {
-                btnCard.style.display = 'none'; normalArea.style.display = 'grid'; // Grid for mobile, Flex for desktop via CSS
+                btnCard.style.display = 'none'; normalArea.style.display = 'grid'; 
             }
             
             let canBuy = rolled && (BD[players[0].pos].t==='pr' || BD[players[0].pos].t==='rr' || BD[players[0].pos].t==='ut') && !props[players[0].pos] && !pendingCardType && players[0].money >= BD[players[0].pos].p;
@@ -687,7 +706,7 @@ const ui = {
             document.getElementById('b-buy').disabled = !canBuy;
         } else {
             jailedArea.style.display = 'none';
-            normalArea.style.display = 'flex';
+            normalArea.style.display = 'grid';
         }
     },
     openProp: (idx, forBuy=false) => {
@@ -767,6 +786,7 @@ const game = {
         ui.dice(d1,d2); await sleep(1500);
         
         if(p.jailed){
+             // AI LOGIC: USE CARD IF HAS IT
              if(turn !== 0 && p.hasJailCard) {
                  p.jailed=false; p.jailAttempts=0; p.hasJailCard=false; p.jailTurns=0;
                  ui.toast("CPU USOU HABEAS CORPUS!"); play('good');
@@ -788,6 +808,7 @@ const game = {
                  setTimeout(game.pass, 1500); return;
              } else { 
                  p.jailAttempts++; ui.toast(`AINDA PRESO! TENTATIVA ${p.jailAttempts}/3`); play('bad');
+                 // CORREÇÃO: Define rolled=true para liberar o botão PASSAR na ui.hud
                  rolled=true; animating=false; ui.hud(); 
                  return; 
              }
@@ -816,6 +837,7 @@ const game = {
         totalTurns++;
         if(totalTurns%20 === 0) { ui.toast(`O GALO PASSOU!`); players.forEach(pl=>{ if(pl.active){ pl.money+=200; pl.pos=0;} }); ui.updatePositions(); return; }
         
+        // AGAMENON LOGIC
         if(s.n === "Agamenon" && (!pr || pr.owner!==pid)) {
             const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
             if(check > 6) { ui.toast(`CUPOM BK! +$50 (Dado: ${check})`); p.money += 50; play('cash'); }
@@ -826,6 +848,7 @@ const game = {
             }
         }
         
+        // TUBARÃO LOGIC (Boa Viagem, Paiva, Pina)
         if((s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina")){ 
              const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
              if(check > 6) {
@@ -849,6 +872,7 @@ const game = {
             } else if(pr.owner !== pid && !pr.loan && players[pr.owner].active){
                 let rent = 0;
                 if(s.t==='pr') {
+                    // REGRA DE OURO: Dobra se monopólio e sem casas
                     const isMonopoly = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1).every(i=>props[i]&&props[i].owner===pr.owner);
                     if(isMonopoly && pr.level===0) rent = s.r[0] * 2;
                     else rent = s.r[pr.level];
@@ -917,6 +941,7 @@ const game = {
         play('jail'); animating = false; rolled = true; 
         setTimeout(game.pass, 2000); 
     },
+    // CORREÇÃO: Atualiza a interface imediatamente
     payJail: () => { const p = players[0]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); play('cash'); ui.hud(); } },
     aiTurn: () => {
         const p = players[turn];
@@ -1012,8 +1037,6 @@ const game = {
     },
     // --- TRADING SYSTEM ---
     openTrade: () => {
-        if(players[0].tradedRound) { ui.toast("Já negociou nesta rodada!"); return; }
-        
         const sel = document.getElementById('trade-partner');
         sel.innerHTML = players.map((p,i)=>(i!==0 && p.active)?`<option value="${i}">${p.name} ($${p.money})</option>`:'').join('');
         if(sel.options.length === 0) { ui.toast("Ninguém para negociar!"); return; }
@@ -1080,9 +1103,6 @@ const game = {
             bot.money += moneyOffer;
             props[getIndex].owner = 0;
             giveIndices.forEach(i => props[i].owner = botId);
-            
-            players[0].tradedRound = true; // LOCK TRADE FOR THIS TURN
-            
             document.getElementById('trade-modal').style.display='none';
             ui.hud();
         } else {
@@ -1092,7 +1112,3 @@ const game = {
     }
 };
 </script>
-</body>
-</html>
-
-
