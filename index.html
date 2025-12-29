@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* --- ESTILOS VISUAIS ORIGINAIS (V65.1) --- */
+        /* --- CSS ORIGINAL (VISUAL V65.1) --- */
         :root {
             --wood: #5d4037; --paper: #fff8e1;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
@@ -37,7 +37,7 @@
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
-        /* MODAIS DE LOGIN/LOBBY (Sistema Antigo Restaurado) */
+        /* MODAIS (LOGIN, LOBBY, TRADE) */
         #screen-login, #screen-lobby, #screen-char, #screen-end, #screen-trade { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
         #screen-lobby, #screen-char, #screen-end, #screen-trade { display: none; }
 
@@ -82,6 +82,7 @@
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
         }
 
+        /* TABULEIRO */
         .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; }
         .rot-left { transform: rotate(90deg); } .rot-top { transform: rotate(180deg); } .rot-right { transform: rotate(-90deg); }
         .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 2px; }
@@ -91,7 +92,7 @@
         .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
         .space.owned { border: 4px solid !important; z-index: 5; }
 
-        /* ELEMENTOS 3D E DECKS */
+        /* CENTER HUB & DECKS 3D */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; background: transparent; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .brennand-tower { position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(10px 10px 20px rgba(0,0,0,0.5)); transform: scale(1.5); }
         .bt-head { font-size: 5rem; line-height: 0.6; z-index: 2; color: #546e7a; text-shadow: 2px 2px 0 #000; }
@@ -105,11 +106,13 @@
         .deck.reves { bottom: 20%; right: 15%; background: linear-gradient(135deg, #ffa726, #f57c00); transform: rotate(5deg); }
         .deck-label { font-size: 3rem; opacity: 0.8; }
 
+        /* TOKENS & BUILDINGS */
         .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: top 0.2s linear, left 0.2s linear; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
 
+        /* UI */
         .turn-badge { background: var(--c-dark); color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'Titan One'; }
         .money-display { font-size: 1.6rem; color: var(--c-green); font-family: 'Titan One'; }
         
@@ -124,13 +127,14 @@
         .p-stat { background: #fff; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.8rem; padding: 8px; margin-bottom: 5px; }
         .p-stat.active-turn { background: #e3f2fd; border: 2px solid var(--c-blue); transform: scale(1.02); }
 
+        /* OVERLAYS */
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
         #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
-        /* DADOS (BOLINHAS) */
+        /* DADOS COM BOLINHAS */
         #dice-container { position: absolute; top:35%; left:50%; transform:translateX(-50%); display:flex; gap:20px; z-index: 7000; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
         .die-box { width: 80px; height: 80px; background: #fff; border-radius: 12px; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
         .die-face { display: grid; width: 100%; height: 100%; padding: 8px; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
@@ -165,10 +169,10 @@
         <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE ONLINE<br><span style="font-size:1rem; color:#000;">MULTIPLAYER</span></h1>
         <input type="text" id="my-name" class="inp-box" placeholder="Seu Nome" maxlength="10">
         <hr style="border:1px dashed #ccc; margin: 15px 0;">
-        <button class="btn-main" onclick="net.initAndCreate()">CRIAR SALA</button>
+        <button class="btn-main" onclick="net.createRoom()">CRIAR SALA</button>
         <p style="font-weight:900; margin:10px;">OU</p>
         <input type="text" id="room-code" class="inp-box" placeholder="Código da Sala">
-        <button class="btn-main btn-sec" onclick="net.initAndJoin()">ENTRAR NA SALA</button>
+        <button class="btn-main btn-sec" onclick="net.joinRoom()">ENTRAR NA SALA</button>
     </div>
 </div>
 
@@ -439,12 +443,13 @@ window.addEventListener('resize', resizeBoard);
 
 // --- REDE (PEERJS) ---
 const net = {
-    initAndCreate: () => {
+    createRoom: () => {
         const name = document.getElementById('my-name').value.trim();
         if(!name) return alert('Digite seu nome!');
         myName = name; isHost = true;
         
         peer = new Peer(null, { debug: 1 });
+        
         peer.on('open', (id) => {
             myId = id;
             gameState.players.push({
@@ -452,8 +457,15 @@ const net = {
                 money: 500, pos: 0, active: true, color: '#f00', protection: false
             });
             navigator.clipboard.writeText(id);
-            ui.toLobby(id);
+            document.getElementById('screen-login').style.display='none';
+            document.getElementById('screen-lobby').style.display='flex';
+            document.getElementById('lobby-code').innerText = id;
+            document.getElementById('host-ctrl').style.display='block';
+            document.getElementById('client-wait').style.display='none';
+            ui.toast("Código copiado! Mande para os amigos.");
+            ui.renderLobby();
         });
+
         peer.on('connection', (conn) => {
             connections.push(conn);
             conn.on('data', (data) => net.handleData(data, conn.peer));
@@ -461,7 +473,7 @@ const net = {
         });
         peer.on('error', (err) => alert(err));
     },
-    initAndJoin: () => {
+    joinRoom: () => {
         const name = document.getElementById('my-name').value.trim();
         const code = document.getElementById('room-code').value.trim();
         if(!name || !code) return alert('Preencha nome e código!');
@@ -473,7 +485,8 @@ const net = {
             connHost = peer.connect(code);
             connHost.on('open', () => {
                 connHost.send({ type: 'JOIN', name: myName });
-                ui.toLobby();
+                document.getElementById('screen-login').style.display='none';
+                document.getElementById('screen-lobby').style.display='flex';
             });
             connHost.on('data', (data) => net.handleData(data));
         });
@@ -657,15 +670,6 @@ const gameHost = {
 
 // --- UI ---
 const ui = {
-    toLobby: (code) => {
-        document.getElementById('screen-login').style.display = 'none';
-        document.getElementById('screen-lobby').style.display = 'flex';
-        if(code) {
-            document.getElementById('lobby-code').innerText = code;
-            document.getElementById('host-ctrl').style.display = 'block';
-            document.getElementById('client-wait').style.display = 'none';
-        }
-    },
     renderLobby: () => {
         document.getElementById('lobby-list').innerHTML = gameState.players.map(p => 
             `<li class="player-li ${p.confirmed?'ready':''}">${p.name} ${p.id===myId?'(Você)':''}</li>`
