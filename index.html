@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Recife Imobiliário: Versão Final</title>
+    <title>Recife Imobiliário: V66.2 (Mobile Ajustado)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -58,7 +58,6 @@
         
         #action-btns { width: 100%; margin-bottom: 10px; }
         
-        /* CORREÇÃO: GRADE PARA BOTÕES MOBILE */
         #normal-btns {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -69,7 +68,11 @@
         /* --- MEDIA QUERIES --- */
         @media (max-width: 899px) {
             #game-layout { flex-direction: column; }
-            #board-container { width: 900px; height: 1250px; }
+            
+            /* AJUSTE MOBILE: DIMENSÃO "QUADRADA" (Referência Original) */
+            /* Antes estava 900px x 1250px (muito alto). Agora ajustado para proporção do original */
+            #board-container { width: 900px; height: 1000px; } 
+            
             #hud-panel { width: 100%; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); gap: 8px; background: #f5f5f5; border-top: 4px solid var(--c-dark); }
             /* Mobile Buttons */
             #jail-btns { display: flex; gap:5px; width: 100%; }
@@ -88,7 +91,6 @@
             .hud-content { padding: 20px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
             #players-scroll { display: flex; flex-direction: column; margin-bottom: 15px; max-height: 25vh; overflow-y: auto; gap: 5px; }
             
-            /* Desktop Buttons: Coluna Vertical */
             #action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
             #normal-btns { display: flex; flex-direction: column; gap: 10px; }
             #jail-btns { display: flex; flex-direction: column; gap: 10px; }
@@ -108,7 +110,7 @@
             font-size: 0.75rem; 
             font-weight: 800; 
             color: #000;
-            overflow: hidden; /* CORREÇÃO DO VAZAMENTO */
+            overflow: hidden; 
         }
         
         .rot-left { transform: rotate(90deg); }
@@ -489,8 +491,9 @@ const ui = {
         const startMoney = gameMode === 'hardcore' ? 500 : 1000;
         const cpuCount = parseInt(document.getElementById('cpu-count').value);
         
-        players = [{name:"Você", icon:"", pos:0, money:startMoney, jailed:false, protection:false, jailTurns:0, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false, hasJailCard:false}];
-        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:startMoney, jailed:false, protection:false, jailTurns:0, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false, hasJailCard:false});
+        // ADDED: tradedRound prop
+        players = [{name:"Você", icon:"", pos:0, money:startMoney, jailed:false, protection:false, jailTurns:0, color:"#d32f2f", id:0, active:true, doubles:0, jailAttempts:0, skippedTurn:false, hasJailCard:false, tradedRound:false}];
+        for(let i=0; i<cpuCount; i++) players.push({name:`CPU ${i+1}`, icon:"🤖", pos:0, money:startMoney, jailed:false, protection:false, jailTurns:0, color:["#1976d2","#388e3c","#fbc02d","#7b1fa2"][i], id:i+1, active:true, doubles:0, jailAttempts:0, skippedTurn:false, hasJailCard:false, tradedRound:false});
         
         document.getElementById('screen-start').style.display='none'; document.getElementById('screen-char').style.display='flex';
         CHARS.forEach(c => document.getElementById('char-grid').innerHTML+=`<div class="char-opt" onclick="ui.start('${c.i}')"><div class="char-emoji">${c.i}</div></div>`);
@@ -609,19 +612,46 @@ const ui = {
         document.getElementById('inv-list').innerHTML = propsHTML;
 
         const hum = turn===0; const jailed = players[0].jailed;
-        document.getElementById('jail-btns').style.display = (jailed && hum) ? 'flex' : 'none';
+        const jailedArea = document.getElementById('jail-btns');
+        const normalArea = document.getElementById('normal-btns');
         
-        if(jailed && hum && players[0].hasJailCard) {
-             if(!document.getElementById('btn-hc')) {
-                 const btn = document.createElement('button'); btn.id='btn-hc'; btn.className='btn-game btn-buy'; btn.innerText='USAR HABEAS CORPUS';
-                 btn.onclick = () => { players[0].jailed=false; players[0].jailAttempts=0; players[0].hasJailCard=false; ui.toast("LIVRE!"); play('good'); ui.hud(); };
-                 document.getElementById('jail-btns').appendChild(btn);
-             }
-        }
-        
-        document.getElementById('normal-btns').style.display = (!jailed && hum) ? 'flex' : 'none';
-        
-        if(!jailed && hum) {
+        if (jailed && hum) {
+            jailedArea.style.display = 'flex';
+            normalArea.style.display = 'none';
+
+            const oldHc = document.getElementById('btn-hc');
+            if(oldHc) oldHc.remove();
+
+            if (players[0].hasJailCard) {
+                const btn = document.createElement('button'); 
+                btn.id='btn-hc'; 
+                btn.className='btn-game btn-buy'; 
+                btn.innerText='USAR HABEAS CORPUS';
+                btn.onclick = () => { 
+                    players[0].jailed=false; 
+                    players[0].jailAttempts=0; 
+                    players[0].hasJailCard=false; 
+                    ui.toast("LIVRE!"); 
+                    play('good'); 
+                    ui.hud(); 
+                };
+                jailedArea.appendChild(btn);
+            }
+            
+            if(rolled) {
+                jailedArea.style.display = 'none';
+                normalArea.style.display = 'flex';
+                document.getElementById('b-roll').disabled = true;
+                document.getElementById('b-buy').disabled = true;
+                document.getElementById('b-trade').disabled = true;
+                document.getElementById('b-pass').disabled = false;
+                document.getElementById('b-pass').innerText = "PASSAR";
+            }
+
+        } else if (hum) {
+            jailedArea.style.display = 'none';
+            normalArea.style.display = 'flex'; // Mudança para grid no CSS mobile
+            
             const doubles = players[0].lastD1 === players[0].lastD2 && players[0].lastD1 !== undefined;
             const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
             document.getElementById('b-roll').disabled = !canRoll;
@@ -638,14 +668,19 @@ const ui = {
                 }
             } else {
                 document.getElementById('b-pass').innerText = "PASSAR";
-                document.getElementById('b-trade').disabled = rolled && !doubles; 
+                document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
+                
+                // TRADE LOGIC: 1 PER ROUND
+                // Can trade if it's my turn AND I haven't traded yet this round
+                const alreadyTraded = players[0].tradedRound;
+                document.getElementById('b-trade').disabled = alreadyTraded || (rolled && !doubles); 
             }
             
             const btnCard = document.getElementById('b-card');
             if(pendingCardType) {
-                btnCard.style.display = 'block'; document.getElementById('normal-btns').style.display = 'none';
+                btnCard.style.display = 'block'; normalArea.style.display = 'none';
             } else {
-                btnCard.style.display = 'none'; document.getElementById('normal-btns').style.display = 'flex';
+                btnCard.style.display = 'none'; normalArea.style.display = 'grid'; // Grid for mobile, Flex for desktop via CSS
             }
             
             let canBuy = rolled && (BD[players[0].pos].t==='pr' || BD[players[0].pos].t==='rr' || BD[players[0].pos].t==='ut') && !props[players[0].pos] && !pendingCardType && players[0].money >= BD[players[0].pos].p;
@@ -653,9 +688,9 @@ const ui = {
             if(players[0].money < 0) canBuy = false;
 
             document.getElementById('b-buy').disabled = !canBuy;
-            if(players[0].money >= 0) {
-                document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
-            }
+        } else {
+            jailedArea.style.display = 'none';
+            normalArea.style.display = 'flex';
         }
     },
     openProp: (idx, forBuy=false) => {
@@ -735,7 +770,6 @@ const game = {
         ui.dice(d1,d2); await sleep(1500);
         
         if(p.jailed){
-             // AI LOGIC: USE CARD IF HAS IT
              if(turn !== 0 && p.hasJailCard) {
                  p.jailed=false; p.jailAttempts=0; p.hasJailCard=false; p.jailTurns=0;
                  ui.toast("CPU USOU HABEAS CORPUS!"); play('good');
@@ -757,7 +791,8 @@ const game = {
                  setTimeout(game.pass, 1500); return;
              } else { 
                  p.jailAttempts++; ui.toast(`AINDA PRESO! TENTATIVA ${p.jailAttempts}/3`); play('bad');
-                 rolled=true; animating=false; ui.hud(); setTimeout(game.pass, 1500); return; 
+                 rolled=true; animating=false; ui.hud(); 
+                 return; 
              }
         } else {
             if(d1===d2) { p.doubles++; ui.toast("DUPLOS!"); play('good'); } else p.doubles=0;
@@ -784,7 +819,6 @@ const game = {
         totalTurns++;
         if(totalTurns%20 === 0) { ui.toast(`O GALO PASSOU!`); players.forEach(pl=>{ if(pl.active){ pl.money+=200; pl.pos=0;} }); ui.updatePositions(); return; }
         
-        // AGAMENON LOGIC
         if(s.n === "Agamenon" && (!pr || pr.owner!==pid)) {
             const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
             if(check > 6) { ui.toast(`CUPOM BK! +$50 (Dado: ${check})`); p.money += 50; play('cash'); }
@@ -795,7 +829,6 @@ const game = {
             }
         }
         
-        // TUBARÃO LOGIC (Boa Viagem, Paiva, Pina)
         if((s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina")){ 
              const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
              if(check > 6) {
@@ -819,7 +852,6 @@ const game = {
             } else if(pr.owner !== pid && !pr.loan && players[pr.owner].active){
                 let rent = 0;
                 if(s.t==='pr') {
-                    // REGRA DE OURO: Dobra se monopólio e sem casas
                     const isMonopoly = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1).every(i=>props[i]&&props[i].owner===pr.owner);
                     if(isMonopoly && pr.level===0) rent = s.r[0] * 2;
                     else rent = s.r[pr.level];
@@ -905,6 +937,10 @@ const game = {
     },
     pass: () => {
         play('slide');
+        
+        // RESET TRADE FOR THE PLAYER ENDING TURN
+        players[turn].tradedRound = false;
+
         players[turn].doubles = 0; 
         if(turn !== 0) game.aiTurn();
 
@@ -979,6 +1015,8 @@ const game = {
     },
     // --- TRADING SYSTEM ---
     openTrade: () => {
+        if(players[0].tradedRound) { ui.toast("Já negociou nesta rodada!"); return; }
+        
         const sel = document.getElementById('trade-partner');
         sel.innerHTML = players.map((p,i)=>(i!==0 && p.active)?`<option value="${i}">${p.name} ($${p.money})</option>`:'').join('');
         if(sel.options.length === 0) { ui.toast("Ninguém para negociar!"); return; }
@@ -1045,6 +1083,9 @@ const game = {
             bot.money += moneyOffer;
             props[getIndex].owner = 0;
             giveIndices.forEach(i => props[i].owner = botId);
+            
+            players[0].tradedRound = true; // LOCK TRADE FOR THIS TURN
+            
             document.getElementById('trade-modal').style.display='none';
             ui.hud();
         } else {
