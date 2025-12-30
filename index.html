@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V74.0 (Final)</title>
+    <title>Recife Imobiliário: Online (V71.3)</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -11,12 +11,12 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        /* --- ESTILOS VISUAIS IDÊNTICOS À V68/71 --- */
         :root { --wood: #5d4037; --paper: #fff8e1; --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d; --c-dark: #263238; --board-bg: #c5e1a5; --space-bg: #ffffff; --border-col: #1a1a1a; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Nunito', sans-serif; background: linear-gradient(120deg, #1565c0, #fbc02d, #c62828, #1565c0); background-size: 400% 400%; animation: frevoBG 15s ease infinite; height: 100dvh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         @keyframes frevoBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-        
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
         .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
@@ -24,34 +24,24 @@
         .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
-        
-        .screen { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
-        .hidden { display: none !important; }
-        
+        #screen-start, #screen-lobby, #screen-join, #screen-char, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
+        #screen-end, #screen-lobby, #screen-join, #screen-char { display: none; }
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
         .sel-box { margin: 15px 0; text-align: left; }
         input, select { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1.2rem; border-radius: 10px; text-align: center; text-transform: uppercase;}
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.2rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
         .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #0d47a1; }
-        .btn-warn { background: #e65100; box-shadow: 0 6px 0 #bf360c; }
-        
-        #screen-interstitial { background: linear-gradient(135deg, var(--c-blue), var(--c-dark)); color: #fff; text-align: center; }
-        #next-player-name { font-size: 3rem; color: var(--c-yel); margin: 20px 0; animation: pulseBig 1.5s infinite; }
-        @keyframes pulseBig { 0%{transform:scale(1);} 50%{transform:scale(1.1);} 100%{transform:scale(1);} }
-
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
         .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
         .lobby-list { text-align: left; margin: 15px 0; background: #eee; padding: 10px; border-radius: 10px; }
         .lobby-item { padding: 5px; border-bottom: 1px solid #ccc; font-weight: bold; }
         #room-code-display { font-size: 2.5rem; color: var(--c-red); font-family: 'Titan One'; letter-spacing: 5px; margin: 10px 0; user-select: all; cursor: pointer; }
-        
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; flex-direction: column; }
         #game-layout.active { display: flex; }
         #board-area { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); flex: 1; width: 100%; min-height: 0; }
         #board-container { position: relative; transform-origin: center center; box-shadow: 0 0 50px rgba(0,0,0,0.5); display: block; }
         #board { width: 900px; height: 1050px; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); }
-        
         #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); flex-shrink: 0; width: 100%; border-top: 4px solid var(--c-dark); padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
         #action-btns { width: 100%; margin-bottom: 5px; }
         #normal-btns, #jail-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
@@ -65,7 +55,6 @@
         .btn-card { background: linear-gradient(45deg, #ff9800, #f57c00); animation: pulseBtn 1s infinite; display: none; width: 100%; grid-column: span 2; }
         .hud-top-bar { background: #eceff1; border: 2px solid #b0bec5; border-radius: 8px; padding: 5px 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .btn-inv { background: #37474f; color: white; border-radius: 8px; cursor: pointer; border: none; font-weight: 800; text-transform: uppercase; height: 35px; width: 100%; font-size: 0.8rem; }
-        
         .hud-content { display: none; }
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
@@ -84,7 +73,6 @@
             #players-scroll, #desktop-props-container { display: none; }
             #mobile-controls-wrapper { display: flex; flex-direction: column; width: 100%; }
         }
-
         .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; overflow: hidden; }
         .rot-left { transform: rotate(90deg); }
         .rot-top { transform: rotate(180deg); }
@@ -110,7 +98,6 @@
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
-        
         .money-display { font-size: 1.4rem; color: var(--c-green); font-family: 'Titan One'; }
         .money-display.debt { color: #d32f2f; animation: pulseRed 1s infinite; }
         @keyframes pulseRed { 0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1} }
@@ -121,7 +108,6 @@
         .prop-item:hover { background: #f5f5f5; transform:translateX(2px); }
         .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
         .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
-        
         #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
         #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
@@ -157,47 +143,49 @@
 <div id="net-status">SALVANDO...</div>
 <div id="fx-layer"><div class="shark-anim">🦈</div><div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div></div>
 
-<div id="screen-mode" class="screen">
+<div id="screen-start">
     <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:3rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1.2rem; color:#000;">V74 (Fixed)</span></h1>
-        <button class="btn-main" onclick="initMode('local')">JOGAR LOCAL<br><span style="font-size:0.8rem">Passar o Celular</span></button>
-        <button class="btn-main btn-warn" style="margin-top:10px" onclick="initMode('online')">JOGAR ONLINE<br><span style="font-size:0.8rem">Multiplayer</span></button>
+        <h1 style="color:var(--c-blue); font-size:3rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1.2rem; color:#000;">ONLINE (V71.3)</span></h1>
+        <div class="sel-box">
+            <label>NOME DE JOGADOR</label>
+            <input type="text" id="p-name" placeholder="SEU NOME" maxlength="10">
+        </div>
+        <div class="sel-box">
+            <button class="btn-main" onclick="fb.createRoom()">CRIAR SALA</button>
+            <button class="btn-main btn-sec" onclick="fb.screenJoin()">ENTRAR</button>
+        </div>
     </div>
 </div>
 
-<div id="screen-setup-local" class="screen hidden">
+<div id="screen-join" style="display:none;">
     <div class="card-menu">
-        <h2 class="brand">CONFIG LOCAL</h2>
-        <div class="sel-box"><label>JOGADORES</label><select id="local-count"><option value="2">2 Amigos</option><option value="3">3 Amigos</option><option value="4">4 Amigos</option></select></div>
-        <button class="btn-main" onclick="startLocalSetup()">CONTINUAR</button>
+        <h2 class="brand">ENTRAR NA SALA</h2>
+        <div class="sel-box">
+            <label>CÓDIGO DA SALA</label>
+            <input type="text" id="join-code" placeholder="CÓDIGO">
+        </div>
+        <button class="btn-main" onclick="fb.joinRoom()">ENTRAR</button>
         <button class="btn-main btn-sec" onclick="location.reload()">VOLTAR</button>
     </div>
 </div>
 
-<div id="screen-setup-online" class="screen hidden">
+<div id="screen-lobby">
     <div class="card-menu">
-        <h2 class="brand">ONLINE</h2>
-        <div class="sel-box"><label>SEU NOME</label><input type="text" id="p-name" placeholder="NOME" maxlength="10"></div>
-        <button class="btn-main" onclick="fb.createRoom()">CRIAR SALA</button>
-        <button class="btn-main btn-sec" onclick="fb.screenJoin()">ENTRAR NA SALA</button>
-        <button class="btn-main btn-sec" style="background:#555" onclick="location.reload()">VOLTAR</button>
+        <h2 class="brand">LOBBY</h2>
+        <div id="room-code-display" onclick="fb.copyCode()">...</div>
+        <div class="lobby-list" id="lobby-list"></div>
+        <div class="sel-box" id="host-controls">
+            <button class="btn-main" onclick="fb.startGame()">INICIAR JOGO</button>
+        </div>
+        <div id="client-msg" style="display:none">Aguardando Host...</div>
     </div>
 </div>
 
-<div id="screen-join" class="screen hidden">
-    <div class="card-menu"><h2 class="brand">ENTRAR</h2><div class="sel-box"><input type="text" id="join-code" placeholder="CÓDIGO"></div><button class="btn-main" onclick="fb.joinRoom()">ENTRAR</button></div>
-</div>
-
-<div id="screen-lobby" class="screen hidden">
-    <div class="card-menu"><h2 class="brand">LOBBY</h2><div id="room-code-display" onclick="fb.copyCode()">...</div><div class="lobby-list" id="lobby-list"></div><div id="host-controls"><button class="btn-main" onclick="fb.startGame()">INICIAR</button></div><div id="client-msg" style="display:none">Aguardando Host...</div></div>
-</div>
-
-<div id="screen-char" class="screen hidden">
-    <div class="card-menu"><h2 class="brand" id="char-title">PERSONAGEM</h2><div class="char-grid" id="char-grid"></div></div>
-</div>
-
-<div id="screen-interstitial" class="screen hidden" onclick="ui.startTurn()">
-    <h2 class="brand">PASSE O CELULAR</h2><div id="next-player-name">JOGADOR 2</div><p>Toque para começar</p>
+<div id="screen-char">
+    <div class="card-menu">
+        <h2 class="brand" id="char-title">ESCOLHA SEU PERSONAGEM</h2>
+        <div class="char-grid" id="char-grid"></div>
+    </div>
 </div>
 
 <div id="game-layout">
@@ -226,7 +214,7 @@
                 </div>
             </div>
             <div class="hud-top-bar">
-                <div class="turn-badge" id="turn-display">...</div>
+                <div class="turn-badge" id="turn-display">Carregando...</div>
                 <div class="money-display" id="p-money">$0</div>
             </div>
             <button class="btn-inv" onclick="ui.toggleInv()">💼 ESCRITURAS</button>
@@ -246,7 +234,7 @@
             <div class="t-col"><div class="t-head">EU RECEBO</div><div id="trade-list-get"></div></div>
         </div>
         <div style="display:flex;gap:10px;">
-            <button id="btn-trade-action" class="btn-game btn-buy" onclick="game.sendOffer()">ENVIAR</button>
+            <button class="btn-game btn-buy" onclick="game.sendOffer()">ENVIAR PROPOSTA</button>
             <button class="btn-game btn-pass" onclick="document.getElementById('trade-modal').style.display='none'">CANCELAR</button>
         </div>
     </div>
@@ -301,106 +289,114 @@ const BD=[{t:'st',n:'MARCO ZERO',i:'🚩'}, {t:'pr',g:'#795548',n:'Coque',p:60,h
 const CARDS_SORTE = [{txt:"Acelera! +200",act:'move',val:0},{txt:"Metrô quebrou, Uber p/ Boa Viagem.",act:'warp',dest:37},{txt:"Ganhe $50 de cada.",act:'all',val:50},{txt:"Achou carteira. +$150",val:150},{txt:"Habeas Corpus.",act:'getjail'},{txt:"Deu a louca no GPS. Volte 3.",act:'back',val:3},{txt:"Lucro no Bolo de Rolo. +$50",val:50},{txt:"Vendeu o Celta. +$100",val:100},{txt:"Vá p/ Casa Forte.",act:'warp',dest:29},{txt:"Troco a mais. +$20",val:20},{txt:"Indenização Compesa. +$100",val:100},{txt:"Promoção. +$100",val:100},{txt:"Herança. +$100",val:100},{txt:"Jogo do Bicho. +$200",val:200},{txt:"Achasse 200 conto!",val:200}];
 const CARDS_REVES = [{txt:"IPTU Atrasado. -$50",val:-50},{txt:"Remédios -$100",val:-100},{txt:"Pague reparos.",act:'repairs'},{txt:"Pichou estátua. CADEIA!",act:'jail'},{txt:"Festa de Aniversário -$50",val:-50},{txt:"Condomínio. -$100",val:-100},{txt:"Escola. -$150",val:-150},{txt:"Bateu no BRT. -$50",val:-50},{txt:"Doação. -$10",val:-10},{txt:"Assalto. -$100",val:-100},{txt:"Multa. -$15",val:-15},{txt:"Engarrafamento! Perca a vez.",act:'skip'},{txt:"Casamento. -$50",val:-50},{txt:"Taxa de Lixo. -$40",val:-40},{txt:"Lei Seca! CADEIA!",act:'jail'}];
 
-let mode = 'local';
-let state = { players: [], props: Array(40).fill(null), turn: 0, rolled: false, pendingCardType: null };
-let myId = 0; 
-let amIHost = false;
 let roomCode = null;
-let currentSetupIndex = 0;
-let isAnimating = false;
+let myId = null;
+let players = [];
+let props = Array(40).fill(null);
+let gameState = { turn: 0, status: 'lobby', lastAction: null };
+let amIHost = false;
 
 const SFX = { step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'), cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'), slide: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'), card: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'), jail: new Audio('https://assets.mixkit.co/active_storage/sfx/1393/1393-preview.mp3'), bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'), good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3') };
 const play = (k) => { try { SFX[k].volume = 0.5; SFX[k].currentTime = 0; SFX[k].play().catch(()=>{}); } catch(e){} };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-window.onbeforeunload = () => { if(mode==='online') return "Sair da sala?"; };
-
-function initMode(m) {
-    mode = m;
-    play('slide');
-    document.getElementById('screen-mode').classList.add('hidden');
-    if(m==='local') document.getElementById('screen-setup-local').classList.remove('hidden');
-    else document.getElementById('screen-setup-online').classList.remove('hidden');
-}
-
-function startLocalSetup() {
-    const count = parseInt(document.getElementById('local-count').value);
-    const colors = ["#d32f2f", "#1976d2", "#388e3c", "#fbc02d"];
-    state.players = [];
-    for(let i=0; i<count; i++) state.players.push({id:i, name:`JOGADOR ${i+1}`, money:1000, color:colors[i], pos:0, active:true, icon:'', jailed:false, hasJailCard:false});
-    currentSetupIndex = 0;
-    ui.showCharSelectLocal();
-}
-
+// --- FIREBASE LOGIC ---
 const fb = {
     createRoom: () => {
         const name = document.getElementById('p-name').value.toUpperCase().trim();
         if(!name) return alert("Digite seu nome!");
         roomCode = Math.random().toString(36).substring(2,8).toUpperCase();
         myId = 0; amIHost = true;
-        const init = { players: [{id: 0, name: name, icon: '👑', money: 1000, color: '#d32f2f', pos: 0, active: true, jailed: false, hasJailCard: false}], props: Array(40).fill(null), state: { turn: 0, status: 'lobby', rolled: false } };
-        db.ref('rooms/' + roomCode).set(init).then(fb.enterLobby);
+        
+        const initialData = {
+            players: [{id: 0, name: name, icon: '👑', money: 1000, color: '#d32f2f', pos: 0, active: true, jailed: false, hasJailCard: false}],
+            props: Array(40).fill(null),
+            state: { turn: 0, status: 'lobby', rolled: false }
+        };
+        
+        db.ref('rooms/' + roomCode).set(initialData).then(() => { fb.enterLobby(); });
     },
-    screenJoin: () => { document.getElementById('screen-setup-online').classList.add('hidden'); document.getElementById('screen-join').classList.remove('hidden'); },
+    screenJoin: () => {
+        const name = document.getElementById('p-name').value.toUpperCase().trim();
+        if(!name) return alert("Digite seu nome!");
+        document.getElementById('screen-start').style.display='none';
+        document.getElementById('screen-join').style.display='flex';
+    },
     joinRoom: () => {
         const code = document.getElementById('join-code').value.toUpperCase().trim();
-        const nameInput = document.getElementById('p-name').value.toUpperCase().trim();
-        if(!nameInput) return alert("Volte e digite seu nome!");
+        const name = document.getElementById('p-name').value.toUpperCase().trim();
+        if(!code) return;
         
         db.ref('rooms/' + code).get().then((snap) => {
             if(snap.exists()) {
-                const d = snap.val();
-                if(d.state.status !== 'lobby') return alert("Jogo já começou!");
-                const newId = d.players.length;
+                const data = snap.val();
+                if(data.state.status !== 'lobby') return alert("Jogo já começou!");
+                
+                const newId = data.players.length;
                 const colors = ['#1976d2','#388e3c','#fbc02d'];
-                const p = {id: newId, name: nameInput, icon: '👤', money: 1000, color: colors[(newId-1)%3], pos: 0, active: true, jailed: false, hasJailCard: false};
-                db.ref('rooms/' + code + '/players/' + newId).set(p);
+                const newPlayer = {id: newId, name: name, icon: '👤', money: 1000, color: colors[(newId-1)%3], pos: 0, active: true, jailed: false, hasJailCard: false};
+                
+                db.ref('rooms/' + code + '/players/' + newId).set(newPlayer);
                 roomCode = code; myId = newId; amIHost = false;
                 fb.enterLobby();
-            } else alert("Sala não encontrada");
+            } else alert("Sala não encontrada!");
         });
     },
     enterLobby: () => {
-        document.getElementById('screen-setup-online').classList.add('hidden');
-        document.getElementById('screen-join').classList.add('hidden');
-        document.getElementById('screen-lobby').classList.remove('hidden');
+        document.getElementById('screen-start').style.display='none';
+        document.getElementById('screen-join').style.display='none';
+        document.getElementById('screen-lobby').style.display='flex';
         document.getElementById('room-code-display').innerText = roomCode;
         if(!amIHost) { document.getElementById('host-controls').style.display='none'; document.getElementById('client-msg').style.display='block'; }
         
-        db.ref('rooms/' + roomCode).on('value', snap => {
-            if(!snap.exists()) return;
+        db.ref('rooms/' + roomCode).on('value', (snap) => {
+            if(!snap.exists()) return alert("Sala fechada.");
             const val = snap.val();
-            state.players = val.players || [];
-            state.props = val.props || Array(40).fill(null);
-            const serverState = val.state;
-            state.turn = serverState.turn;
-            state.rolled = serverState.rolled;
-            state.pendingCardType = serverState.pendingCardType;
+            players = val.players || [];
+            props = val.props || Array(40).fill(null);
+            gameState = val.state;
             
-            document.getElementById('lobby-list').innerHTML = state.players.map(p => `<div class="lobby-item">${p.name}</div>`).join('');
+            // LOBBY UPDATE
+            document.getElementById('lobby-list').innerHTML = players.map(p => `<div class="lobby-item">${p.name}</div>`).join('');
             
-            if(serverState.status === 'char_select') {
-                document.getElementById('screen-lobby').classList.add('hidden');
-                document.getElementById('screen-char').classList.remove('hidden');
-                ui.renderChars((icon) => fb.selectChar(icon));
+            // START GAME CHECK
+            if(gameState.status === 'char_select') {
+                if(document.getElementById('screen-char').style.display === 'none' && document.getElementById('game-layout').style.display === 'none') {
+                    fb.screenChar();
+                }
+                // Host auto-triggers play if all set
+                if(amIHost) {
+                    const allReady = players.every(p => p.icon !== '👤' && p.icon !== '👑'); 
+                    if(allReady) db.ref('rooms/' + roomCode + '/state').update({status: 'playing'});
+                }
             }
-            if(serverState.status === 'playing') {
+            if(gameState.status === 'playing') {
                 if(document.getElementById('game-layout').style.display === 'none') ui.initGame();
-                ui.sync();
+                ui.sync(); 
             }
-            if(amIHost && serverState.status === 'char_select') {
-                const allReady = state.players.every(p => p.icon !== '👤' && p.icon !== '👑');
-                if(allReady) db.ref('rooms/' + roomCode + '/state').update({status: 'playing'});
+            
+            // TRADE
+            if(val.tradeProposal && val.tradeProposal.to === myId && document.getElementById('trade-accept-modal').style.display === 'none') {
+                game.showTradeProposal(val.tradeProposal);
             }
-            if(val.tradeProposal && val.tradeProposal.to === myId) game.showTradeProposal(val.tradeProposal);
             if(!val.tradeProposal) document.getElementById('trade-accept-modal').style.display = 'none';
         });
     },
     copyCode: () => { navigator.clipboard.writeText(roomCode); alert("Copiado!"); },
-    startGame: () => { db.ref('rooms/' + roomCode + '/state').update({status: 'char_select'}); },
+    startGame: () => {
+        if(players.length < 2) return alert("Precisa de 2 jogadores!");
+        db.ref('rooms/' + roomCode + '/state').update({status: 'char_select', turn: 0});
+    },
+    screenChar: () => {
+        document.getElementById('screen-lobby').style.display='none';
+        document.getElementById('screen-char').style.display='flex';
+        ui.renderCharSelect();
+    },
     selectChar: (icon) => {
-        state.players[myId].icon = icon;
+        players[myId].icon = icon;
         db.ref('rooms/' + roomCode + '/players/' + myId + '/icon').set(icon);
+        // Change feedback
+        document.getElementById('char-title').innerText = "AGUARDANDO OUTROS...";
     },
     update: (updates) => {
         document.getElementById('net-status').style.display='block';
@@ -409,33 +405,17 @@ const fb = {
 };
 
 const ui = {
-    showCharSelectLocal: () => {
-        document.getElementById('screen-setup-local').classList.add('hidden');
-        document.getElementById('screen-char').classList.remove('hidden');
-        document.getElementById('char-title').innerText = `${state.players[currentSetupIndex].name}, ESCOLHA:`;
-        ui.renderChars((icon) => {
-            play('good');
-            state.players[currentSetupIndex].icon = icon;
-            currentSetupIndex++;
-            if(currentSetupIndex < state.players.length) ui.showCharSelectLocal();
-            else ui.initGame();
-        });
-    },
-    renderChars: (cb) => {
+    renderCharSelect: () => {
         document.getElementById('char-grid').innerHTML = '';
         CHARS.forEach(c => {
-            const taken = state.players.some(p => p.icon === c.i);
-            if(!taken || (mode==='online' && taken && state.players[myId].icon !== c.i)) { 
-                 document.getElementById('char-grid').innerHTML += `<div class="char-opt" onclick="this.style.background='#ccc'; (${cb})('${c.i}')"><div class="char-emoji">${c.i}</div></div>`;
-            }
+            document.getElementById('char-grid').innerHTML += `<div class="char-opt" onclick="fb.selectChar('${c.i}'); this.style.background='#cfd8dc'"><div class="char-emoji">${c.i}</div></div>`;
         });
     },
     initGame: () => {
-        document.getElementById('screen-char').classList.add('hidden');
+        document.getElementById('screen-char').style.display='none';
         document.getElementById('game-layout').classList.add('active');
         ui.buildBoard();
         setTimeout(resizeBoard, 100);
-        if(mode === 'local') ui.sync();
     },
     buildBoard: () => {
         const b = document.getElementById('board');
@@ -449,176 +429,154 @@ const ui = {
             if(i===0 || i===10 || i===20 || i===30) rotClass = '';
             d.style.gridRow=r; d.style.gridColumn=c;
             const showPrice = (s.t==='pr' || s.t==='rr' || s.t==='ut') && s.p;
-            d.innerHTML = s.t==='pr' ? `<div class="space-content ${rotClass}"><div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>` : `<div class="space-content ${rotClass}"><div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}</div>`;
+            let contentHTML = s.t==='pr' ? `<div class="space-content ${rotClass}"><div class="color-strip" style="background:${s.g}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>` : `<div class="space-content ${rotClass}"><div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div>${showPrice ? `<div class="sp-price">$${s.p}</div>` : ''}</div>`;
+            d.innerHTML = contentHTML;
             b.appendChild(d);
         });
         for(let i=0; i<4; i++){ const t=document.createElement('div');t.className='token';t.id=`tok${i}`; b.appendChild(t); }
     },
     sync: () => {
-        // CORREÇÃO CRÍTICA LOCAL: 'me' deve ser quem está jogando
-        const activeP = state.players[state.turn];
-        document.getElementById('turn-display').innerText = `VEZ DE: ${activeP.name}`;
-        document.getElementById('turn-display').style.background = activeP.color;
-        
-        const me = mode==='local' ? activeP : state.players[myId]; // DYNAMIC IDENTITY
-        document.getElementById('p-money').innerText = `$${me.money}`;
-        
-        ui.updatePositions();
-
-        state.props.forEach((pr,i) => {
-            const sp = document.getElementById(`s${i}`);
-            const el = document.getElementById(`b${i}`);
-            if(pr) { sp.classList.add('owned'); sp.style.borderColor = state.players[pr.owner].color; if(el) el.innerHTML = pr.level===5?'<div class="hotel-3d"></div>':Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
+        // TOKENS
+        players.forEach((p,i) => {
+            const t = document.getElementById(`tok${i}`);
+            if(!t) return;
+            t.style.display = p.active ? 'block' : 'none';
+            t.innerHTML = p.icon;
+            const s = document.getElementById(`s${p.pos}`);
+            if(s) { t.style.left = (s.offsetLeft + 12) + 'px'; t.style.top = (s.offsetTop + 12) + 'px'; }
         });
 
-        const isMyTurn = mode==='local' ? true : (myId === state.turn);
-        const normal = document.getElementById('normal-btns');
-        const jail = document.getElementById('jail-btns');
-        const bCard = document.getElementById('b-card');
-        
-        normal.style.display = 'grid'; jail.style.display='none'; bCard.style.display='none';
-        document.querySelectorAll('.btn-game').forEach(b => b.disabled=true);
+        // PROPS
+        props.forEach((pr,i) => {
+            const sp = document.getElementById(`s${i}`);
+            const el = document.getElementById(`b${i}`);
+            if(pr) { 
+                sp.classList.add('owned'); sp.style.borderColor = players[pr.owner].color; 
+                if(el) el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join('');
+            }
+        });
 
-        if(isMyTurn && !isAnimating) {
-            if(me.jailed) {
-                normal.style.display='none'; jail.style.display='flex';
-                if(!state.rolled) { jail.querySelectorAll('button').forEach(b=>b.disabled=false); }
-                else { jail.style.display='none'; normal.style.display='grid'; document.getElementById('b-pass').disabled=false; }
-            } else if (state.pendingCardType) {
-                normal.style.display='none'; bCard.style.display='block'; bCard.disabled=false;
+        // HUD
+        const currentP = players[gameState.turn];
+        document.getElementById('turn-display').innerText = `VEZ DE: ${currentP.name}`;
+        document.getElementById('turn-display').style.background = currentP.color;
+        
+        const myP = players[myId];
+        document.getElementById('p-money').innerText = `$${myP.money}`;
+        
+        // CONTROLS
+        const isMyTurn = (myId === gameState.turn);
+        const btns = document.querySelectorAll('.btn-game');
+        btns.forEach(b => b.disabled = true);
+        
+        document.getElementById('normal-btns').style.display = 'grid';
+        document.getElementById('jail-btns').style.display = 'none';
+        document.getElementById('b-card').style.display = 'none';
+
+        if(isMyTurn) {
+            if(myP.jailed) {
+                document.getElementById('normal-btns').style.display='none';
+                document.getElementById('jail-btns').style.display='flex';
+                if(!gameState.rolled) {
+                    document.querySelector('#jail-btns .btn-roll').disabled = false;
+                    document.querySelector('#jail-btns .btn-buy').disabled = false;
+                } else {
+                    document.getElementById('jail-btns').style.display='none';
+                    document.getElementById('normal-btns').style.display='grid';
+                    document.getElementById('b-pass').disabled = false;
+                }
+            } else if (gameState.pendingCardType) {
+                document.getElementById('normal-btns').style.display='none';
+                document.getElementById('b-card').style.display='block';
+                document.getElementById('b-card').disabled=false;
             } else {
-                if(!state.rolled) { document.getElementById('b-roll').disabled=false; document.getElementById('b-trade').disabled=false; }
+                if(!gameState.rolled) document.getElementById('b-roll').disabled=false;
                 else document.getElementById('b-pass').disabled=false;
                 
-                // CORREÇÃO BOTÃO COMPRAR
-                if(state.rolled && !state.props[me.pos] && BD[me.pos].p && me.money >= BD[me.pos].p) document.getElementById('b-buy').disabled=false;
+                if(gameState.rolled && !props[myP.pos] && BD[myP.pos].p && myP.money >= BD[myP.pos].p) {
+                    document.getElementById('b-buy').disabled = false;
+                }
+                if(!gameState.rolled) document.getElementById('b-trade').disabled = false;
             }
         }
         
+        // INV LIST
         let html = '';
-        state.props.forEach((pr,i)=>{
-            if(pr && pr.owner === me.id) html += `<div class="prop-item" onclick="ui.openProp(${i})"><span>${BD[i].n}</span><span>${pr.level>0?'🏠'+pr.level:''}</span></div>`;
+        props.forEach((pr,i)=>{
+            if(pr && pr.owner === myId) html += `<div class="prop-item" onclick="ui.openProp(${i})"><span>${BD[i].n}</span><span>${pr.level>0?'🏠'+pr.level:''}</span></div>`;
         });
         document.getElementById('inv-list').innerHTML = html;
         document.getElementById('desktop-props-container').innerHTML = html;
-        document.getElementById('btn-trade-action').innerText = mode==='local' ? "O OUTRO ACEITA?" : "ENVIAR PROPOSTA";
-    },
-    updatePositions: () => {
-        state.players.forEach((p,i) => {
-            const t = document.getElementById(`tok${i}`);
-            if(t) {
-                t.style.display = p.active ? 'block' : 'none';
-                t.innerHTML = p.icon;
-                const s = document.getElementById(`s${p.pos}`);
-                if(s) { t.style.left = (s.offsetLeft+12)+'px'; t.style.top = (s.offsetTop+12)+'px'; }
-            }
-        });
     },
     openProp: (idx) => {
-        const s = BD[idx]; const pr = state.props[idx];
-        document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-price').innerText=`$${s.p}`;
-        const me = mode==='local' ? state.players[state.turn] : state.players[myId]; // FIXED
+        const s = BD[idx]; const pr = props[idx];
+        document.getElementById('pc-name').innerText=s.n;
+        document.getElementById('pc-price').innerText=`$${s.p}`;
         
-        document.getElementById('act-buy').style.display='none';
-        document.getElementById('act-manage').style.display='none';
+        document.getElementById('act-buy').style.display = 'none';
+        document.getElementById('act-manage').style.display = 'none';
         
-        if(!pr && state.turn === me.id && state.rolled && me.pos === idx) document.getElementById('act-buy').style.display='block';
-        if(pr && pr.owner === me.id) document.getElementById('act-manage').style.display='block';
+        if(!pr && myId === gameState.turn && gameState.rolled && players[myId].pos === idx) document.getElementById('act-buy').style.display='block';
+        if(pr && pr.owner === myId) document.getElementById('act-manage').style.display='block';
         
         document.getElementById('prop-card').style.display='block';
         document.getElementById('overlay-bg').style.display='block';
     },
-    toggleInv: () => document.getElementById('inv-modal').style.display='flex',
+    toggleInv: () => { document.getElementById('inv-modal').style.display = 'flex'; },
     closeCard: () => { document.getElementById('prop-card').style.display='none'; document.getElementById('overlay-bg').style.display='none'; },
-    closeEvent: () => { document.getElementById('card-event').style.display='none'; game.applyCard(); },
-    startTurn: () => { document.getElementById('screen-interstitial').classList.add('hidden'); ui.sync(); }
+    closeEvent: () => { document.getElementById('card-event').style.display='none'; game.applyCard(); }
 };
 
 const game = {
-    roll: async () => {
-        if(isAnimating) return;
-        isAnimating = true;
-        
+    roll: () => {
         const d1 = Math.ceil(Math.random()*6);
         const d2 = Math.ceil(Math.random()*6);
-        ui.dice(d1,d2);
-        await sleep(1000);
+        ui.dice(d1,d2); // Local Visual Only
         
-        const p = state.players[state.turn];
+        const p = players[myId];
         let steps = d1+d2;
         
         if(p.jailed) {
             p.jailTurns++;
-            if(d1===d2 || p.jailTurns>3) { p.jailed=false; p.jailTurns=0; await game.move(state.turn, steps); }
-            else { ui.toast("Preso!"); }
+            if(d1===d2 || p.jailTurns > 3) { p.jailed=false; p.jailTurns=0; p.pos = (p.pos + steps)%40; }
         } else {
-            if(d1===d2) p.doubles++; else p.doubles=0;
-            if(p.doubles===3) { p.jailed=true; p.pos=10; p.doubles=0; ui.toast("3x Duplos = Cadeia!"); }
-            else { await game.move(state.turn, steps); }
+            p.pos = (p.pos + steps) % 40;
+            if(p.pos < steps && p.active) p.money += 200; 
         }
         
-        if(mode==='local') {
-            state.rolled = true;
-            isAnimating = false;
-            ui.sync();
-        } else {
-            fb.update({ [`players/${state.turn}`]: p, 'state/rolled': true });
-            isAnimating = false;
-        }
+        fb.update({
+            [`players/${myId}`]: p,
+            'state/rolled': true
+        });
     },
-    move: async (pid, steps) => {
-        const p = state.players[pid];
-        for(let i=0; i<steps; i++) {
-            p.pos = (p.pos + 1) % 40;
-            if(p.pos === 0) { p.money += 200; play('cash'); }
-            if(mode==='local') ui.updatePositions();
-            play('step');
-            await sleep(200);
-        }
-        game.land(pid);
-    },
-    land: (pid) => {
-        const p = state.players[pid]; const s = BD[p.pos]; const pr = state.props[p.pos];
-        if(s.t==='pr' || s.t==='rr' || s.t==='ut') {
-            if(pr && pr.owner !== pid && !pr.loan) {
-                let rent = 50; 
-                if(s.t==='pr') rent = s.r[pr.level];
-                p.money -= rent; state.players[pr.owner].money += rent;
-                play('cash'); ui.toast(`Aluguel: $${rent}`);
-            }
-        }
-        if(s.t==='ch' || s.t==='rev') state.pendingCardType = s.t;
-        if(s.t==='gj') { p.jailed=true; p.pos=10; }
-        if(s.t==='tx') { p.money -= 200; play('bad'); }
-        if(s.n==='Agamenon') { p.money -= 50; play('bad'); }
-    },
-    buy: () => ui.openProp(state.players[state.turn].pos),
+    buy: () => { ui.openProp(players[myId].pos); },
     confirmBuy: () => {
-        const actorId = mode === 'local' ? state.turn : myId;
-        const p = state.players[actorId];
+        const p = players[myId];
         const idx = p.pos;
         if(p.money >= BD[idx].p) {
             p.money -= BD[idx].p;
-            state.props[idx] = {owner: actorId, level:0, loan:null};
-            if(mode==='local') ui.sync();
-            else fb.update({ [`players/${actorId}/money`]: p.money, [`props/${idx}`]: state.props[idx] });
+            props[idx] = {owner: myId, level: 0, loan: null};
+            fb.update({
+                [`players/${myId}/money`]: p.money,
+                [`props/${idx}`]: props[idx]
+            });
             ui.closeCard();
-            play('cash');
         }
     },
     pass: () => {
-        let next = (state.turn + 1) % state.players.length;
-        if(mode==='local') {
-            state.turn = next; state.rolled=false; state.pendingCardType=null;
-            document.getElementById('next-player-name').innerText = state.players[next].name;
-            document.getElementById('screen-interstitial').classList.remove('hidden');
-        } else {
-            fb.update({ 'state/turn': next, 'state/rolled': false, 'state/pendingCardType': null });
-        }
+        let next = (gameState.turn + 1) % players.length;
+        fb.update({
+            'state/turn': next,
+            'state/rolled': false,
+            'state/pendingCardType': null
+        });
+    },
+    clickDeck: (type) => { 
+        if(gameState.pendingCardType === type) game.forceDrawCard();
     },
     forceDrawCard: () => {
-        const type = state.pendingCardType;
-        const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
+        const type = gameState.pendingCardType; 
+        const deck = type === 'ch' ? CARDS_SORTE : CARDS_REVES;
         const c = deck[Math.floor(Math.random()*deck.length)];
         document.getElementById('ev-title').innerText = type==='ch'?'SORTE':'REVÉS';
         document.getElementById('ev-desc').innerText = c.txt;
@@ -627,147 +585,73 @@ const game = {
     },
     applyCard: () => {
         const c = game.currentCard;
-        const p = state.players[state.turn];
+        const p = players[myId];
         if(c.val) p.money += c.val;
-        if(c.act==='jail') { p.jailed=true; p.pos=10; }
-        if(c.act==='move') { p.pos=0; p.money+=200; }
-        
-        if(mode==='local') { state.pendingCardType=null; ui.sync(); }
-        else fb.update({ [`players/${state.turn}`]: p, 'state/pendingCardType': null });
-    },
-    clickDeck: (type) => { if(state.pendingCardType === type) game.forceDrawCard(); },
-    payJail: () => {
-        const p = state.players[state.turn];
-        if(p.money >= 50) {
-            p.money-=50; p.jailed=false;
-            if(mode==='local') ui.sync();
-            else fb.update({ [`players/${state.turn}`]: p });
-        }
+        if(c.act === 'jail') { p.jailed=true; p.pos=10; }
+        if(c.act === 'move') { p.pos=0; p.money+=200; }
+        fb.update({
+            [`players/${myId}`]: p,
+            'state/pendingCardType': null
+        });
     },
     openTrade: () => {
         const sel = document.getElementById('trade-partner');
-        sel.innerHTML = state.players.map((p,i)=>(i!==state.turn)?`<option value="${i}">${p.name}</option>`:'').join('');
+        sel.innerHTML = players.map((p,i)=>(i!==myId)?`<option value="${i}">${p.name}</option>`:'').join('');
         document.getElementById('trade-modal').style.display='flex';
         game.updateTradeUI();
     },
     updateTradeUI: () => {
         const targetId = parseInt(document.getElementById('trade-partner').value);
-        const me = state.turn;
-        document.getElementById('trade-list-give').innerHTML = state.props.map((pr,i)=> pr&&pr.owner===me ? `<label><input type='checkbox' class='chk-give' value='${i}'> ${BD[i].n}</label>` : '').join('');
-        document.getElementById('trade-list-get').innerHTML = state.props.map((pr,i)=> pr&&pr.owner===targetId ? `<label><input type='radio' name='rad-get' value='${i}'> ${BD[i].n}</label>` : '').join('');
+        document.getElementById('trade-list-give').innerHTML = props.map((pr,i)=> pr&&pr.owner===myId ? `<label><input type='checkbox' class='chk-give' value='${i}'> ${BD[i].n}</label>` : '').join('');
+        document.getElementById('trade-list-get').innerHTML = props.map((pr,i)=> pr&&pr.owner===targetId ? `<label><input type='radio' name='rad-get' value='${i}'> ${BD[i].n}</label>` : '').join('');
     },
     sendOffer: () => {
-        if(mode === 'local') {
-            const target = parseInt(document.getElementById('trade-partner').value);
-            const giveMoney = parseInt(document.getElementById('trade-money-give').value) || 0;
-            const gives = Array.from(document.querySelectorAll('.chk-give:checked')).map(c=>parseInt(c.value));
-            const get = document.querySelector('input[name="rad-get"]:checked') ? parseInt(document.querySelector('input[name="rad-get"]:checked').value) : null;
-            
-            const p1 = state.players[state.turn];
-            const p2 = state.players[target];
-            p1.money -= giveMoney; p2.money += giveMoney;
-            gives.forEach(i => state.props[i].owner = target);
-            if(get !== null) state.props[get].owner = state.turn;
-            
-            document.getElementById('trade-modal').style.display='none';
-            play('cash'); ui.sync();
-        } else {
-            const target = parseInt(document.getElementById('trade-partner').value);
-            const giveMoney = parseInt(document.getElementById('trade-money-give').value) || 0;
-            const gives = Array.from(document.querySelectorAll('.chk-give:checked')).map(c=>parseInt(c.value));
-            const get = document.querySelector('input[name="rad-get"]:checked') ? parseInt(document.querySelector('input[name="rad-get"]:checked').value) : null;
-            fb.update({ tradeProposal: { from: myId, to: target, money: giveMoney, gives: gives, get: get } });
-            document.getElementById('trade-modal').style.display='none';
-        }
+        const target = parseInt(document.getElementById('trade-partner').value);
+        const giveMoney = parseInt(document.getElementById('trade-money-give').value) || 0;
+        const gives = Array.from(document.querySelectorAll('.chk-give:checked')).map(c=>parseInt(c.value));
+        const get = document.querySelector('input[name="rad-get"]:checked') ? parseInt(document.querySelector('input[name="rad-get"]:checked').value) : null;
+        
+        fb.update({
+            tradeProposal: { from: myId, to: target, money: giveMoney, gives: gives, get: get }
+        });
+        document.getElementById('trade-modal').style.display='none';
     },
     showTradeProposal: (prop) => {
-        document.getElementById('trade-desc').innerText = `${state.players[prop.from].name} oferece $${prop.money} + Imóveis...`;
+        document.getElementById('trade-desc').innerText = `${players[prop.from].name} oferece $${prop.money} + ${prop.gives.length} imóveis por ${prop.get ? BD[prop.get].n : 'nada'}.`;
         document.getElementById('trade-accept-modal').style.display='flex';
     },
     resolveTrade: (accepted) => {
         document.getElementById('trade-accept-modal').style.display='none';
         if(accepted) {
-            db.ref('rooms/'+roomCode+'/tradeProposal').get().then(snap => {
+            db.ref('rooms/' + roomCode + '/tradeProposal').get().then(snap => {
                 const p = snap.val();
                 if(!p) return;
-                const p1 = state.players[p.from];
-                const p2 = state.players[p.to];
+                fb.update({tradeProposal: null});
+                // Actual trade logic happens here? No, must execute.
+                // Re-fetch players to ensure no sync issue
+                const p1 = players[p.from];
+                const p2 = players[p.to];
                 p1.money -= p.money; p2.money += p.money;
-                if(p.gives) p.gives.forEach(i => state.props[i].owner = p.to);
-                if(p.get !== undefined && p.get !== null) state.props[p.get].owner = p.from;
+                if(p.gives) p.gives.forEach(i => props[i].owner = p.to);
+                if(p.get !== undefined && p.get !== null) props[p.get].owner = p.from;
                 
                 fb.update({
-                    tradeProposal: null,
                     [`players/${p.from}`]: p1,
                     [`players/${p.to}`]: p2,
-                    props: state.props
+                    props: props
                 });
             });
         } else {
-            fb.update({ tradeProposal: null });
+            fb.update({tradeProposal: null});
         }
     },
-    mortgage: () => {
-        const actorId = mode === 'local' ? state.turn : myId;
-        const p = state.players[actorId];
-        const idx = p.pos; // FIX: Mortgage button only in card, context is implied by open modal.
-        // Re-fix: need context. But for now using p.pos as we only mortgage when landing or via inventory.
-        // Actually, inventory click opens prop.
-        // Let's use global var or just fix scope.
-        // Simplified: Mortgage current viewed prop? We need the index.
-        // In V71 I added global var. Let's re-add.
+    payJail: () => {
+        const p = players[myId];
+        if(p.money >= 50) { p.money-=50; p.jailed=false; fb.update({[`players/${myId}`]: p}); }
     },
-    build: () => {}
+    mortgage: () => { /* Simplified */ },
+    build: () => { /* Simplified */ }
 };
-
-// FIX MORTGAGE CONTEXT
-let currentPropIdx = -1;
-const originalOpenProp = ui.openProp;
-ui.openProp = (idx) => {
-    currentPropIdx = idx;
-    originalOpenProp(idx);
-};
-game.mortgage = () => {
-    const actorId = mode === 'local' ? state.turn : myId;
-    const p = state.players[actorId];
-    const s = BD[currentPropIdx];
-    const pr = state.props[currentPropIdx];
-    if(!pr.loan) {
-        const val = Math.floor(s.p * 0.8);
-        p.money += val;
-        state.props[currentPropIdx].loan = { val: val, turns: 5 };
-        if(mode==='local') ui.sync();
-        else fb.update({ [`players/${actorId}/money`]: p.money, [`props/${currentPropIdx}`]: state.props[currentPropIdx] });
-        ui.closeCard();
-        play('cash');
-    }
-};
-game.build = () => {
-    const actorId = mode === 'local' ? state.turn : myId;
-    const p = state.players[actorId];
-    const s = BD[currentPropIdx];
-    const pr = state.props[currentPropIdx];
-    if(p.money >= s.h && pr.level < 5) {
-        p.money -= s.h;
-        state.props[currentPropIdx].level++;
-        if(mode==='local') ui.sync();
-        else fb.update({ [`players/${actorId}/money`]: p.money, [`props/${currentPropIdx}`]: state.props[currentPropIdx] });
-        ui.closeCard();
-        play('cash');
-    }
-}
-
-const ui_dice = {
-    dice: (d1, d2) => {
-        const ds = document.getElementById('dice-visual'); ds.classList.add('active');
-        const c1=document.getElementById('d1'), c2=document.getElementById('d2');
-        c1.className='cube shake'; c2.className='cube shake';
-        setTimeout(()=>{ c1.className='cube'; c2.className='cube'; void c1.offsetWidth; c1.innerText=d1; c2.innerText=d2; }, 1000);
-        setTimeout(()=>{ ds.classList.remove('active'); }, 2000);
-    }
-};
-ui.dice = ui_dice.dice;
-ui.toast = (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); }
 
 function resizeBoard() {
     const el = document.getElementById('board-container');
@@ -783,7 +667,14 @@ function resizeBoard() {
     }
 }
 window.addEventListener('resize', resizeBoard);
-window.onload = resizeBoard;
+const ui_dice = { dice: (d1, d2) => {
+    const ds = document.getElementById('dice-visual'); ds.classList.add('active');
+    const c1=document.getElementById('d1'), c2=document.getElementById('d2');
+    c1.className='cube shake'; c2.className='cube shake';
+    setTimeout(()=>{ c1.className='cube'; c2.className='cube'; void c1.offsetWidth; c1.innerText=d1; c2.innerText=d2; }, 1000);
+    setTimeout(()=>{ ds.classList.remove('active'); }, 2000);
+}};
+ui.dice = ui_dice.dice;
 </script>
 </body>
 </html>
