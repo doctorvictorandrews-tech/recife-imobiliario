@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: Multiplayer Online</title>
+    <title>Recife Imobiliário: Multiplayer V2</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
@@ -27,15 +27,6 @@
 
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
 
-        /* --- FX LAYERS --- */
-        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
-        .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
-        .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
-        @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
-        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
-        .traffic-anim.active { display: flex; }
-        @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
-
         /* --- UI: SCREENS --- */
         #screen-lobby, #screen-char, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
         #screen-end { display: none; }
@@ -46,7 +37,6 @@
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
         .btn-secondary { background: var(--c-blue); box-shadow: 0 6px 0 #0d47a1; margin-top: 10px; }
-        .btn-secondary:active { box-shadow: 0 3px 0 #0d47a1; }
         
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
         .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; opacity: 1; }
@@ -209,7 +199,6 @@
 <body>
 
 <div id="fx-layer">
-    <div class="shark-anim">🦈</div>
     <div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div>
 </div>
 
@@ -254,16 +243,7 @@
 <div id="game-layout">
     <div id="board-area">
         <div id="board-container">
-            <div id="board">
-                <div class="center-hub">
-                    <div class="center-title">
-                        RECIFE <span class="center-sub">IMOBILIÁRIO</span>
-                    </div>
-                    <div class="center-icon">🦈⛱️</div>
-                </div>
-                <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div><div style="font-size:0.8rem">SORTE</div></div>
-                <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div><div style="font-size:0.8rem">REVÉS</div></div>
-            </div>
+            <div id="board"></div>
         </div>
     </div>
 
@@ -483,6 +463,7 @@ let roomCode = null;
 let dbRef = null;
 let amIHost = false;
 let myPlayerIdx = -1;
+let isBoardBuilt = false; // FLAG IMPORTANTE
 
 // Status de turno sincronizado
 let turnState = {
@@ -543,7 +524,6 @@ const net = {
             if(data.players.some(p => p.uid === myId)) {
                 // Reconectar
                 roomCode = code; dbRef = db.ref('rooms/' + code);
-                myPlayerIdx = data.players.findIndex(p => p.uid === myId);
                 net.enterLobbyUI();
             } else {
                 if(data.players.length >= 4) return alert('Sala cheia!');
@@ -557,7 +537,6 @@ const net = {
                 };
                 data.players.push(newPlayer);
                 dbRef.update({ players: data.players });
-                myPlayerIdx = newIdx;
                 net.enterLobbyUI();
             }
         });
@@ -579,6 +558,9 @@ const net = {
             turnState = data.turnState;
             totalTurns = data.totalTurns || 0;
             
+            // ATUALIZAR MEU ÍNDICE (IMPORTANTE!)
+            myPlayerIdx = players.findIndex(p => p.uid === myId);
+
             // UI Updates based on Status
             if(data.status === 'lobby') {
                 const list = document.getElementById('lobby-list');
@@ -590,15 +572,18 @@ const net = {
             } else if(data.status === 'playing') {
                 document.getElementById('screen-char').style.display = 'none';
                 document.getElementById('game-layout').classList.add('active');
-                if(!document.getElementById('board').hasChildNodes()) { // Build once
+                
+                // CORREÇÃO AQUI: Flag explícita
+                if(!isBoardBuilt) {
                     ui.buildBoard(); 
-                    setTimeout(resizeBoard, 100);
+                    isBoardBuilt = true;
+                    // Força o resize depois de construir
+                    setTimeout(resizeBoard, 200);
                 }
                 
-                // Animação de Dados (se mudou)
+                // Animação de Dados
                 if(data.triggerDice) {
                     ui.dice(turnState.lastD1, turnState.lastD2);
-                    // Reset trigger locally to avoid loop (hacky but works for simple sync)
                     if(amIHost) dbRef.update({triggerDice: null}); 
                 }
                 
@@ -611,7 +596,6 @@ const net = {
         dbRef.update({ status: 'char_select' });
     },
     saveState: () => {
-        // Salva todo o estado local no Firebase
         dbRef.update({
             players: players,
             props: props,
@@ -627,20 +611,34 @@ function resizeBoard() {
     const el = document.getElementById('board-container');
     const area = document.getElementById('board-area');
     if(!el || !area) return;
+    
+    // Calcula o scale baseado na área visível
     const isMobile = window.innerWidth < 900;
+    let scale = 1;
+
     if (isMobile) {
-        const scale = Math.min(window.innerWidth / 900, (window.innerHeight - 100) / 1050) * 0.98;
-        el.style.transform = `scale(${scale})`;
+        // Mobile: 900x1050
+        const availW = area.offsetWidth;
+        const availH = area.offsetHeight;
+        scale = Math.min(availW / 900, availH / 1050) * 0.95;
     } else {
-        const scale = Math.min(area.offsetWidth / 1300, area.offsetHeight / 1000) * 0.95;
-        el.style.transform = `scale(${scale})`;
+        // Desktop: 1300x1000
+        const availW = area.offsetWidth;
+        const availH = area.offsetHeight;
+        scale = Math.min(availW / 1300, availH / 1000) * 0.95;
     }
+    
+    // Se o cálculo falhar, força um mínimo
+    if(scale < 0.1 || isNaN(scale)) scale = 0.5;
+    
+    el.style.transform = `scale(${scale})`;
 }
 window.addEventListener('resize', resizeBoard);
 
 const ui = {
     renderCharSelect: () => {
         const me = players[myPlayerIdx];
+        if(!me) return;
         document.getElementById('char-title').innerText = me.icon ? "AGUARDANDO..." : "ESCOLHA SEU BONECO:";
         document.getElementById('char-grid').innerHTML = '';
         
@@ -667,7 +665,7 @@ const ui = {
         }
     },
     selectChar: (icon) => {
-        if(players[myPlayerIdx].icon) return; // Já escolheu
+        if(players[myPlayerIdx].icon) return; 
         const taken = players.some(p => p.icon === icon);
         if(taken) return;
         
@@ -677,8 +675,16 @@ const ui = {
     },
     buildBoard: () => {
         const b = document.getElementById('board');
-        b.innerHTML = ''; // Limpar para garantir
-        // (Mesma lógica de buildBoard do original, mas garante limpar antes)
+        b.innerHTML = ''; 
+        
+        // Elementos CENTRAIS e DECKS (Adicionados Primeiro)
+        b.innerHTML += `
+            <div class="center-hub"><div class="center-title">RECIFE <span class="center-sub">IMOBILIÁRIO</span></div><div class="center-icon">🦈⛱️</div></div>
+            <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div><div style="font-size:0.8rem">SORTE</div></div>
+            <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div><div style="font-size:0.8rem">REVÉS</div></div>
+        `;
+
+        // Casas do Tabuleiro
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
             let r,c, rotClass;
@@ -710,13 +716,6 @@ const ui = {
             d.innerHTML = contentHTML;
             b.appendChild(d);
         });
-        
-        // Deck e Centro
-        b.innerHTML += `
-            <div class="center-hub"><div class="center-title">RECIFE <span class="center-sub">IMOBILIÁRIO</span></div><div class="center-icon">🦈⛱️</div></div>
-            <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div><div style="font-size:0.8rem">SORTE</div></div>
-            <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div><div style="font-size:0.8rem">REVÉS</div></div>
-        `;
 
         players.forEach((p,i)=>{ const t=document.createElement('div');t.className='token';t.id=`tok${i}`;t.innerHTML=`${p.icon}<div class="token-shield" style="display:none" id="sh${i}">🛡️</div>`; b.appendChild(t); });
     },
@@ -748,8 +747,10 @@ const ui = {
         document.getElementById('turn-display').style.color = isMyTurn ? '#fff' : '#000';
 
         const myP = players[myPlayerIdx];
+        if(!myP) return;
+
         const mDisp = document.getElementById('p-money');
-        mDisp.innerText = `$${myP.money}`; // Mostra MEU dinheiro
+        mDisp.innerText = `$${myP.money}`;
         if(myP.money < 0) mDisp.classList.add('debt'); else mDisp.classList.remove('debt');
 
         document.getElementById('players-scroll').innerHTML = players.map((pl,i) => {
@@ -759,7 +760,7 @@ const ui = {
         
         players.forEach((pl, i) => { const sh = document.getElementById(`sh${i}`); if(sh) sh.style.display = pl.protection ? 'flex' : 'none'; });
 
-        // Props logic (Visuals)
+        // Props logic
         let propsHTML = '';
         props.forEach((pr,i)=>{
             const sp = document.getElementById(`s${i}`);
@@ -784,7 +785,6 @@ const ui = {
             const el = document.getElementById(`b${i}`);
             if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
             
-            // Show MY props
             if(pr && pr.owner===myPlayerIdx) {
                 const loanTxt = pr.loan ? `<br><span class="loan-alert">Pagar: $${Math.ceil(pr.loan.val*1.5)} (${pr.loan.turns}T)</span>` : '';
                 propsHTML += `<div class="prop-item ${pr.loan?'loan':''}" style="border-left-color:${BD[i].g||'#333'}" onclick="ui.openProp(${i})">
@@ -797,12 +797,9 @@ const ui = {
         document.getElementById('desktop-props-container').innerHTML = propsHTML;
         document.getElementById('inv-list').innerHTML = propsHTML;
 
-        // CONTROLS VISIBILITY (Only active if my turn)
-        const myTurnActive = isMyTurn; 
-        
-        // Bloquear tudo se não for minha vez
+        // CONTROLS VISIBILITY
         const actionArea = document.getElementById('action-btns');
-        if(!myTurnActive) {
+        if(!isMyTurn) {
             actionArea.style.opacity = '0.5';
             actionArea.style.pointerEvents = 'none';
         } else {
@@ -830,7 +827,7 @@ const ui = {
             normalArea.style.display = 'grid';
             
             const doubles = turnState.lastD1 === turnState.lastD2 && turnState.rolled;
-            // Roll logic: Can roll if haven't rolled OR (rolled & doubles)
+            // AQUI ESTAVA O PROBLEMA: Usar o estado do servidor (turnState)
             const canRoll = !turnState.animating && !pendingCardType && (!turnState.rolled || (turnState.rolled && doubles && turnState.doublesCount < 3));
             
             document.getElementById('b-roll').disabled = !canRoll;
@@ -843,8 +840,6 @@ const ui = {
                 document.getElementById('b-pass').innerText = "DÍVIDA!";
             } else {
                 document.getElementById('b-pass').innerText = "PASSAR";
-                // Can pass if rolled AND not pending card AND (not double OR rolled double but logic finished)
-                // Simplificação: Pode passar se rolou e não tem pendencias.
                 document.getElementById('b-pass').disabled = !(turnState.rolled && !pendingCardType && !doubles);
                 document.getElementById('b-trade').disabled = (turnState.rolled && !doubles); 
             }
@@ -876,11 +871,9 @@ const ui = {
         else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
         document.getElementById('rent-table-body').innerHTML = html;
         
-        // Actions visibilidade:
-        // Se for compra, e for minha vez
         const isMyTurn = turn === myPlayerIdx;
         document.getElementById('act-buy').style.display = (forBuy && isMyTurn) ? 'block':'none';
-        // Se for gerenciar: sou dono?
+        
         const isOwner = pr && pr.owner === myPlayerIdx;
         document.getElementById('act-manage').style.display = (!forBuy && isOwner) ? 'block':'none';
         
@@ -942,12 +935,10 @@ const game = {
         const p = players[turn];
         if(p.money < 0) return;
 
-        // Animação local primeiro
         const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
         turnState.lastD1 = d1; turnState.lastD2 = d2;
         turnState.animating = true;
         
-        // Trigger visual sync for others
         dbRef.update({ triggerDice: true, turnState: turnState });
         ui.dice(d1,d2); 
         await sleep(1500);
@@ -995,9 +986,8 @@ const game = {
             if(!p.active) break;
             p.pos = (p.pos + 1) % 40;
             if(p.pos===0 && p.active){ p.money+=200; ui.toast("Início! +$200"); play('cash'); p.boughtRound=false; confetti(); }
-            // Sync movement step by step? No, just end result for others is fine. Local animation is smoother.
         }
-        net.saveState(); // Save final pos
+        net.saveState();
         ui.updatePositions(); play('step');
         if(p.active) game.land(pid);
     },
@@ -1038,7 +1028,7 @@ const game = {
     applyCard: () => {
         const c = ui.pendingCard;
         const p = players[turn];
-        if(c.act === 'move') { p.pos = (p.pos + 200) % 40; ui.updatePositions(); } // Simple hack, just add money logic separately if needed
+        if(c.act === 'move') { p.pos = (p.pos + 200) % 40; ui.updatePositions(); }
         if(c.act === 'warp') { p.pos = c.dest; ui.updatePositions(); game.land(turn); }
         if(c.act === 'all') { players.forEach((pl, i) => { if(i!==turn && pl.active){ pl.money-=c.val; p.money+=c.val; }}); }
         if(c.val) p.money += c.val;
@@ -1070,11 +1060,10 @@ const game = {
     },
     
     pass: () => {
-        if(turn !== myPlayerIdx && !players[turn].jailed) return; // Só quem joga passa, ou auto-pass do jail
+        if(turn !== myPlayerIdx && !players[turn].jailed) return;
 
         players[turn].doubles = 0; 
         
-        // Validar falencia
         if(players[turn].active && players[turn].money < 0) { ui.toast("RESOLVA SUA DÍVIDA!"); return; }
 
         let actives = players.filter(p=>p.active);
@@ -1093,8 +1082,6 @@ const game = {
         } while(!players[nextTurn].active && loop < players.length);
         
         turn = nextTurn;
-        
-        // Reset Turn State
         turnState = { rolled: false, animating: false, doublesCount: 0, lastD1: 1, lastD2: 1 };
         
         net.saveState();
