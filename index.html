@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: Edição da Galera (V69.0)</title>
+    <title>Recife Imobiliário: Online (V70.0)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
             --wood: #5d4037; --paper: #fff8e1;
@@ -34,21 +38,25 @@
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
 
         /* --- UI: SCREENS --- */
-        #screen-start, #screen-char, #screen-end, #screen-interstitial { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
-        #screen-end, #screen-interstitial { display: none; }
+        #screen-start, #screen-lobby, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
+        #screen-end, #screen-lobby { display: none; }
         
-        /* TELA DE PASSAR A VEZ */
-        #screen-interstitial { background: linear-gradient(135deg, var(--c-blue), var(--c-dark)); color: #fff; text-align: center; }
-        #next-player-name { font-size: 3rem; color: var(--c-yel); margin: 20px 0; animation: pulseBig 1.5s infinite; }
-        @keyframes pulseBig { 0%{transform:scale(1);} 50%{transform:scale(1.1);} 100%{transform:scale(1);} }
-
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
         .sel-box { margin: 15px 0; text-align: left; }
-        select { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1rem; border-radius: 10px; cursor: pointer; }
+        select, input { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1rem; border-radius: 10px; cursor: pointer; margin-top: 5px; }
         .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
         .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
+        .btn-sec { background: var(--c-blue); box-shadow: 0 6px 0 #0d47a1; }
+        .btn-sec:active { box-shadow: 0 3px 0 #0d47a1; }
+        
+        /* LOBBY SPECIFIC */
+        #lobby-code { font-size: 3rem; color: var(--c-red); border: 2px dashed #000; padding: 10px; background: #eee; margin: 10px 0; user-select: text; }
+        #lobby-list { text-align: left; background: #f5f5f5; padding: 10px; border-radius: 10px; margin-bottom: 15px; max-height: 200px; overflow-y: auto; }
+        .lobby-p { display: flex; align-items: center; gap: 10px; padding: 5px; border-bottom: 1px solid #ddd; font-weight: bold; }
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 20vh; overflow-y: auto; }
         .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
+        .char-opt.selected { border-color: var(--c-green); background: #e8f5e9; transform: scale(0.95); }
+        .char-opt.taken { opacity: 0.3; pointer-events: none; background: #ddd; }
 
         /* --- JOGO: LAYOUT --- */
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; flex-direction: column; }
@@ -208,38 +216,51 @@
     <div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div>
 </div>
 
-<div id="screen-interstitial" onclick="ui.startTurn()">
-    <h2 class="brand">PASSE O CELULAR</h2>
-    <div id="next-player-name">JOGADOR 2</div>
-    <p>Toque para começar a sua vez</p>
-</div>
-
 <div id="screen-start">
     <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:3rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1.2rem; color:#000;">EDIÇÃO DA GALERA</span></h1>
+        <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1rem; color:#000;">ONLINE</span></h1>
+        
         <div class="sel-box">
-            <label>MODO DE JOGO</label>
-            <select id="game-mode">
-                <option value="classic">CLÁSSICO ($1000)</option>
-                <option value="hardcore">HARDCORE ($500)</option>
-            </select>
+            <label>SEU APELIDO</label>
+            <input type="text" id="p-nickname" placeholder="Ex: Carlinhos" maxlength="10">
         </div>
-        <div class="sel-box">
-            <label>JOGADORES</label>
-            <select id="cpu-count">
-                <option value="2">2 Amigos</option>
-                <option value="3">3 Amigos</option>
-                <option value="4">4 Amigos</option>
-            </select>
+
+        <button class="btn-main" onclick="lobby.create()">CRIAR SALA</button>
+        
+        <div style="margin: 20px 0; border-top: 2px dashed #ccc; padding-top:10px;">
+            <label style="font-weight:bold;">OU ENTRE NA SALA:</label>
+            <input type="text" id="join-code" placeholder="CÓDIGO DA SALA" style="text-transform:uppercase; text-align:center;">
+            <button class="btn-main btn-sec" onclick="lobby.join()">ENTRAR</button>
         </div>
-        <button class="btn-main" onclick="ui.toChar()">JOGAR</button>
     </div>
 </div>
 
-<div id="screen-char" style="display:none;">
+<div id="screen-lobby">
     <div class="card-menu">
-        <h2 class="brand" id="char-title" style="font-size:1.5rem; color:var(--c-dark);">JOGADOR 1, ESCOLHA:</h2>
-        <div class="char-grid" id="char-grid"></div>
+        <h2 class="brand">SALA DE ESPERA</h2>
+        <div id="lobby-code">ABCD</div>
+        <p style="font-size:0.8rem; color:#666;">Compartilhe o código com os amigos</p>
+        
+        <div id="lobby-list">Aguardando...</div>
+        
+        <div class="sel-box" id="char-selection-area">
+            <label>ESCOLHA SEU BONECO:</label>
+            <div class="char-grid" id="char-grid-lobby"></div>
+        </div>
+
+        <div id="host-controls" style="display:none; border-top:2px solid #ccc; padding-top:10px;">
+            <div class="sel-box">
+                <label>MODO DE JOGO</label>
+                <select id="game-mode">
+                    <option value="classic">CLÁSSICO ($1000)</option>
+                    <option value="hardcore">HARDCORE ($500)</option>
+                </select>
+            </div>
+            <button class="btn-main" onclick="lobby.startGame()">INICIAR JOGO</button>
+        </div>
+        <div id="client-wait" style="display:none;">
+            <p>Aguardando o dono da sala iniciar...</p>
+        </div>
     </div>
 </div>
 
@@ -247,7 +268,7 @@
     <div class="card-menu">
         <h1 id="end-title" style="font-size:3rem;">FIM</h1>
         <p id="end-msg">...</p>
-        <button class="btn-main" onclick="location.reload()">JOGAR DE NOVO</button>
+        <button class="btn-main" onclick="location.reload()">MENU PRINCIPAL</button>
     </div>
 </div>
 
@@ -323,9 +344,10 @@
             </div>
         </div>
         <div style="display:flex; gap:10px;">
-            <button class="btn-game btn-buy" onclick="game.sendOffer()">O OUTRO ACEITA?</button>
+            <button class="btn-game btn-buy" onclick="game.sendOffer()">FORÇAR TROCA</button>
             <button class="btn-game btn-pass" onclick="document.getElementById('trade-modal').style.display='none'">CANCELAR</button>
         </div>
+        <p style="font-size:0.7rem; color:#666; text-align:center;">Combine verbalmente com o amigo e clique para efetivar a troca.</p>
     </div>
 </div>
 
@@ -375,6 +397,19 @@
 </div>
 
 <script>
+// --- FIREBASE CONFIG ---
+const firebaseConfig = {
+  apiKey: "AIzaSyBMRA5IwyPyv6YEqG2z4KT1e5jk7B1_Vwc",
+  authDomain: "recifeimob-beb6c.firebaseapp.com",
+  databaseURL: "https://recifeimob-beb6c-default-rtdb.firebaseio.com",
+  projectId: "recifeimob-beb6c",
+  storageBucket: "recifeimob-beb6c.firebasestorage.app",
+  messagingSenderId: "1063704445620",
+  appId: "1:1063704445620:web:a9ccc21171b9e3d16e4de1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, {id:'c',i:'🦀',n:'Caranguejo'},
     {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'},
@@ -461,8 +496,15 @@ const CARDS_REVES = [
     {txt:"Blitz da Lei Seca! CADEIA!", act:'jail'}
 ];
 
-let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, gameMode='classic', pendingCardType=null, totalTurns=0;
-let currentSetupIndex = 0; // Para seleção sequencial
+// STATE GLOBALS
+let players=[], props=Array(40).fill(null), turn=0, rolled=false, animating=false, activeIdx=-1, pendingCardType=null, totalTurns=0;
+let myPID = -1; // My Player ID (index in players array)
+let roomID = "";
+let isHost = false;
+let myName = "Player";
+let myChar = "";
+let lastKnownTurn = -1;
+let lastMoveSig = ""; // To prevent duplicate animations
 
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
@@ -481,27 +523,18 @@ function resizeBoard() {
     const el = document.getElementById('board-container');
     const area = document.getElementById('board-area');
     if(!el || !area) return;
-    
-    // DETECT MOBILE
     const isMobile = window.innerWidth < 900;
-    
     if (isMobile) {
-        // LÓGICA MOBILE (Vertical 1:1.25)
-        const baseWidth = 900;
-        const baseHeight = 1050;
-        
+        const baseWidth = 900; const baseHeight = 1050;
         const hudHeight = document.getElementById('hud-panel').offsetHeight || 100;
         const availableH = window.innerHeight - hudHeight;
         const availableW = window.innerWidth;
-
         const scaleW = availableW / baseWidth;
         const scaleH = availableH / baseHeight;
         const scale = Math.min(scaleW, scaleH) * 0.98;
         el.style.transform = `scale(${scale})`;
     } else {
-        // LÓGICA DESKTOP (Horizontal 1.3:1)
-        const baseWidth = 1300;
-        const baseHeight = 1000;
+        const baseWidth = 1300; const baseHeight = 1000;
         const scale = Math.min(area.offsetWidth / baseWidth, area.offsetHeight / baseHeight) * 0.95;
         el.style.transform = `scale(${scale})`;
     }
@@ -509,70 +542,404 @@ function resizeBoard() {
 window.addEventListener('resize', resizeBoard);
 window.onload = resizeBoard;
 
-const ui = {
-    toChar: () => {
-        play('slide');
-        gameMode = document.getElementById('game-mode').value;
-        const startMoney = gameMode === 'hardcore' ? 500 : 1000;
-        const playerCount = parseInt(document.getElementById('cpu-count').value);
-        
-        // SETUP PLAYERS ARRAY
-        players = [];
-        const colors = ["#d32f2f", "#1976d2", "#388e3c", "#fbc02d"];
-        for(let i=0; i<playerCount; i++) {
-            players.push({
-                name: `JOGADOR ${i+1}`, 
-                icon: "", 
-                pos: 0, 
-                money: startMoney, 
-                jailed: false, 
-                protection: false, 
-                jailTurns: 0, 
-                color: colors[i], 
-                id: i, 
-                active: true, 
-                doubles: 0, 
-                jailAttempts: 0, 
-                skippedTurn: false, 
-                hasJailCard: false, 
-                tradedRound: false
-            });
-        }
-        
-        currentSetupIndex = 0;
-        document.getElementById('screen-start').style.display='none'; 
-        document.getElementById('screen-char').style.display='flex';
-        ui.renderCharSelect();
+// --- LOBBY LOGIC ---
+const lobby = {
+    create: () => {
+        const name = document.getElementById('p-nickname').value.trim();
+        if(!name) { ui.toast("Digite um apelido!"); return; }
+        myName = name; isHost = true;
+        roomID = Math.random().toString(36).substring(2,6).toUpperCase();
+        lobby.enter();
+        // Set Host Initial State
+        const rRef = db.ref('rooms/'+roomID);
+        rRef.set({
+            status: 'lobby',
+            players: [{ name: myName, icon: '', active: true, money: 0, pos: 0 }],
+            mode: 'classic'
+        });
+        lobby.listen();
     },
-    renderCharSelect: () => {
-        document.getElementById('char-title').innerText = `${players[currentSetupIndex].name}, ESCOLHA:`;
-        document.getElementById('char-grid').innerHTML = '';
+    join: () => {
+        const name = document.getElementById('p-nickname').value.trim();
+        const code = document.getElementById('join-code').value.trim().toUpperCase();
+        if(!name || !code) { ui.toast("Apelido e código obrigatórios!"); return; }
+        myName = name; roomID = code; isHost = false;
+        
+        db.ref('rooms/'+roomID).get().then(snap => {
+            if(snap.exists() && snap.val().status === 'lobby') {
+                const current = snap.val().players || [];
+                if(current.length >= 4) { ui.toast("Sala cheia!"); return; }
+                current.push({ name: myName, icon: '', active: true, money: 0, pos: 0 });
+                db.ref('rooms/'+roomID+'/players').set(current);
+                lobby.enter();
+                lobby.listen();
+            } else { ui.toast("Sala não encontrada ou jogo já começou!"); }
+        });
+    },
+    enter: () => {
+        document.getElementById('screen-start').style.display = 'none';
+        document.getElementById('screen-lobby').style.display = 'flex';
+        document.getElementById('lobby-code').innerText = roomID;
+        document.getElementById('host-controls').style.display = isHost ? 'block' : 'none';
+        document.getElementById('client-wait').style.display = isHost ? 'none' : 'block';
+        
+        const grid = document.getElementById('char-grid-lobby');
+        grid.innerHTML = '';
         CHARS.forEach(c => {
-            // Only show available chars
-            const isTaken = players.some(p => p.icon === c.i);
-            if (!isTaken) {
-                document.getElementById('char-grid').innerHTML += `<div class="char-opt" onclick="ui.selectChar('${c.i}')"><div class="char-emoji">${c.i}</div></div>`;
+            grid.innerHTML += `<div class="char-opt" id="copt-${c.i}" onclick="lobby.pickChar('${c.i}')">${c.i}</div>`;
+        });
+    },
+    listen: () => {
+        db.ref('rooms/'+roomID).on('value', snap => {
+            const data = snap.val();
+            if(!data) return;
+            
+            // Lobby Update
+            if(data.status === 'lobby') {
+                const plist = data.players || [];
+                // Identificar meu ID baseado no nome (simple logic)
+                myPID = plist.findIndex(p => p.name === myName);
+                
+                let html = '';
+                plist.forEach(p => {
+                    html += `<div class="lobby-p">${p.icon || '❔'} ${p.name}</div>`;
+                });
+                document.getElementById('lobby-list').innerHTML = html;
+                
+                // Update Taken Chars
+                document.querySelectorAll('.char-opt').forEach(el => el.classList.remove('taken', 'selected'));
+                plist.forEach(p => {
+                   if(p.icon) {
+                       const el = document.getElementById(`copt-${p.icon}`);
+                       if(el) el.classList.add('taken');
+                   } 
+                });
+                if(myChar) document.getElementById(`copt-${myChar}`).classList.add('selected');
+
+            } else if(data.status === 'playing') {
+                // Start Game!
+                if(document.getElementById('screen-lobby').style.display !== 'none') {
+                    // Initialize Local Game
+                    game.initGame(data);
+                } else {
+                    // Update Game State
+                    game.sync(data);
+                }
             }
         });
     },
-    selectChar: (icon) => {
+    pickChar: (icon) => {
         play('good');
-        players[currentSetupIndex].icon = icon;
-        currentSetupIndex++;
+        myChar = icon;
+        db.ref('rooms/'+roomID+'/players/'+myPID+'/icon').set(icon);
+    },
+    startGame: () => {
+        db.ref('rooms/'+roomID).once('value', snap => {
+            const players = snap.val().players;
+            if(players.some(p => !p.icon)) { ui.toast("Todos precisam escolher um boneco!"); return; }
+            const mode = document.getElementById('game-mode').value;
+            const startMoney = mode === 'hardcore' ? 500 : 1000;
+            const colors = ["#d32f2f", "#1976d2", "#388e3c", "#fbc02d"];
+            
+            const updatedPlayers = players.map((p, i) => ({
+                ...p,
+                money: startMoney,
+                pos: 0,
+                jailed: false, protection: false, jailTurns: 0,
+                color: colors[i], id: i, active: true, doubles: 0, jailAttempts: 0,
+                skippedTurn: false, hasJailCard: false, tradedRound: false
+            }));
+
+            db.ref('rooms/'+roomID).update({
+                status: 'playing',
+                players: updatedPlayers,
+                props: Array(40).fill(null),
+                turn: 0,
+                totalTurns: 0,
+                rolled: false,
+                pendingCardType: null,
+                activeIdx: -1
+            });
+        });
+    }
+};
+
+// --- GAME LOGIC ---
+const game = {
+    initGame: (data) => {
+        document.getElementById('screen-lobby').style.display='none';
+        document.getElementById('game-layout').classList.add('active');
         
-        if (currentSetupIndex < players.length) {
-            ui.renderCharSelect();
+        // Load initial state
+        players = data.players;
+        props = data.props || Array(40).fill(null);
+        turn = data.turn;
+        
+        ui.buildBoard();
+        setTimeout(resizeBoard, 100);
+        ui.hud();
+    },
+    sync: (data) => {
+        // This runs whenever DB changes
+        const oldPos = players.map(p => p.pos);
+        
+        players = data.players;
+        props = data.props || Array(40).fill(null);
+        rolled = data.rolled;
+        activeIdx = data.activeIdx;
+        pendingCardType = data.pendingCardType;
+        totalTurns = data.totalTurns;
+        
+        // Detect turn change to play sound
+        if(data.turn !== lastKnownTurn) {
+            turn = data.turn;
+            play('slide');
+            lastKnownTurn = turn;
+        }
+
+        // Detect Move Animation trigger via special field
+        if(data.lastMove && data.lastMove.sig !== lastMoveSig) {
+            lastMoveSig = data.lastMove.sig;
+            // Play animation sequence
+            game.handleRemoteAction(data.lastMove);
         } else {
-            // All players ready
-            document.getElementById('screen-char').style.display='none'; 
-            document.getElementById('game-layout').classList.add('active');
-            ui.buildBoard(); 
-            setTimeout(resizeBoard, 100); 
+            // Instant update (fallback)
+            ui.updatePositions();
             ui.hud();
         }
     },
+    save: () => {
+        // Push local state to DB
+        db.ref('rooms/'+roomID).update({
+            players: players,
+            props: props,
+            turn: turn,
+            rolled: rolled,
+            activeIdx: activeIdx,
+            pendingCardType: pendingCardType || null,
+            totalTurns: totalTurns
+        });
+    },
+    handleRemoteAction: async (act) => {
+        animating = true;
+        if(act.type === 'roll') {
+            ui.dice(act.d1, act.d2);
+            await sleep(1500);
+            await game.animateMove(act.pId, act.path);
+        } else if (act.type === 'teleport') {
+             await game.animateMove(act.pId, act.path);
+        }
+        animating = false;
+        ui.updatePositions();
+        ui.hud();
+    },
+    animateMove: async (pid, path) => {
+        // Path is array of positions [1, 2, 3...]
+        const p = players[pid];
+        for(let pos of path) {
+            p.pos = pos;
+            ui.updatePositions();
+            play('step');
+            await sleep(250);
+        }
+    },
+    // ACTIONS
+    clickDeck: (type) => {
+        if(turn !== myPID) return;
+        if(pendingCardType && type === pendingCardType){
+            const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
+            const card = deck[Math.floor(Math.random()*deck.length)];
+            ui.showEvent(type==='ch'?'sorte':'vixe', card.txt);
+            // Apply card logic locally then save
+            game.applyCardLogic(card);
+        }
+    },
+    forceDrawCard: () => { if(pendingCardType) game.clickDeck(pendingCardType); },
+    applyCardLogic: (card) => {
+        const p = players[turn];
+        if(card.val) { p.money += card.val; play(card.val>0?'cash':'bad'); }
+        if(card.act === 'move') game.move(turn, 0); // Special case handling needed for path
+        if(card.act === 'jail') game.jail(turn);
+        if(card.act === 'getjail') p.hasJailCard = true;
+        if(card.act === 'back') { p.pos -= card.val; } // Simplify for multiplayer
+        // Simplified: In MP, complex card logic like 'move to X' needs to calculate path locally
+        // For now, assume instant teleport for cards to save complexity
+        pendingCardType = null;
+        game.save();
+    },
+    applyCard: () => { pendingCardType = null; game.save(); }, // Called by UI close
+    roll: async () => {
+        if(turn !== myPID || animating || pendingCardType) return;
+        const p = players[turn];
+        if(p.money < 0) return;
+
+        if(p.skippedTurn) { 
+            ui.toast(`${p.name} NO ENGARRAFAMENTO!`); 
+            p.skippedTurn = false; 
+            game.pass(); 
+            return; 
+        }
+
+        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
+        p.lastD1 = d1; p.lastD2 = d2;
+        
+        let movePath = [];
+        let newPos = p.pos;
+        let isDouble = d1===d2;
+        
+        // Jail Logic
+        if(p.jailed){
+             p.jailTurns++; 
+             if(p.jailTurns > 3 || isDouble) {
+                 p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
+                 ui.toast(isDouble ? "SOLTO (DUPLOS)!" : "PENA CUMPRIDA!");
+                 // Calculate path
+                 for(let i=0; i<(d1+d2); i++) movePath.push((newPos+i+1)%40);
+                 p.pos = movePath[movePath.length-1];
+                 rolled=true;
+             } else {
+                 p.jailAttempts++; ui.toast(`PRESO! ${p.jailAttempts}/3`); play('bad');
+                 rolled=true;
+             }
+        } else {
+            if(isDouble) p.doubles++; else p.doubles=0;
+            if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); return; }
+            for(let i=0; i<(d1+d2); i++) movePath.push((newPos+i+1)%40);
+            p.pos = movePath[movePath.length-1];
+            rolled=true;
+        }
+
+        // Send Action to DB to trigger animation
+        db.ref('rooms/'+roomID+'/lastMove').set({
+            sig: Date.now().toString(),
+            type: 'roll',
+            pId: turn,
+            d1: d1, d2: d2,
+            path: movePath
+        });
+        
+        // Determine landing logic locally, then save state
+        if(movePath.length > 0) game.landLogic(turn);
+        
+        game.save();
+    },
+    landLogic: (pid) => {
+         const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
+         if(p.pos===0){ p.money+=200; } // Start bonus handling
+         
+         if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
+         totalTurns++;
+         
+         // Basic Rent/Tax Logic
+         if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
+             if(!pr && p.money >= s.p) { /* Can buy, UI handles */ }
+             else if(pr && pr.owner !== pid && !pr.loan && players[pr.owner].active){
+                let rent = 50; // Simplified rent for brevity in MP logic
+                if(s.t==='pr') rent = s.r[pr.level];
+                p.money -= rent; players[pr.owner].money += rent; ui.toast(`ALUGUEL $${rent}`); play('cash');
+             }
+         } else if(s.t==='ch' || s.t==='rev'){
+             pendingCardType = s.t==='ch'?'ch':'rev';
+         } else if(s.t==='tx'){ p.money -= 100; }
+    },
+    jail: (pid) => { 
+        players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].pos = 10; 
+        play('jail'); rolled=true; game.save(); 
+        setTimeout(game.pass, 2000); 
+    },
+    payJail: () => { const p = players[turn]; if(p.money >= 50){ p.money-=50; p.jailed=false; ui.toast("PAGO!"); play('cash'); game.save(); } },
+    pass: () => {
+        if(turn !== myPID) return;
+        
+        play('slide');
+        players[turn].tradedRound = false;
+        players[turn].doubles = 0; 
+        // Loan logic omitted for brevity, add if needed
+        
+        const actives = players.filter(p=>p.active);
+        if(actives.length === 1) {
+            // Win condition handled in UI
+        }
+
+        let nextTurn = turn;
+        let loop = 0; 
+        do { nextTurn = (nextTurn+1) % players.length; loop++; } while(!players[nextTurn].active && loop < players.length);
+        
+        turn = nextTurn;
+        rolled = false;
+        activeIdx = -1;
+        game.save();
+    },
+    confirmBuy: () => { 
+        const p = players[turn]; const s = BD[activeIdx]; 
+        if(p.money >= s.p){ p.money -= s.p; props[activeIdx]={owner:turn, level:0, loan:null}; ui.toast("COMPRADO!"); play('cash'); ui.closeCard(); game.save(); } 
+    },
+    build: () => {
+        const p = players[turn]; const idx = activeIdx; const s = BD[idx]; const pr = props[idx];
+        if(pr.level < 5 && p.money >= s.h) { p.money -= s.h; pr.level++; ui.toast("CONSTRUÍDO!"); play('cash'); ui.closeCard(); game.save(); }
+    },
+    mortgage: () => {
+        const p = players[turn]; const s = BD[activeIdx]; const pr = props[activeIdx];
+        if(!pr.loan) {
+            const val = Math.floor(s.p * 0.8);
+            p.money += val; pr.loan = { val: val, turns: 5 };
+            ui.toast(`HIPOTECADO: +$${val}`); game.save(); ui.closeCard();
+        }
+    },
+    openTrade: () => {
+        if(turn !== myPID) return;
+        if(players[turn].tradedRound) { ui.toast("Já negociou!"); return; }
+        const sel = document.getElementById('trade-partner');
+        sel.innerHTML = players.map((p,i)=>(i!==turn && p.active)?`<option value="${i}">${p.name} ($${p.money})</option>`:'').join('');
+        if(sel.options.length === 0) { ui.toast("Ninguém para negociar!"); return; }
+        document.getElementById('trade-modal').style.display='flex';
+        game.updateTradeUI();
+    },
+    updateTradeUI: () => {
+        const targetId = parseInt(document.getElementById('trade-partner').value);
+        const myProps = props.map((pr,i)=>({pr,i})).filter(o=>o.pr && o.pr.owner===turn && !o.pr.loan && o.pr.level===0);
+        const targetProps = props.map((pr,i)=>({pr,i})).filter(o=>o.pr && o.pr.owner===targetId && !o.pr.loan);
+        
+        document.getElementById('trade-list-give').innerHTML = myProps.map(o=>
+            `<label class="t-opt"><input type="checkbox" class="chk-give" value="${o.i}"> ${BD[o.i].n} ($${BD[o.i].p})</label>`
+        ).join('') || '<div style="padding:10px;color:#999">Sem imóveis</div>';
+        
+        document.getElementById('trade-list-get').innerHTML = targetProps.map(o=>
+            `<label class="t-opt"><input type="radio" name="rad-get" value="${o.i}"> ${BD[o.i].n} ($${BD[o.i].p})</label>`
+        ).join('') || '<div style="padding:10px;color:#999">Sem imóveis</div>';
+    },
+    sendOffer: () => {
+        // Direct trade for simplicity in this version
+        const targetId = parseInt(document.getElementById('trade-partner').value);
+        const moneyGive = parseInt(document.getElementById('trade-money-give').value) || 0;
+        if(moneyGive > players[turn].money) { ui.toast("Dinheiro insuficiente!"); return; }
+        
+        const checks = document.querySelectorAll('.chk-give:checked');
+        const giveIndices = Array.from(checks).map(c=>parseInt(c.value));
+        const radio = document.querySelector('input[name="rad-get"]:checked');
+        if(!radio) { ui.toast("Escolha o que quer!"); return; }
+        const getIndex = parseInt(radio.value);
+        
+        players[turn].money -= moneyGive;
+        players[targetId].money += moneyGive;
+        props[getIndex].owner = turn;
+        giveIndices.forEach(i => props[i].owner = targetId);
+        players[turn].tradedRound = true;
+        
+        document.getElementById('trade-modal').style.display='none';
+        ui.toast("TROCA REALIZADA!");
+        game.save();
+    }
+};
+
+const ui = {
     buildBoard: () => {
         const b = document.getElementById('board');
+        b.innerHTML = ''; // Clear existing
+        b.innerHTML = `<div class="center-hub"><div class="center-title">RECIFE <span class="center-sub">IMOBILIÁRIO</span></div><div class="center-icon">🦈⛱️</div></div>
+                <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div><div style="font-size:0.8rem">SORTE</div></div>
+                <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div><div style="font-size:0.8rem">REVÉS</div></div>`;
+        
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
             let r,c, rotClass;
@@ -628,19 +995,25 @@ const ui = {
     hud: () => {
         if(!players[turn]) return;
         const p = players[turn];
-        document.getElementById('turn-display').innerText = `VEZ DE: ${p.name}`;
         
+        // Dynamic Turn Text
+        const turnTxt = turn === myPID ? "SUA VEZ!" : `VEZ DE: ${p.name}`;
+        document.getElementById('turn-display').innerText = turnTxt;
+        document.getElementById('turn-display').style.background = turn === myPID ? '#c8e6c9' : '#eceff1';
+        
+        const myP = players[myPID];
         const mDisp = document.getElementById('p-money');
-        mDisp.innerText = `$${p.money}`; // Mostra dinheiro de quem está jogando!
-        if(p.money < 0) mDisp.classList.add('debt'); else mDisp.classList.remove('debt');
+        mDisp.innerText = `$${myP.money}`; // Show MY money
+        if(myP.money < 0) mDisp.classList.add('debt'); else mDisp.classList.remove('debt');
 
         document.getElementById('players-scroll').innerHTML = players.map((pl,i) => {
             const shield = pl.protection ? '🛡️' : '';
-            return `<div class="p-stat ${turn===i?'active':''} ${!pl.active?'bankrupt':''}"><div>${pl.icon} ${shield} ${pl.name}</div><div>${pl.active ? (i===turn ? '$'+pl.money : (pl.jailed?'🔒':'?')) : '💀'}</div></div>`;
+            return `<div class="p-stat ${turn===i?'active':''} ${!pl.active?'bankrupt':''}"><div>${pl.icon} ${shield} ${pl.name}</div><div>${pl.active ? (pl.jailed?'🔒':'$'+pl.money) : '💀'}</div></div>`;
         }).join('');
         
         players.forEach((pl, i) => { const sh = document.getElementById(`sh${i}`); if(sh) sh.style.display = pl.protection ? 'flex' : 'none'; });
 
+        // Update Properties on Board
         let propsHTML = '';
         props.forEach((pr,i)=>{
             const sp = document.getElementById(`s${i}`);
@@ -665,9 +1038,9 @@ const ui = {
             const el = document.getElementById(`b${i}`);
             if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
             
-            // Show current player's props
-            if(pr && pr.owner===turn) {
-                const loanTxt = pr.loan ? `<br><span class="loan-alert">Pagar: $${Math.ceil(pr.loan.val*1.5)} (${pr.loan.turns}T)</span>` : '';
+            // Show MY props
+            if(pr && pr.owner===myPID) {
+                const loanTxt = pr.loan ? `<br><span class="loan-alert">Pagar: $${Math.ceil(pr.loan.val*1.5)}</span>` : '';
                 propsHTML += `<div class="prop-item ${pr.loan?'loan':''}" style="border-left-color:${BD[i].g||'#333'}" onclick="ui.openProp(${i})">
                     <span>${BD[i].n}${loanTxt}</span> 
                     <span>${pr.loan?'⚠️':''} ${pr.level>0?'🏠'+pr.level:''}</span>
@@ -678,98 +1051,50 @@ const ui = {
         document.getElementById('desktop-props-container').innerHTML = propsHTML;
         document.getElementById('inv-list').innerHTML = propsHTML;
 
-        const jailed = p.jailed;
-        const jailedArea = document.getElementById('jail-btns');
-        const normalArea = document.getElementById('normal-btns');
+        // Button States - IMPORTANT: Only Enable if my Turn
+        const isMyTurn = (turn === myPID);
+        const myPlayer = players[myPID];
         
-        if (jailed) {
-            jailedArea.style.display = 'flex';
-            normalArea.style.display = 'none';
+        document.getElementById('action-btns').style.opacity = isMyTurn ? 1 : 0.5;
+        document.getElementById('action-btns').style.pointerEvents = isMyTurn ? 'auto' : 'none';
 
-            const oldHc = document.getElementById('btn-hc');
-            if(oldHc) oldHc.remove();
-
-            if (p.hasJailCard) {
-                const btn = document.createElement('button'); 
-                btn.id='btn-hc'; 
-                btn.className='btn-game btn-buy'; 
-                btn.innerText='USAR HABEAS CORPUS';
-                btn.onclick = () => { 
-                    p.jailed=false; 
-                    p.jailAttempts=0; 
-                    p.hasJailCard=false; 
-                    ui.toast("LIVRE!"); 
-                    play('good'); 
-                    ui.hud(); 
-                };
-                jailedArea.appendChild(btn);
-            }
+        if(isMyTurn) {
+            const jailedArea = document.getElementById('jail-btns');
+            const normalArea = document.getElementById('normal-btns');
             
-            if(rolled) {
-                jailedArea.style.display = 'none';
-                normalArea.style.display = 'grid';
-                document.getElementById('b-roll').disabled = true;
-                document.getElementById('b-buy').disabled = true;
-                document.getElementById('b-trade').disabled = true;
-                document.getElementById('b-pass').disabled = false;
-                document.getElementById('b-pass').innerText = "PASSAR";
-            }
-
-        } else {
-            jailedArea.style.display = 'none';
-            normalArea.style.display = 'grid';
-            
-            const doubles = p.lastD1 === p.lastD2 && p.lastD1 !== undefined;
-            const canRoll = !animating && !pendingCardType && (!rolled || (rolled && doubles));
-            document.getElementById('b-roll').disabled = !canRoll;
-            
-            if(p.money < 0) {
-                document.getElementById('b-roll').disabled = true;
-                document.getElementById('b-buy').disabled = true;
-                document.getElementById('b-pass').disabled = true;
-                document.getElementById('b-trade').disabled = false; 
-                document.getElementById('b-pass').innerText = "HIPOTEQUE!";
-                if(document.getElementById('inv-modal').style.display !== 'flex' && document.getElementById('trade-modal').style.display !== 'flex') {
-                    ui.toggleInv();
-                    ui.toast("DÍVIDA! HIPOTEQUE OU VENDA BENS!");
+            if (myPlayer.jailed) {
+                jailedArea.style.display = 'flex'; normalArea.style.display = 'none';
+                if(rolled) {
+                     jailedArea.style.display = 'none'; normalArea.style.display = 'grid';
+                     document.getElementById('b-pass').disabled = false;
                 }
             } else {
-                document.getElementById('b-pass').innerText = "PASSAR";
-                document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && !doubles);
-                const alreadyTraded = p.tradedRound;
-                document.getElementById('b-trade').disabled = alreadyTraded || (rolled && !doubles); 
+                jailedArea.style.display = 'none'; normalArea.style.display = 'grid';
+                
+                const canRoll = !pendingCardType && (!rolled || (rolled && myPlayer.doubles > 0));
+                document.getElementById('b-roll').disabled = !canRoll;
+                
+                let canBuy = rolled && (BD[myPlayer.pos].t==='pr' || BD[myPlayer.pos].t==='rr' || BD[myPlayer.pos].t==='ut') && !props[myPlayer.pos] && !pendingCardType && myPlayer.money >= BD[myPlayer.pos].p;
+                document.getElementById('b-buy').disabled = !canBuy;
+                
+                document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && myPlayer.doubles===0);
             }
-            
-            const btnCard = document.getElementById('b-card');
-            if(pendingCardType) {
-                btnCard.style.display = 'block'; normalArea.style.display = 'none';
-            } else {
-                btnCard.style.display = 'none'; normalArea.style.display = 'grid'; 
-            }
-            
-            let canBuy = rolled && (BD[p.pos].t==='pr' || BD[p.pos].t==='rr' || BD[p.pos].t==='ut') && !props[p.pos] && !pendingCardType && p.money >= BD[p.pos].p;
-            if(gameMode === 'hardcore' && p.boughtRound) canBuy = false;
-            if(p.money < 0) canBuy = false;
-
-            document.getElementById('b-buy').disabled = !canBuy;
         }
     },
     openProp: (idx, forBuy=false) => {
-        play('slide');
+        if(forBuy && turn !== myPID) return; // Cant open buy if not my turn
         activeIdx = idx; const s = BD[idx]; const pr = props[idx];
         document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g||'#333'; document.getElementById('pc-price').innerText=`$${s.p}`;
         let html = '';
         if(s.r) {
             const labels = ['Aluguel', '1 Casa', '2 Casas', '3 Casas', '4 Casas', 'Hotel'];
             s.r.forEach((val, i) => html += `<tr><td>${labels[i]}</td><td style="text-align:right">$${val}</td></tr>`);
-            html += `<tr style="background:#eee; color:#000;"><td>Custo Const.</td><td style="text-align:right">$${s.h}</td></tr>`;
-        } else if(s.t==='rr') html = `<tr><td>Aluguel</td><td style="text-align:right">$25 - $200</td></tr>`;
-        else if(s.t==='ut') html = `<tr><td>Aluguel</td><td style="text-align:right">Dados x 4</td></tr>`;
+        }
         document.getElementById('rent-table-body').innerHTML = html;
         document.getElementById('act-buy').style.display = forBuy?'block':'none';
-        document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===turn)?'block':'none'; // Só dono mexe
+        document.getElementById('act-manage').style.display = (!forBuy && pr && pr.owner===myPID)?'block':'none';
         
-        if(!forBuy && pr){
+        if(!forBuy && pr && pr.owner === myPID){
             const bM = document.getElementById('btn-mtg');
             const lInfo = document.getElementById('loan-info');
             if(pr.loan) { 
@@ -806,259 +1131,8 @@ const ui = {
         setTimeout(()=>{ c1.className='cube'; c2.className='cube'; void c1.offsetWidth; c1.innerText=d1; c2.innerText=d2; }, 1000);
         setTimeout(()=>{ ds.classList.remove('active'); }, 2000);
     },
-    toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); },
-    // MULTIPLAYER INTERSTITIAL
-    showNextTurnModal: (nextPlayer) => {
-        const modal = document.getElementById('screen-interstitial');
-        document.getElementById('next-player-name').innerText = nextPlayer.name;
-        modal.style.display = 'flex';
-    },
-    startTurn: () => {
-        document.getElementById('screen-interstitial').style.display = 'none';
-        ui.hud();
-    }
-};
-
-const game = {
-    clickDeck: (type) => {
-        if(pendingCardType && type === pendingCardType){
-            const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
-            ui.pendingCard = deck[Math.floor(Math.random()*deck.length)];
-            ui.showEvent(type==='ch'?'sorte':'vixe', ui.pendingCard.txt);
-            pendingCardType = null; ui.hud();
-        }
-    },
-    forceDrawCard: () => { if(pendingCardType) game.clickDeck(pendingCardType); },
-    roll: async () => {
-        if(animating || pendingCardType) return;
-        const p = players[turn];
-        if(p.money < 0) return;
-
-        if(p.skippedTurn) { ui.toast(`${p.name} NO ENGARRAFAMENTO!`); p.skippedTurn = false; await sleep(1500); game.pass(); return; }
-        animating=true; ui.hud();
-        const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
-        p.lastD1 = d1; p.lastD2 = d2;
-        ui.dice(d1,d2); await sleep(1500);
-        
-        if(p.jailed){
-             p.jailTurns++; 
-             if(p.jailTurns > 3) {
-                 p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
-                 ui.toast("PENA CUMPRIDA! LIVRE!"); play('good');
-                 await game.move(turn, d1+d2); rolled=true;
-                 setTimeout(game.pass, 1500); return;
-             }
-             if(d1===d2){ 
-                 p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
-                 ui.toast("SOLTO (DUPLOS)!"); play('good'); 
-                 await game.move(turn, d1+d2); rolled = true; 
-                 setTimeout(game.pass, 1500); return;
-             } else { 
-                 p.jailAttempts++; ui.toast(`AINDA PRESO! TENTATIVA ${p.jailAttempts}/3`); play('bad');
-                 rolled=true; animating=false; ui.hud(); 
-                 return; 
-             }
-        } else {
-            if(d1===d2) { p.doubles++; ui.toast("DUPLOS!"); play('good'); } else p.doubles=0;
-            if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); return; }
-            await game.move(turn, d1+d2);
-        }
-        
-        rolled = true; animating=false; ui.hud();
-        // REMOVED AUTO PASS/ROLL FOR MULTIPLAYER. HUMANS MUST CLICK.
-    },
-    move: async (pid, steps) => {
-        const p = players[pid];
-        for(let i=0; i<steps; i++){
-            if(!p.active) break;
-            p.pos = (p.pos + 1) % 40;
-            if(p.pos===0 && p.active){ p.money+=200; ui.toast("Início! +$200"); play('cash'); p.boughtRound=false; confetti(); }
-            ui.updatePositions(); play('step'); await sleep(250);
-        }
-        if(p.active) game.land(pid);
-    },
-    land: (pid) => {
-        const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
-        if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
-        totalTurns++;
-        if(totalTurns%20 === 0) { ui.toast(`O GALO PASSOU!`); players.forEach(pl=>{ if(pl.active){ pl.money+=200; pl.pos=0;} }); ui.updatePositions(); return; }
-        
-        if(s.n === "Agamenon" && (!pr || pr.owner!==pid)) {
-            const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
-            if(check > 6) { ui.toast(`CUPOM BK! +$50 (Dado: ${check})`); p.money += 50; play('cash'); }
-            else { 
-                document.querySelector('.traffic-anim').classList.add('active'); 
-                setTimeout(()=>document.querySelector('.traffic-anim').classList.remove('active'), 2000); 
-                ui.toast(`ENGARRAFAMENTO! -$50 (Dado: ${check})`); p.money -= 50; play('bad'); 
-            }
-        }
-        
-        if((s.n === "Boa Viagem" || s.n === "Paiva" || s.n === "Pina")){ 
-             const check = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
-             if(check > 6) {
-                 ui.toast(`TUBARÃO RATÃO TE PROTEGEU! (Dado: ${check})`);
-                 p.protection = true; play('good');
-             } else {
-                 document.querySelector('.shark-anim').classList.add('active'); 
-                 setTimeout(()=>document.querySelector('.shark-anim').classList.remove('active'), 3000); 
-                 if(p.protection) {
-                     ui.toast(`ESCUDO QUEBROU, MAS VIVEU! (Dado: ${check})`); p.protection = false; play('bad');
-                 } else {
-                     ui.toast(`NHAC! MORDIDA! -$100 (Dado: ${check})`); p.money-=100; play('bad'); 
-                 }
-             }
-        }
-
-        if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
-            if(!pr){
-                if(p.money >= s.p) ui.openProp(p.pos, true); 
-            } else if(pr.owner !== pid && !pr.loan && players[pr.owner].active){
-                let rent = 0;
-                if(s.t==='pr') {
-                    const isMonopoly = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1).every(i=>props[i]&&props[i].owner===pr.owner);
-                    if(isMonopoly && pr.level===0) rent = s.r[0] * 2;
-                    else rent = s.r[pr.level];
-                }
-                else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
-                else if(s.t==='ut') { let c=BD.filter((b,i)=>b.t==='ut'&&props[i]&&props[i].owner===pr.owner).length; rent = (p.lastD1+p.lastD2)*(c===2?10:4); }
-                
-                p.money -= rent; players[pr.owner].money += rent; ui.toast(`ALUGUEL $${rent}`); play('cash');
-                game.checkDebt(pid);
-            }
-        } else if(s.t==='ch' || s.t==='rev'){
-            pendingCardType = s.t==='ch'?'ch':'rev'; ui.hud(); ui.toast("PEGUE UMA CARTA!"); 
-        } else if(s.t==='tx'){ 
-            const tax = Math.floor(p.money > 0 ? p.money * 0.10 : 0); 
-            p.money -= tax; ui.toast(`IMPOSTO! -${tax}`); play('bad'); 
-            game.checkDebt(pid);
-        }
-        ui.hud(); 
-    },
-    checkDebt: (pid) => {
-        const p = players[pid];
-        if(p.money < 0) {
-            const assets = props.filter(pr => pr && pr.owner === pid && !pr.loan);
-            if(assets.length === 0) { game.bankrupt(pid); }
-            else { ui.hud(); }
-        }
-    },
-    jail: (pid) => { 
-        players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].jailTurns = 0; players[pid].pos = 10; 
-        ui.updatePositions(); ui.toast("PRESO! PASSANDO A VEZ..."); 
-        play('jail'); animating = false; rolled = true; 
-        setTimeout(game.pass, 2000); 
-    },
-    payJail: () => { const p = players[turn]; if(p.money >= 50){ p.money-=50; p.jailed=false; p.jailAttempts=0; ui.toast("PAGO!"); play('cash'); ui.hud(); } },
-    pass: () => {
-        play('slide');
-        players[turn].tradedRound = false;
-        players[turn].doubles = 0; 
-
-        props.forEach((pr, i) => {
-            if(pr && pr.owner === turn && pr.loan) {
-                pr.loan.turns--;
-                if(pr.loan.turns <= 0) { props[i] = null; ui.toast(`Prazo venceu! ${players[turn].name} perdeu ${BD[i].n}`); }
-            }
-        });
-
-        if(players[turn].active && players[turn].money < 0) {
-             ui.toast("RESOLVA SUA DÍVIDA!"); return; 
-        }
-        
-        const actives = players.filter(p=>p.active);
-        if(actives.length === 1) {
-            document.getElementById('end-title').innerText = "VITÓRIA!";
-            document.getElementById('end-msg').innerText = `${actives[0].name} DONO DE RECIFE!`;
-            document.getElementById('screen-end').style.display = 'flex';
-            play('win'); confetti(); return;
-        }
-
-        let loop = 0; do { turn = (turn+1) % players.length; loop++; } while(!players[turn].active && loop < players.length);
-        
-        rolled=false; animating=false; 
-        
-        // SHOW "PASS THE PHONE"
-        ui.showNextTurnModal(players[turn]);
-    },
-    confirmBuy: () => { const p = players[turn]; const s = BD[activeIdx]; if(p.money >= s.p){ p.money -= s.p; props[activeIdx]={owner:turn, level:0, loan:null}; ui.toast("COMPRADO!"); play('cash'); ui.closeCard(); ui.hud(); } },
-    build: () => {
-        const p = players[turn]; const idx = activeIdx; const s = BD[idx]; const pr = props[idx];
-        const groupColor = s.g; const hasMonopoly = BD.map((b, i) => b.g === groupColor ? i : -1).filter(i => i !== -1).every(i => props[i] && props[i].owner === turn);
-        if(!hasMonopoly) { ui.toast("PRECISA TER O GRUPO!"); return; }
-        if(pr.level === 4) { if(p.money >= s.h) { p.money -= s.h; pr.level = 5; ui.toast("HOTEL!"); play('cash'); ui.closeCard(); ui.hud(); } else ui.toast("SEM GRANA!"); } 
-        else if (pr.level < 4) { if(p.money >= s.h) { p.money -= s.h; pr.level++; ui.toast("CASA!"); play('cash'); ui.closeCard(); ui.hud(); } else ui.toast("SEM GRANA!"); } 
-        else ui.toast("MÁXIMO!");
-    },
-    mortgage: () => {
-        const p = players[turn]; const s = BD[activeIdx]; const pr = props[activeIdx];
-        if(!pr.loan) {
-            const val = Math.floor(s.p * 0.8);
-            p.money += val; pr.loan = { val: val, turns: 5 };
-            ui.toast(`RECEBEU $${val}`); play('cash'); ui.closeCard(); ui.hud();
-        }
-    },
-    payLoan: () => {
-        const p = players[turn]; const pr = props[activeIdx];
-        const debt = Math.ceil(pr.loan.val * 1.5);
-        if(pr.loan && p.money >= debt) {
-            p.money -= debt; pr.loan = null;
-            ui.toast("DÍVIDA PAGA!"); play('cash'); ui.closeCard(); ui.hud();
-        } else ui.toast("SEM GRANA!");
-    },
-    bankrupt: (pid) => {
-        players[pid].active = false; 
-        ui.toast(`${players[pid].name} FALIU!`); play('bad');
-        props.forEach((pr,i)=>{if(pr && pr.owner===pid) props[i]=null;});
-        const t = document.getElementById(`tok${pid}`); if(t) t.style.display='none';
-        // Pass immediately if current player bankrupts
-        if(pid === turn) game.pass();
-    },
-    openTrade: () => {
-        if(players[turn].tradedRound) { ui.toast("Já negociou nesta rodada!"); return; }
-        const sel = document.getElementById('trade-partner');
-        sel.innerHTML = players.map((p,i)=>(i!==turn && p.active)?`<option value="${i}">${p.name} ($${p.money})</option>`:'').join('');
-        if(sel.options.length === 0) { ui.toast("Ninguém para negociar!"); return; }
-        document.getElementById('trade-modal').style.display='flex';
-        game.updateTradeUI();
-    },
-    updateTradeUI: () => {
-        const targetId = parseInt(document.getElementById('trade-partner').value);
-        const myProps = props.map((pr,i)=>({pr,i})).filter(o=>o.pr && o.pr.owner===turn && !o.pr.loan && o.pr.level===0);
-        const targetProps = props.map((pr,i)=>({pr,i})).filter(o=>o.pr && o.pr.owner===targetId && !o.pr.loan);
-        
-        document.getElementById('trade-list-give').innerHTML = myProps.map(o=>
-            `<label class="t-opt"><input type="checkbox" class="chk-give" value="${o.i}"> ${BD[o.i].n} ($${BD[o.i].p})</label>`
-        ).join('') || '<div style="padding:10px;color:#999">Sem imóveis</div>';
-        
-        document.getElementById('trade-list-get').innerHTML = targetProps.map(o=>
-            `<label class="t-opt"><input type="radio" name="rad-get" value="${o.i}"> ${BD[o.i].n} ($${BD[o.i].p})</label>`
-        ).join('') || '<div style="padding:10px;color:#999">Sem imóveis</div>';
-    },
-    sendOffer: () => {
-        const targetId = parseInt(document.getElementById('trade-partner').value);
-        const moneyGive = parseInt(document.getElementById('trade-money-give').value) || 0;
-        if(moneyGive > players[turn].money) { ui.toast("Dinheiro insuficiente!"); return; }
-        
-        const checks = document.querySelectorAll('.chk-give:checked');
-        const giveIndices = Array.from(checks).map(c=>parseInt(c.value));
-        const radio = document.querySelector('input[name="rad-get"]:checked');
-        if(!radio) { ui.toast("Escolha o que quer!"); return; }
-        const getIndex = parseInt(radio.value);
-        
-        // MANUAL ACCEPTANCE
-        ui.toast("NEGÓCIO FECHADO!");
-        play('cash');
-        players[turn].money -= moneyGive;
-        players[targetId].money += moneyGive;
-        props[getIndex].owner = turn;
-        giveIndices.forEach(i => props[i].owner = targetId);
-        
-        players[turn].tradedRound = true;
-        document.getElementById('trade-modal').style.display='none';
-        ui.hud();
-    }
+    toast: (m) => { const d=document.createElement('div');d.className='toast';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000); }
 };
 </script>
 </body>
 </html>
-
