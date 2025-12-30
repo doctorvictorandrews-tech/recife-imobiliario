@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V72 (Compra Corrigida)</title>
+    <title>Recife Imobiliário: V73 (Destravado)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -11,20 +11,25 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* ESTILOS (V69) */
         :root { --wood: #5d4037; --paper: #fff8e1; --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d; --c-dark: #263238; --board-bg: #c5e1a5; --space-bg: #ffffff; --border-col: #1a1a1a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Nunito', sans-serif; background: linear-gradient(120deg, #1565c0, #fbc02d, #c62828, #1565c0); background-size: 400% 400%; animation: frevoBG 15s ease infinite; height: 100dvh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         @keyframes frevoBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+        
+        /* CORREÇÃO DE CLIQUES: Pointer Events */
         #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
+        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
+        #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
+        
         .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
         .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
         @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
         .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
         .traffic-anim.active { display: flex; }
         @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
-        #screen-start, #screen-lobby, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
+        
+        #screen-start, #screen-lobby, #screen-end { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; pointer-events: auto; }
         #screen-lobby, #screen-end { display: none; }
         .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
         .sel-box { margin: 15px 0; text-align: left; }
@@ -39,12 +44,14 @@
         .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
         .char-opt.selected { border-color: var(--c-green); background: #e8f5e9; transform: scale(0.95); }
         .char-opt.taken { opacity: 0.3; pointer-events: none; background: #ddd; }
+        
         #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; flex-direction: column; }
         #game-layout.active { display: flex; }
         #board-area { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); flex: 1; width: 100%; min-height: 0; }
-        #board-container { position: relative; transform-origin: center center; box-shadow: 0 0 50px rgba(0,0,0,0.5); display: block; }
+        #board-container { position: relative; transform-origin: center center; box-shadow: 0 0 50px rgba(0,0,0,0.5); display: block; pointer-events: auto; }
         #board { width: 900px; height: 1050px; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid var(--border-col); }
-        #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); flex-shrink: 0; width: 100%; border-top: 4px solid var(--c-dark); padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        
+        #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); flex-shrink: 0; width: 100%; border-top: 4px solid var(--c-dark); padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); pointer-events: auto; }
         #action-btns { width: 100%; margin-bottom: 5px; }
         #normal-btns, #jail-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
         .btn-game { border: none; border-radius: 10px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.3); text-transform: uppercase; position: relative; width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center; text-align: center; height: 45px; font-size: 0.9rem; padding: 0 5px; }
@@ -58,6 +65,7 @@
         .hud-top-bar { background: #eceff1; border: 2px solid #b0bec5; border-radius: 8px; padding: 5px 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .btn-inv { background: #37474f; color: white; border-radius: 8px; cursor: pointer; border: none; font-weight: 800; text-transform: uppercase; height: 35px; width: 100%; font-size: 0.8rem; }
         .hud-content { display: none; }
+        
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); border-top: none; padding: 0; }
@@ -72,7 +80,8 @@
             #desktop-props-container { display: block; flex: 1; overflow-y: auto; padding-top: 10px; }
         }
         @media (max-width: 899px) { #players-scroll, #desktop-props-container { display: none; } #mobile-controls-wrapper { display: flex; flex-direction: column; width: 100%; } }
-        .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; overflow: hidden; }
+        
+        .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; overflow: hidden; cursor: pointer; }
         .rot-left { transform: rotate(90deg); } .rot-top { transform: rotate(180deg); } .rot-right { transform: rotate(-90deg); }
         .space-content { width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; text-align:center; padding: 2px; }
         .color-strip { height: 20%; width: 100%; border-bottom: 2px solid #000; }
@@ -89,6 +98,7 @@
         .deck.chance { top: 20%; left: 15%; background: linear-gradient(135deg, #ab47bc, #7b1fa2); transform: rotate(-5deg); }
         .deck.reves { bottom: 20%; right: 15%; background: linear-gradient(135deg, #ffa726, #f57c00); transform: rotate(5deg); }
         .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: all 0.4s; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
+        .token-shield { position: absolute; top:-5px; right:-5px; font-size: 1rem; background: blue; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid #fff; }
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
@@ -103,8 +113,7 @@
         .prop-item:hover { background: #f5f5f5; transform:translateX(2px); }
         .prop-item.loan { background: #ffebee; border-left-color: #d32f2f !important; }
         .loan-alert { color: #d32f2f; font-size: 0.7rem; display: block; }
-        #overlay-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9500; display: flex; justify-content: center; align-items: center; }
-        #overlay-bg { position:absolute; inset:0; background:rgba(0,0,0,0.7); pointer-events:auto; display:none; }
+        
         .prop-card { width: 90%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); pointer-events: auto; display: none; border: 4px solid var(--c-dark); animation: popIn 0.3s; z-index: 9600; position:relative; }
         .pc-head { padding: 15px; background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 1.4rem; text-align: center; }
         .rent-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
@@ -123,7 +132,7 @@
         .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
         @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
-        #inv-modal, #trade-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; align-items: center; justify-content: center; }
+        #inv-modal, #trade-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:7000; flex-direction:column; padding:20px; align-items: center; justify-content: center; pointer-events: auto; }
         #inv-list { flex:1; overflow-y:auto; width:100%; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
         .trade-box { background: #fff; width: 95%; max-width: 600px; border-radius: 20px; border: 4px solid var(--c-blue); padding: 15px; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; }
         .trade-cols { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -138,7 +147,7 @@
 
 <div id="screen-start">
     <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1rem; color:#000;">ONLINE V72</span></h1>
+        <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1rem; color:#000;">ONLINE V73</span></h1>
         <div class="sel-box"><label>SEU APELIDO</label><input type="text" id="p-nickname" placeholder="Ex: Carlinhos" maxlength="10"></div>
         <button class="btn-main" onclick="lobby.create()">CRIAR SALA</button>
         <div style="margin: 20px 0; border-top: 2px dashed #ccc; padding-top:10px;">
@@ -250,19 +259,17 @@
 </div>
 
 <script>
-// --- CONFIGURAÇÃO FIREBASE ---
+// CONFIG FIREBASE
 const firebaseConfig = { apiKey: "AIzaSyBMRA5IwyPyv6YEqG2z4KT1e5jk7B1_Vwc", authDomain: "recifeimob-beb6c.firebaseapp.com", databaseURL: "https://recifeimob-beb6c-default-rtdb.firebaseio.com", projectId: "recifeimob-beb6c", storageBucket: "recifeimob-beb6c.firebasestorage.app", messagingSenderId: "1063704445620", appId: "1:1063704445620:web:a9ccc21171b9e3d16e4de1" };
 if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- DADOS ---
+// DADOS
 const CHARS=[{id:'rt',i:'💅',n:'A Ratona'},{id:'as',i:'🗿',n:'Bilola'},{id:'bt',i:'🛶',n:'Celta'},{id:'c',i:'🦀',n:'Caranguejo'},{id:'s',i:'🦈',n:'Tubarão'},{id:'u',i:'☂️',n:'Sombrinha'},{id:'pd',i:'🐀',n:'Gabiru'},{id:'bb',i:'🌽',n:'Milho'},{id:'gl',i:'🐔',n:'Galo'},{id:'brt',i:'🚌',n:'BRT'},{id:'bdr',i:'🍥',n:'Bolo Rolo'},{id:'lu',i:'🐻',n:'La Ursa'},{id:'hmn',i:'🎩',n:'Meia-Noite'},{id:'rp',i:'🚔',n:'Rádio P.'},{id:'srr',i:'🐚',n:'Sururu'},{id:'and',i:'😎',n:'Anderson'}];
-
 const BD=[{t:'st',n:'MARCO ZERO',i:'🚩'},{t:'pr',g:'#795548',n:'Coque',p:60,h:50,r:[2,10,30,90,160,250]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#795548',n:'Ibura',p:60,h:50,r:[4,20,60,180,320,450]},{t:'tx',n:'IPTU',i:'💸'},{t:'rr',n:'Est. Joana B.',p:200,m:100,i:'🚆',r:[25,50,100,200]},{t:'pr',g:'#03a9f4',n:'Agamenon',p:100,h:50,r:[6,30,90,270,400,550]},{t:'rev',n:'Revés',i:'⚠️'},{t:'pr',g:'#03a9f4',n:'Afogados',p:100,h:50,r:[6,30,90,270,400,550]},{t:'pr',g:'#03a9f4',n:'Mustardinha',p:120,h:50,r:[8,40,100,300,450,600]},{t:'jl',n:'LEI SECA',i:'👮'},{t:'pr',g:'#e91e63',n:'Iputinga',p:140,h:100,r:[10,50,150,450,750,950]},{t:'ut',n:'Celpe',p:150,i:'💡'},{t:'pr',g:'#e91e63',n:'Cordeiro',p:140,h:100,r:[10,50,150,450,750,950]},{t:'pr',g:'#e91e63',n:'Várzea',p:160,h:100,r:[12,60,180,500,700,900]},{t:'rr',n:'Est. Coqueiral',p:200,m:100,i:'🚆',r:[25,50,100,200]},{t:'pr',g:'#ff5722',n:'Rosarinho',p:180,h:100,r:[14,70,200,550,750,950]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#ff5722',n:'Encruzilhada',p:180,h:100,r:[14,70,200,550,750,950]},{t:'pr',g:'#ff5722',n:'Torre',p:200,h:100,r:[16,80,220,600,800,1000]},{t:'pk',n:'Pq. Jaqueira',i:'🌳'},{t:'pr',g:'#d32f2f',n:'Aflitos',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'rev',n:'Revés',i:'⚠️'},{t:'pr',g:'#d32f2f',n:'Espinheiro',p:220,h:150,r:[18,90,250,700,875,1050]},{t:'pr',g:'#d32f2f',n:'Madalena',p:240,h:150,r:[20,100,300,750,925,1100]},{t:'rr',n:'Est. Barro',p:200,m:100,i:'🚆',r:[25,50,100,200]},{t:'pr',g:'#fbc02d',n:'Graças',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'pr',g:'#fbc02d',n:'Poço Panela',p:260,h:150,r:[22,110,330,800,975,1150]},{t:'ut',n:'Compesa',p:150,i:'💧'},{t:'pr',g:'#fbc02d',n:'Casa Forte',p:280,h:150,r:[24,120,360,850,1025,1200]},{t:'gj',n:'CADEIA!',i:'🚓'},{t:'pr',g:'#388e3c',n:'Apipucos',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'pr',g:'#388e3c',n:'Parnamirim',p:300,h:200,r:[26,130,390,900,1100,1275]},{t:'ch',n:'Sorte',i:'🍀'},{t:'pr',g:'#388e3c',n:'Paiva',p:320,h:200,r:[28,150,450,1000,1200,1400]},{t:'rr',n:'Est. Afogados',p:200,m:100,i:'🚆',r:[25,50,100,200]},{t:'rev',n:'Revés',i:'⚠️'},{t:'pr',g:'#1565c0',n:'Boa Viagem',p:350,h:200,r:[35,175,500,1100,1300,1500]},{t:'tx',n:'Taxa',i:'🧾'},{t:'pr',g:'#1565c0',n:'Pina',p:400,h:200,r:[50,200,600,1400,1700,2000]}];
 const CARDS_SORTE = [{txt:"Acelera! Vá p/ Marco Zero +200", act:'move', val:0}, {txt:"Rei do Passinho! Ganhe $50 de cada.", act:'all', val:50}, {txt:"Achou carteira na praia. +$150", val:150}, {txt:"Habeas Corpus. Livre da Cadeia.", act:'getjail'}, {txt:"GPS Louco. Volte 3 casas.", act:'back', val:3}, {txt:"Lucro no Bolo de Rolo. +$50", val:50}, {txt:"Vendeu o Celta. +$100", val:100}, {txt:"Troco do Pão a mais. +$20", val:20}, {txt:"Indenização da Compesa. +$100", val:100}, {txt:"Promoção no Trabalho. +$100", val:100}, {txt:"Herança de Tio Rico. +$100", val:100}, {txt:"Sorte no Bicho (Águia). +$200", val:200}, {txt:"Achasse 200 conto no chão! +$200", val:200}];
 const CARDS_REVES = [{txt:"IPTU Atrasado. Pague $50", val:-50}, {txt:"Virose da Mosca. Remédios -$100", val:-100}, {txt:"Maresia comeu o portão. Pague reparos.", act:'repairs'}, {txt:"Pichou estátua de Brennand. CADEIA!", act:'jail'}, {txt:"Seu Aniversário! Pague a festa -$50", val:-50}, {txt:"Taxa de Condomínio. -$100", val:-100}, {txt:"Mensalidade da Escola. -$150", val:-150}, {txt:"Bateu no BRT. Pague $50", val:-50}, {txt:"Doação Hospital Câncer. -$10", val:-10}, {txt:"Assalto no ônibus. Celular novo -$100", val:-100}, {txt:"Multa na Agamenon. -$15", val:-15}, {txt:"Engarrafamento! Perca a vez.", act:'skip'}, {txt:"Casamento do Primo. Presente -$50", val:-50}, {txt:"Taxa de Lixo. -$40", val:-40}, {txt:"Blitz da Lei Seca! CADEIA!", act:'jail'}];
 
-// --- ESTADO LOCAL ---
 let players=[], props=Array(40).fill(null), turn=0, myName="", myChar="", myPID=-1, roomID="", isHost=false, rolled=false, animating=false, pendingCardType=null, activeIdx=-1, lastCommandSig = "";
 
 const SFX = { step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'), cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'), slide: new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'), card: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'), jail: new Audio('https://assets.mixkit.co/active_storage/sfx/1393/1393-preview.mp3'), bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'), good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'), win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3') };
@@ -281,6 +288,7 @@ const lobby = {
 const game = {
     init: (d) => { document.getElementById('screen-lobby').style.display='none'; document.getElementById('game-layout').classList.add('active'); players = d.players; props = d.props||Array(40).fill(null); turn = d.turn; ui.buildBoard(); setTimeout(ui.resize, 100); ui.hud(); },
     sync: async (d) => {
+        // BLINDAGEM CONTRA DADOS NULOS
         props = d.props || Array(40).fill(null);
         d.players.forEach((rp, i) => { players[i].money = rp.money; players[i].active = rp.active; players[i].jailed = rp.jailed; players[i].icon = rp.icon; if(!animating) players[i].pos = rp.pos; });
         if(turn !== d.turn) { turn = d.turn; play('slide'); rolled = false; pendingCardType = null; animating = false; }
@@ -333,25 +341,17 @@ const game = {
         db.ref('rooms/'+roomID).update({ turn: next, players: players, props: props });
     },
     
-    // --- FUNÇÃO DE COMPRA DIRETA (HUD) ---
+    // COMPRA RÁPIDA (Correção de loop e travamento)
     buy: () => {
         if(turn !== myPID || animating || !rolled) return;
-        const p = players[turn];
-        const idx = p.pos;
-        const s = BD[idx];
-
+        const p = players[turn]; const idx = p.pos; const s = BD[idx];
         if(props[idx]) return ui.toast("Já tem dono!");
         if(p.money < s.p) return ui.toast("Sem dinheiro!");
-
         p.money -= s.p;
         props[idx] = { owner: turn, level: 0, loan: null };
-        
-        ui.toast("COMPRADO!");
-        play('cash');
-        
-        // Salva imediatamente
-        game.sendCommand({ type: 'NONE' }); // NONE só atualiza o estado sem animação
-        ui.hud(); // Atualiza botão visualmente
+        ui.toast("COMPRADO!"); play('cash');
+        ui.hud(); // Atualiza local imediatamente
+        game.sendCommand({ type: 'NONE' }); // Salva
     },
 
     confirmBuy: () => { const p = players[turn]; const s = BD[activeIdx]; if(p.money >= s.p) { p.money -= s.p; props[activeIdx] = {owner:turn, level:0, loan:null}; ui.toast("Comprado!"); play('cash'); ui.closeCard(); game.sendCommand({type:'NONE'}); } },
@@ -380,7 +380,8 @@ const ui = {
             let r,c, rot; if(i<=10){r=11;c=11-i;} else if(i<=20){r=11-(i-10);c=1;rot='rot-left';} else if(i<=30){r=1;c=1+(i-20);rot='rot-top';} else {r=1+(i-30);c=11;rot='rot-right';}
             d.style.gridRow=r; d.style.gridColumn=c;
             if(s.t.match(/pr|rr|ut/)) { d.innerHTML = `<div class="space-content ${rot||''}"><div class="color-strip" style="background:${s.g||'#333'}"></div><div class="sp-name">${s.n}</div><div class="sp-price">$${s.p}</div></div><div class="build-area" id="b${i}"></div>`; } else { d.innerHTML = `<div class="space-content ${rot||''}"><div class="sp-icon">${s.i}</div><div class="sp-name" style="font-size:0.6rem">${s.n}</div></div>`; }
-            d.onclick = () => ui.openProp(i); b.appendChild(d);
+            d.addEventListener('click', () => ui.openProp(i)); // LISTENER SEGURO
+            b.appendChild(d);
         });
         players.forEach((p,i) => { const t=document.createElement('div'); t.className='token'; t.id=`tok${i}`; t.innerHTML = p.icon; b.appendChild(t); }); ui.updatePositions();
     },
@@ -395,15 +396,19 @@ const ui = {
         document.getElementById('turn-display').style.background = isMyTurn ? '#c8e6c9' : '#eee';
         const me = players[myPID]; const md = document.getElementById('p-money'); md.innerText = `$${me.money}`; md.className = me.money<0 ? 'money-display debt' : 'money-display';
         document.getElementById('players-scroll').innerHTML = players.map((p,i)=>`<div class="p-stat ${turn===i?'active':''} ${!p.active?'bankrupt':''}"><div>${p.icon} ${p.name}</div><div>$${p.money}</div></div>`).join('');
+        
+        // CORREÇÃO: USO SEGURO DO PROPS COM OPTIONAL CHAINING
         props.forEach((pr,i) => { const s = document.getElementById(`s${i}`); if(pr) { s.classList.add('owned'); s.style.borderColor = players[pr.owner].color; const b = document.getElementById(`b${i}`); if(b) b.innerHTML = pr.level===5?'<div class="hotel-3d"></div>':Array(pr.level).fill('<div class="house-3d"></div>').join(''); } else if(s) { s.classList.remove('owned'); s.style.borderColor='#1a1a1a'; const b = document.getElementById(`b${i}`); if(b) b.innerHTML=''; } });
+        
+        // CORREÇÃO DA LISTA DE PROPRIEDADES
         const myPropsHTML = props.map((pr,i) => (pr && pr.owner===myPID) ? `<div class="prop-item" onclick="ui.openProp(${i})" style="border-left-color:${BD[i].g}"><span>${BD[i].n}</span><span>${pr.level>0?'🏠'+pr.level:''}</span></div>` : '').join('');
         document.getElementById('desktop-props-container').innerHTML = myPropsHTML; document.getElementById('inv-list').innerHTML = myPropsHTML;
+        
         const acts = document.getElementById('action-btns'); acts.style.opacity = isMyTurn ? 1 : 0.5; acts.style.pointerEvents = isMyTurn ? 'auto' : 'none';
         if(isMyTurn) {
             document.getElementById('b-card').style.display = pendingCardType ? 'block' : 'none'; document.getElementById('normal-btns').style.display = pendingCardType ? 'none' : 'grid';
             const canRoll = !rolled && !animating && !pendingCardType; document.getElementById('b-roll').disabled = !canRoll;
             const p = players[myPID];
-            // LÓGICA DO BOTÃO COMPRAR CORRIGIDA
             const canBuy = rolled && !animating && !pendingCardType && !props[p.pos] && BD[p.pos].t.match(/pr|rr|ut/) && p.money >= BD[p.pos].p;
             document.getElementById('b-buy').disabled = !canBuy;
             const canPass = rolled && !animating && !pendingCardType; document.getElementById('b-pass').disabled = !canPass;
