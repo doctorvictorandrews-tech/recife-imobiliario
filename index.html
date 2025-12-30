@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: Online (V70.0)</title>
+    <title>Recife Imobiliário: Online (V71.0 Final)</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -407,9 +408,12 @@ const firebaseConfig = {
   messagingSenderId: "1063704445620",
   appId: "1:1063704445620:web:a9ccc21171b9e3d16e4de1"
 };
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 
+// --- DADOS DO JOGO ---
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, {id:'c',i:'🦀',n:'Caranguejo'},
     {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'},
@@ -462,14 +466,12 @@ const BD=[
 
 const CARDS_SORTE = [
     {txt:"Acelera o passo! Vá p/ Marco Zero +200", act:'move', val:0},
-    {txt:"Metrô quebrou, Uber p/ Boa Viagem.", act:'warp', dest:37},
     {txt:"Rei do Passinho! Ganhe $50 de cada.", act:'all', val:50},
     {txt:"Achou carteira na praia. +$150", val:150},
     {txt:"Habeas Corpus. Livre da Cadeia.", act:'getjail'},
     {txt:"Deu a louca no GPS. Volte 3 casas.", act:'back', val:3},
     {txt:"Lucro no Bolo de Rolo. +$50", val:50},
     {txt:"Vendeu o Celta. +$100", val:100},
-    {txt:"Visitando a Família. Vá p/ Casa Forte.", act:'warp', dest:29},
     {txt:"Troco do Pão a mais. +$20", val:20},
     {txt:"Indenização da Compesa. +$100", val:100},
     {txt:"Promoção no Trabalho. +$100", val:100},
@@ -504,7 +506,7 @@ let isHost = false;
 let myName = "Player";
 let myChar = "";
 let lastKnownTurn = -1;
-let lastMoveSig = ""; // To prevent duplicate animations
+let lastMoveSig = ""; // Prevent duplicate animations
 
 const SFX = {
     step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
@@ -550,7 +552,6 @@ const lobby = {
         myName = name; isHost = true;
         roomID = Math.random().toString(36).substring(2,6).toUpperCase();
         lobby.enter();
-        // Set Host Initial State
         const rRef = db.ref('rooms/'+roomID);
         rRef.set({
             status: 'lobby',
@@ -569,6 +570,7 @@ const lobby = {
             if(snap.exists() && snap.val().status === 'lobby') {
                 const current = snap.val().players || [];
                 if(current.length >= 4) { ui.toast("Sala cheia!"); return; }
+                if(current.some(p => p.name === myName)) { ui.toast("Nome já existe na sala!"); return; }
                 current.push({ name: myName, icon: '', active: true, money: 0, pos: 0 });
                 db.ref('rooms/'+roomID+'/players').set(current);
                 lobby.enter();
@@ -594,19 +596,14 @@ const lobby = {
             const data = snap.val();
             if(!data) return;
             
-            // Lobby Update
             if(data.status === 'lobby') {
                 const plist = data.players || [];
-                // Identificar meu ID baseado no nome (simple logic)
                 myPID = plist.findIndex(p => p.name === myName);
                 
                 let html = '';
-                plist.forEach(p => {
-                    html += `<div class="lobby-p">${p.icon || '❔'} ${p.name}</div>`;
-                });
+                plist.forEach(p => { html += `<div class="lobby-p">${p.icon || '❔'} ${p.name}</div>`; });
                 document.getElementById('lobby-list').innerHTML = html;
                 
-                // Update Taken Chars
                 document.querySelectorAll('.char-opt').forEach(el => el.classList.remove('taken', 'selected'));
                 plist.forEach(p => {
                    if(p.icon) {
@@ -617,12 +614,9 @@ const lobby = {
                 if(myChar) document.getElementById(`copt-${myChar}`).classList.add('selected');
 
             } else if(data.status === 'playing') {
-                // Start Game!
                 if(document.getElementById('screen-lobby').style.display !== 'none') {
-                    // Initialize Local Game
                     game.initGame(data);
                 } else {
-                    // Update Game State
                     game.sync(data);
                 }
             }
@@ -669,47 +663,58 @@ const game = {
     initGame: (data) => {
         document.getElementById('screen-lobby').style.display='none';
         document.getElementById('game-layout').classList.add('active');
-        
-        // Load initial state
         players = data.players;
         props = data.props || Array(40).fill(null);
         turn = data.turn;
-        
         ui.buildBoard();
         setTimeout(resizeBoard, 100);
         ui.hud();
     },
     sync: (data) => {
-        // This runs whenever DB changes
-        const oldPos = players.map(p => p.pos);
+        // Only update basic stats, do NOT snap position if animating
+        const remotePlayers = data.players;
         
-        players = data.players;
+        remotePlayers.forEach((rp, idx) => {
+            // Update money and status
+            players[idx].money = rp.money;
+            players[idx].active = rp.active;
+            players[idx].jailed = rp.jailed;
+            players[idx].protection = rp.protection;
+            
+            // CRITICAL: Only update position if NOT animating this specific player locally
+            // We know animation is running if animating=true AND it's the current turn player
+            const isAnimatingThisPlayer = animating && (idx === turn);
+            
+            if (!isAnimatingThisPlayer) {
+                players[idx].pos = rp.pos;
+            }
+        });
+
         props = data.props || Array(40).fill(null);
         rolled = data.rolled;
         activeIdx = data.activeIdx;
         pendingCardType = data.pendingCardType;
         totalTurns = data.totalTurns;
         
-        // Detect turn change to play sound
         if(data.turn !== lastKnownTurn) {
             turn = data.turn;
             play('slide');
             lastKnownTurn = turn;
+            // New turn: reset animation lock just in case
+            animating = false; 
         }
 
-        // Detect Move Animation trigger via special field
+        // Check for Remote Animation Trigger
         if(data.lastMove && data.lastMove.sig !== lastMoveSig) {
             lastMoveSig = data.lastMove.sig;
-            // Play animation sequence
             game.handleRemoteAction(data.lastMove);
         } else {
-            // Instant update (fallback)
-            ui.updatePositions();
+            // If no animation, safe to update visual positions
+            if(!animating) ui.updatePositions();
             ui.hud();
         }
     },
     save: () => {
-        // Push local state to DB
         db.ref('rooms/'+roomID).update({
             players: players,
             props: props,
@@ -721,6 +726,9 @@ const game = {
         });
     },
     handleRemoteAction: async (act) => {
+        // Prevent double animation if I am the one who triggered it locally
+        if(act.pId === myPID && animating) return;
+
         animating = true;
         if(act.type === 'roll') {
             ui.dice(act.d1, act.d2);
@@ -729,12 +737,14 @@ const game = {
         } else if (act.type === 'teleport') {
              await game.animateMove(act.pId, act.path);
         }
+        
+        // After animation, force snap to final position to ensure sync
+        players[act.pId].pos = act.finalPos;
         animating = false;
         ui.updatePositions();
         ui.hud();
     },
     animateMove: async (pid, path) => {
-        // Path is array of positions [1, 2, 3...]
         const p = players[pid];
         for(let pos of path) {
             p.pos = pos;
@@ -750,7 +760,6 @@ const game = {
             const deck = type==='ch' ? CARDS_SORTE : CARDS_REVES;
             const card = deck[Math.floor(Math.random()*deck.length)];
             ui.showEvent(type==='ch'?'sorte':'vixe', card.txt);
-            // Apply card logic locally then save
             game.applyCardLogic(card);
         }
     },
@@ -758,18 +767,22 @@ const game = {
     applyCardLogic: (card) => {
         const p = players[turn];
         if(card.val) { p.money += card.val; play(card.val>0?'cash':'bad'); }
-        if(card.act === 'move') game.move(turn, 0); // Special case handling needed for path
+        if(card.act === 'move') { /* handled via special logic if needed, simplify for now */ }
         if(card.act === 'jail') game.jail(turn);
         if(card.act === 'getjail') p.hasJailCard = true;
-        if(card.act === 'back') { p.pos -= card.val; } // Simplify for multiplayer
-        // Simplified: In MP, complex card logic like 'move to X' needs to calculate path locally
-        // For now, assume instant teleport for cards to save complexity
+        if(card.act === 'back') { p.pos -= card.val; if(p.pos<0) p.pos+=40; } 
+        
         pendingCardType = null;
         game.save();
     },
-    applyCard: () => { pendingCardType = null; game.save(); }, // Called by UI close
+    applyCard: () => { pendingCardType = null; game.save(); }, 
+    
     roll: async () => {
-        if(turn !== myPID || animating || pendingCardType) return;
+        // SAFETY CHECKS
+        if(turn !== myPID) return; 
+        if(animating) return; // Prevent double click
+        if(rolled) return; // Prevent rolling again
+        
         const p = players[turn];
         if(p.money < 0) return;
 
@@ -780,71 +793,100 @@ const game = {
             return; 
         }
 
+        animating = true; // LOCK INTERFACE IMMEDIATELY
+        document.getElementById('b-roll').disabled = true;
+
         const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
         p.lastD1 = d1; p.lastD2 = d2;
         
         let movePath = [];
-        let newPos = p.pos;
+        let currentPos = p.pos;
         let isDouble = d1===d2;
         
-        // Jail Logic
+        // LOGIC
         if(p.jailed){
              p.jailTurns++; 
              if(p.jailTurns > 3 || isDouble) {
                  p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
                  ui.toast(isDouble ? "SOLTO (DUPLOS)!" : "PENA CUMPRIDA!");
-                 // Calculate path
-                 for(let i=0; i<(d1+d2); i++) movePath.push((newPos+i+1)%40);
-                 p.pos = movePath[movePath.length-1];
+                 for(let i=0; i<(d1+d2); i++) {
+                     currentPos = (currentPos+1)%40;
+                     movePath.push(currentPos);
+                 }
                  rolled=true;
              } else {
                  p.jailAttempts++; ui.toast(`PRESO! ${p.jailAttempts}/3`); play('bad');
                  rolled=true;
+                 // No movement
              }
         } else {
             if(isDouble) p.doubles++; else p.doubles=0;
-            if(p.doubles===3) { ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); return; }
-            for(let i=0; i<(d1+d2); i++) movePath.push((newPos+i+1)%40);
-            p.pos = movePath[movePath.length-1];
+            if(p.doubles===3) { 
+                ui.toast("3x DUPLOS! CADEIA!"); 
+                game.jail(turn); 
+                return; // jail handles save
+            }
+            for(let i=0; i<(d1+d2); i++) {
+                currentPos = (currentPos+1)%40;
+                movePath.push(currentPos);
+            }
             rolled=true;
         }
 
-        // Send Action to DB to trigger animation
+        const finalPos = movePath.length > 0 ? movePath[movePath.length-1] : p.pos;
+
+        // 1. TRIGGER VISUALS FOR EVERYONE
         db.ref('rooms/'+roomID+'/lastMove').set({
             sig: Date.now().toString(),
             type: 'roll',
             pId: turn,
             d1: d1, d2: d2,
-            path: movePath
+            path: movePath,
+            finalPos: finalPos
         });
+
+        // 2. PLAY LOCALLY (Wait for completion)
+        ui.dice(d1, d2);
+        await sleep(1500);
+        if(movePath.length > 0) await game.animateMove(turn, movePath);
+
+        // 3. UPDATE STATE ONLY AFTER ANIMATION
+        p.pos = finalPos;
+        animating = false;
         
-        // Determine landing logic locally, then save state
         if(movePath.length > 0) game.landLogic(turn);
-        
+
+        // 4. SAVE FINAL STATE TO DB (Enables buttons for everyone)
         game.save();
+        ui.hud(); // Explicit refresh
     },
     landLogic: (pid) => {
          const p = players[pid]; const s = BD[p.pos]; const pr = props[p.pos];
-         if(p.pos===0){ p.money+=200; } // Start bonus handling
+         if(p.pos===0){ p.money+=200; } 
          
          if(p.pos===30){ ui.toast("BLITZ!"); game.jail(pid); return; }
          totalTurns++;
          
-         // Basic Rent/Tax Logic
          if(s.t==='pr' || s.t==='rr' || s.t==='ut'){
-             if(!pr && p.money >= s.p) { /* Can buy, UI handles */ }
-             else if(pr && pr.owner !== pid && !pr.loan && players[pr.owner].active){
-                let rent = 50; // Simplified rent for brevity in MP logic
-                if(s.t==='pr') rent = s.r[pr.level];
+             // Auto Rent
+             if(pr && pr.owner !== pid && !pr.loan && players[pr.owner].active){
+                let rent = 0;
+                if(s.t==='pr') {
+                     const isMonopoly = BD.map((b,i)=>b.g===s.g?i:-1).filter(i=>i!==-1).every(i=>props[i]&&props[i].owner===pr.owner);
+                     rent = (isMonopoly && pr.level===0) ? s.r[0]*2 : s.r[pr.level];
+                }
+                else if(s.t==='rr') { let c=BD.filter((b,i)=>b.t==='rr'&&props[i]&&props[i].owner===pr.owner).length; rent=25*Math.pow(2,c-1); }
+                else if(s.t==='ut') { rent = (p.lastD1+p.lastD2)*4; }
+                
                 p.money -= rent; players[pr.owner].money += rent; ui.toast(`ALUGUEL $${rent}`); play('cash');
              }
          } else if(s.t==='ch' || s.t==='rev'){
              pendingCardType = s.t==='ch'?'ch':'rev';
-         } else if(s.t==='tx'){ p.money -= 100; }
+         } else if(s.t==='tx'){ p.money -= 100; ui.toast("IMPOSTO -$100"); }
     },
     jail: (pid) => { 
         players[pid].jailed = true; players[pid].jailAttempts = 0; players[pid].pos = 10; 
-        play('jail'); rolled=true; game.save(); 
+        play('jail'); rolled=true; animating=false; game.save(); 
         setTimeout(game.pass, 2000); 
     },
     payJail: () => { const p = players[turn]; if(p.money >= 50){ p.money-=50; p.jailed=false; ui.toast("PAGO!"); play('cash'); game.save(); } },
@@ -854,12 +896,9 @@ const game = {
         play('slide');
         players[turn].tradedRound = false;
         players[turn].doubles = 0; 
-        // Loan logic omitted for brevity, add if needed
         
         const actives = players.filter(p=>p.active);
-        if(actives.length === 1) {
-            // Win condition handled in UI
-        }
+        if(actives.length === 1) { /* Win logic */ }
 
         let nextTurn = turn;
         let loop = 0; 
@@ -909,7 +948,6 @@ const game = {
         ).join('') || '<div style="padding:10px;color:#999">Sem imóveis</div>';
     },
     sendOffer: () => {
-        // Direct trade for simplicity in this version
         const targetId = parseInt(document.getElementById('trade-partner').value);
         const moneyGive = parseInt(document.getElementById('trade-money-give').value) || 0;
         if(moneyGive > players[turn].money) { ui.toast("Dinheiro insuficiente!"); return; }
@@ -935,7 +973,7 @@ const game = {
 const ui = {
     buildBoard: () => {
         const b = document.getElementById('board');
-        b.innerHTML = ''; // Clear existing
+        b.innerHTML = ''; 
         b.innerHTML = `<div class="center-hub"><div class="center-title">RECIFE <span class="center-sub">IMOBILIÁRIO</span></div><div class="center-icon">🦈⛱️</div></div>
                 <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div><div style="font-size:0.8rem">SORTE</div></div>
                 <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div><div style="font-size:0.8rem">REVÉS</div></div>`;
@@ -996,14 +1034,13 @@ const ui = {
         if(!players[turn]) return;
         const p = players[turn];
         
-        // Dynamic Turn Text
         const turnTxt = turn === myPID ? "SUA VEZ!" : `VEZ DE: ${p.name}`;
         document.getElementById('turn-display').innerText = turnTxt;
         document.getElementById('turn-display').style.background = turn === myPID ? '#c8e6c9' : '#eceff1';
         
         const myP = players[myPID];
         const mDisp = document.getElementById('p-money');
-        mDisp.innerText = `$${myP.money}`; // Show MY money
+        mDisp.innerText = `$${myP.money}`; 
         if(myP.money < 0) mDisp.classList.add('debt'); else mDisp.classList.remove('debt');
 
         document.getElementById('players-scroll').innerHTML = players.map((pl,i) => {
@@ -1013,7 +1050,6 @@ const ui = {
         
         players.forEach((pl, i) => { const sh = document.getElementById(`sh${i}`); if(sh) sh.style.display = pl.protection ? 'flex' : 'none'; });
 
-        // Update Properties on Board
         let propsHTML = '';
         props.forEach((pr,i)=>{
             const sp = document.getElementById(`s${i}`);
@@ -1038,7 +1074,6 @@ const ui = {
             const el = document.getElementById(`b${i}`);
             if(pr && el) { el.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join(''); }
             
-            // Show MY props
             if(pr && pr.owner===myPID) {
                 const loanTxt = pr.loan ? `<br><span class="loan-alert">Pagar: $${Math.ceil(pr.loan.val*1.5)}</span>` : '';
                 propsHTML += `<div class="prop-item ${pr.loan?'loan':''}" style="border-left-color:${BD[i].g||'#333'}" onclick="ui.openProp(${i})">
@@ -1051,7 +1086,7 @@ const ui = {
         document.getElementById('desktop-props-container').innerHTML = propsHTML;
         document.getElementById('inv-list').innerHTML = propsHTML;
 
-        // Button States - IMPORTANT: Only Enable if my Turn
+        // Button States
         const isMyTurn = (turn === myPID);
         const myPlayer = players[myPID];
         
@@ -1071,18 +1106,27 @@ const ui = {
             } else {
                 jailedArea.style.display = 'none'; normalArea.style.display = 'grid';
                 
+                // CRITICAL FIX: Only allow rolling if not already rolled AND not waiting for card
                 const canRoll = !pendingCardType && (!rolled || (rolled && myPlayer.doubles > 0));
-                document.getElementById('b-roll').disabled = !canRoll;
+                document.getElementById('b-roll').disabled = !canRoll || animating;
                 
-                let canBuy = rolled && (BD[myPlayer.pos].t==='pr' || BD[myPlayer.pos].t==='rr' || BD[myPlayer.pos].t==='ut') && !props[myPlayer.pos] && !pendingCardType && myPlayer.money >= BD[myPlayer.pos].p;
+                let canBuy = rolled && !animating && (BD[myPlayer.pos].t==='pr' || BD[myPlayer.pos].t==='rr' || BD[myPlayer.pos].t==='ut') && !props[myPlayer.pos] && !pendingCardType && myPlayer.money >= BD[myPlayer.pos].p;
                 document.getElementById('b-buy').disabled = !canBuy;
                 
-                document.getElementById('b-pass').disabled = !(rolled && !pendingCardType && myPlayer.doubles===0);
+                // Allow pass if rolled and animation done
+                document.getElementById('b-pass').disabled = !(rolled && !animating && !pendingCardType && myPlayer.doubles===0);
+            }
+            
+            const btnCard = document.getElementById('b-card');
+            if(pendingCardType) {
+                btnCard.style.display = 'block'; normalArea.style.display = 'none';
+            } else {
+                btnCard.style.display = 'none'; normalArea.style.display = 'grid'; 
             }
         }
     },
     openProp: (idx, forBuy=false) => {
-        if(forBuy && turn !== myPID) return; // Cant open buy if not my turn
+        if(forBuy && turn !== myPID) return; 
         activeIdx = idx; const s = BD[idx]; const pr = props[idx];
         document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-name').style.background=s.g||'#333'; document.getElementById('pc-price').innerText=`$${s.p}`;
         let html = '';
