@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: Multiplayer V2</title>
+    <title>Recife Imobiliário: Multiplayer V3 (Fix)</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
@@ -463,7 +463,7 @@ let roomCode = null;
 let dbRef = null;
 let amIHost = false;
 let myPlayerIdx = -1;
-let isBoardBuilt = false; // FLAG IMPORTANTE
+let isBoardBuilt = false; 
 
 // Status de turno sincronizado
 let turnState = {
@@ -552,13 +552,13 @@ const net = {
             const data = snap.val();
             if(!data) return;
             
+            // ATUALIZAR DADOS
             players = data.players || [];
             props = data.props || Array(40).fill(null);
             turn = data.turn || 0;
             turnState = data.turnState;
             totalTurns = data.totalTurns || 0;
             
-            // ATUALIZAR MEU ÍNDICE (IMPORTANTE!)
             myPlayerIdx = players.findIndex(p => p.uid === myId);
 
             // UI Updates based on Status
@@ -573,22 +573,20 @@ const net = {
                 document.getElementById('screen-char').style.display = 'none';
                 document.getElementById('game-layout').classList.add('active');
                 
-                // CORREÇÃO AQUI: Flag explícita
                 if(!isBoardBuilt) {
                     ui.buildBoard(); 
                     isBoardBuilt = true;
-                    // Força o resize depois de construir
                     setTimeout(resizeBoard, 200);
                 }
                 
-                // Animação de Dados
+                // Animação de Dados (visual para todos)
                 if(data.triggerDice) {
                     ui.dice(turnState.lastD1, turnState.lastD2);
                     if(amIHost) dbRef.update({triggerDice: null}); 
                 }
                 
-                ui.updatePositions();
-                ui.hud();
+                ui.updatePositions(); // Atualiza posições visuais
+                ui.hud(); // Atualiza painel e botões
             }
         });
     },
@@ -677,14 +675,12 @@ const ui = {
         const b = document.getElementById('board');
         b.innerHTML = ''; 
         
-        // Elementos CENTRAIS e DECKS (Adicionados Primeiro)
         b.innerHTML += `
             <div class="center-hub"><div class="center-title">RECIFE <span class="center-sub">IMOBILIÁRIO</span></div><div class="center-icon">🦈⛱️</div></div>
             <div class="deck chance" id="d-chance" onclick="game.clickDeck('ch')"><div class="deck-label">?</div><div style="font-size:0.8rem">SORTE</div></div>
             <div class="deck reves" id="d-reves" onclick="game.clickDeck('rev')"><div style="font-size:2rem">💰</div><div style="font-size:0.8rem">REVÉS</div></div>
         `;
 
-        // Casas do Tabuleiro
         BD.forEach((s,i) => {
             const d=document.createElement('div');d.className='space';d.id=`s${i}`;
             let r,c, rotClass;
@@ -827,7 +823,7 @@ const ui = {
             normalArea.style.display = 'grid';
             
             const doubles = turnState.lastD1 === turnState.lastD2 && turnState.rolled;
-            // AQUI ESTAVA O PROBLEMA: Usar o estado do servidor (turnState)
+            // Só libera rolar se ainda NÃO rolou, ou se rolou dados duplos (e não é a 3a vez)
             const canRoll = !turnState.animating && !pendingCardType && (!turnState.rolled || (turnState.rolled && doubles && turnState.doublesCount < 3));
             
             document.getElementById('b-roll').disabled = !canRoll;
@@ -840,6 +836,8 @@ const ui = {
                 document.getElementById('b-pass').innerText = "DÍVIDA!";
             } else {
                 document.getElementById('b-pass').innerText = "PASSAR";
+                // Pode passar se: JÁ rolou E não tem carta pendente E (não tirou duplos OU já jogou os duplos)
+                // Simplificação: Se rolou, pode passar, a menos que tenha duplos não jogados.
                 document.getElementById('b-pass').disabled = !(turnState.rolled && !pendingCardType && !doubles);
                 document.getElementById('b-trade').disabled = (turnState.rolled && !doubles); 
             }
@@ -929,32 +927,38 @@ const game = {
     },
     forceDrawCard: () => { if(pendingCardType) game.clickDeck(pendingCardType); },
     
+    // --- LÓGICA CORRIGIDA DE ROLAGEM ---
     roll: async () => {
         if(turn !== myPlayerIdx) return;
         if(turnState.animating || pendingCardType) return;
         const p = players[turn];
         if(p.money < 0) return;
 
+        // 1. Gera valores e Inicia Animação Visual
         const d1=Math.ceil(Math.random()*6), d2=Math.ceil(Math.random()*6);
         turnState.lastD1 = d1; turnState.lastD2 = d2;
         turnState.animating = true;
         
+        // Avisa a todos para mostrar a animação (mas não move ainda)
         dbRef.update({ triggerDice: true, turnState: turnState });
         ui.dice(d1,d2); 
-        await sleep(1500);
+        await sleep(1500); // Espera a animação acabar localmente
         turnState.animating = false;
 
+        // 2. Calcula Movimento LOCALMENTE (sem salvar no DB ainda)
         if(p.jailed){
              p.jailTurns++; 
              if(p.jailTurns > 3) {
                  p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
                  ui.toast("LIVRE!"); play('good');
-                 await game.move(turn, d1+d2); turnState.rolled=true;
+                 await game.move(turn, d1+d2); // Move visualmente
+                 turnState.rolled=true;
                  setTimeout(game.pass, 1500); 
              } else if(d1===d2){ 
                  p.jailed=false; p.jailAttempts=0; p.jailTurns=0;
                  ui.toast("SOLTO (DUPLOS)!"); play('good'); 
-                 await game.move(turn, d1+d2); turnState.rolled = true; 
+                 await game.move(turn, d1+d2); 
+                 turnState.rolled = true; 
                  setTimeout(game.pass, 1500); 
              } else { 
                  p.jailAttempts++; ui.toast(`TENTATIVA ${p.jailAttempts}/3`); play('bad');
@@ -970,26 +974,35 @@ const game = {
 
             if(turnState.doublesCount===3) { 
                 ui.toast("3x DUPLOS! CADEIA!"); game.jail(turn); 
-                net.saveState(); return; 
+                net.saveState(); return; // Salva direto se for preso
             }
+            // MOVE VISUALMENTE
             await game.move(turn, d1+d2);
         }
         
+        // 3. AGORA SIM, SALVA TUDO NO FINAL
         turnState.rolled = true; 
-        net.saveState();
+        net.saveState(); // Salva posição final e estado
         ui.hud();
     },
 
     move: async (pid, steps) => {
         const p = players[pid];
+        // Move localmente passo a passo
         for(let i=0; i<steps; i++){
             if(!p.active) break;
             p.pos = (p.pos + 1) % 40;
             if(p.pos===0 && p.active){ p.money+=200; ui.toast("Início! +$200"); play('cash'); p.boughtRound=false; confetti(); }
+            
+            // Só atualiza visual local, não salva no DB a cada passo
+            ui.updatePositions(); 
+            play('step');
+            await sleep(250); // Delay do passo
         }
-        net.saveState();
-        ui.updatePositions(); play('step');
+        
+        // Pousa na casa final (Lógica local)
         if(p.active) game.land(pid);
+        // Nota: O saveState ocorre no final do roll(), garantindo sync
     },
 
     land: (pid) => {
@@ -1012,7 +1025,7 @@ const game = {
                 
                 p.money -= rent; players[pr.owner].money += rent; ui.toast(`ALUGUEL $${rent}`); play('cash');
                 game.checkDebt(pid);
-                net.saveState();
+                // Salvar aqui é opcional pois roll() vai salvar, mas aluguel é bom garantir
             }
         } else if(s.t==='ch' || s.t==='rev'){
             pendingCardType = s.t==='ch'?'ch':'rev'; ui.hud(); ui.toast("PEGUE UMA CARTA!"); 
@@ -1020,7 +1033,6 @@ const game = {
             const tax = Math.floor(p.money > 0 ? p.money * 0.10 : 0); 
             p.money -= tax; ui.toast(`IMPOSTO! -${tax}`); play('bad'); 
             game.checkDebt(pid);
-            net.saveState();
         }
         ui.hud(); 
     },
@@ -1082,9 +1094,11 @@ const game = {
         } while(!players[nextTurn].active && loop < players.length);
         
         turn = nextTurn;
+        // RESET COMPLETO DO ESTADO DO TURNO
         turnState = { rolled: false, animating: false, doublesCount: 0, lastD1: 1, lastD2: 1 };
         
         net.saveState();
+        ui.hud(); // Força update da UI local
     },
 
     confirmBuy: () => { 
