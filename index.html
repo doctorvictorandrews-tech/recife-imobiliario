@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V72.0 (Stable)</title>
+    <title>Recife Imobiliário: V74.0 (Final)</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -110,6 +110,7 @@
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
         .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
+        
         .money-display { font-size: 1.4rem; color: var(--c-green); font-family: 'Titan One'; }
         .money-display.debt { color: #d32f2f; animation: pulseRed 1s infinite; }
         @keyframes pulseRed { 0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1} }
@@ -148,15 +149,17 @@
         .t-col { flex: 1; border: 1px solid #ccc; padding: 5px; border-radius: 8px; }
         .t-head { font-weight: 900; text-align: center; background: #eee; padding: 5px; border-radius: 5px; margin-bottom: 5px; }
         .t-opt { padding: 5px; display: block; font-size: 0.8rem; border-bottom: 1px solid #eee; }
+        #net-status { position:fixed; top:5px; right:5px; background:rgba(0,0,0,0.5); color:#fff; font-size:0.7rem; padding:3px; border-radius:5px; z-index:9999; display:none; }
     </style>
 </head>
 <body>
 
+<div id="net-status">SALVANDO...</div>
 <div id="fx-layer"><div class="shark-anim">🦈</div><div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div></div>
 
 <div id="screen-mode" class="screen">
     <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:3rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1.2rem; color:#000;">TOTAL FLEX</span></h1>
+        <h1 style="color:var(--c-blue); font-size:3rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1.2rem; color:#000;">V74 (Fixed)</span></h1>
         <button class="btn-main" onclick="initMode('local')">JOGAR LOCAL<br><span style="font-size:0.8rem">Passar o Celular</span></button>
         <button class="btn-main btn-warn" style="margin-top:10px" onclick="initMode('online')">JOGAR ONLINE<br><span style="font-size:0.8rem">Multiplayer</span></button>
     </div>
@@ -164,7 +167,7 @@
 
 <div id="screen-setup-local" class="screen hidden">
     <div class="card-menu">
-        <h2 class="brand">CONFIGURAÇÃO LOCAL</h2>
+        <h2 class="brand">CONFIG LOCAL</h2>
         <div class="sel-box"><label>JOGADORES</label><select id="local-count"><option value="2">2 Amigos</option><option value="3">3 Amigos</option><option value="4">4 Amigos</option></select></div>
         <button class="btn-main" onclick="startLocalSetup()">CONTINUAR</button>
         <button class="btn-main btn-sec" onclick="location.reload()">VOLTAR</button>
@@ -376,12 +379,15 @@ const fb = {
             
             document.getElementById('lobby-list').innerHTML = state.players.map(p => `<div class="lobby-item">${p.name}</div>`).join('');
             
-            if(serverState.status === 'char_select' && document.getElementById('screen-char').classList.contains('hidden') && document.getElementById('game-layout').style.display === 'none') fb.screenChar();
+            if(serverState.status === 'char_select') {
+                document.getElementById('screen-lobby').classList.add('hidden');
+                document.getElementById('screen-char').classList.remove('hidden');
+                ui.renderChars((icon) => fb.selectChar(icon));
+            }
             if(serverState.status === 'playing') {
                 if(document.getElementById('game-layout').style.display === 'none') ui.initGame();
                 ui.sync();
             }
-            // Auto-Start Check for Host
             if(amIHost && serverState.status === 'char_select') {
                 const allReady = state.players.every(p => p.icon !== '👤' && p.icon !== '👑');
                 if(allReady) db.ref('rooms/' + roomCode + '/state').update({status: 'playing'});
@@ -392,12 +398,14 @@ const fb = {
     },
     copyCode: () => { navigator.clipboard.writeText(roomCode); alert("Copiado!"); },
     startGame: () => { db.ref('rooms/' + roomCode + '/state').update({status: 'char_select'}); },
-    screenChar: () => { document.getElementById('screen-lobby').classList.add('hidden'); ui.showCharSelectOnline(); },
     selectChar: (icon) => {
         state.players[myId].icon = icon;
         db.ref('rooms/' + roomCode + '/players/' + myId + '/icon').set(icon);
     },
-    update: (updates) => db.ref('rooms/' + roomCode).update(updates)
+    update: (updates) => {
+        document.getElementById('net-status').style.display='block';
+        db.ref('rooms/' + roomCode).update(updates).then(() => document.getElementById('net-status').style.display='none');
+    }
 };
 
 const ui = {
@@ -412,10 +420,6 @@ const ui = {
             if(currentSetupIndex < state.players.length) ui.showCharSelectLocal();
             else ui.initGame();
         });
-    },
-    showCharSelectOnline: () => {
-        document.getElementById('screen-char').classList.remove('hidden');
-        ui.renderChars((icon) => fb.selectChar(icon));
     },
     renderChars: (cb) => {
         document.getElementById('char-grid').innerHTML = '';
@@ -451,11 +455,12 @@ const ui = {
         for(let i=0; i<4; i++){ const t=document.createElement('div');t.className='token';t.id=`tok${i}`; b.appendChild(t); }
     },
     sync: () => {
+        // CORREÇÃO CRÍTICA LOCAL: 'me' deve ser quem está jogando
         const activeP = state.players[state.turn];
         document.getElementById('turn-display').innerText = `VEZ DE: ${activeP.name}`;
         document.getElementById('turn-display').style.background = activeP.color;
         
-        const me = mode==='local' ? activeP : state.players[myId];
+        const me = mode==='local' ? activeP : state.players[myId]; // DYNAMIC IDENTITY
         document.getElementById('p-money').innerText = `$${me.money}`;
         
         ui.updatePositions();
@@ -484,6 +489,8 @@ const ui = {
             } else {
                 if(!state.rolled) { document.getElementById('b-roll').disabled=false; document.getElementById('b-trade').disabled=false; }
                 else document.getElementById('b-pass').disabled=false;
+                
+                // CORREÇÃO BOTÃO COMPRAR
                 if(state.rolled && !state.props[me.pos] && BD[me.pos].p && me.money >= BD[me.pos].p) document.getElementById('b-buy').disabled=false;
             }
         }
@@ -510,7 +517,7 @@ const ui = {
     openProp: (idx) => {
         const s = BD[idx]; const pr = state.props[idx];
         document.getElementById('pc-name').innerText=s.n; document.getElementById('pc-price').innerText=`$${s.p}`;
-        const me = mode==='local' ? state.players[state.turn] : state.players[myId];
+        const me = mode==='local' ? state.players[state.turn] : state.players[myId]; // FIXED
         
         document.getElementById('act-buy').style.display='none';
         document.getElementById('act-manage').style.display='none';
@@ -587,13 +594,14 @@ const game = {
     },
     buy: () => ui.openProp(state.players[state.turn].pos),
     confirmBuy: () => {
-        const p = state.players[state.turn];
+        const actorId = mode === 'local' ? state.turn : myId;
+        const p = state.players[actorId];
         const idx = p.pos;
         if(p.money >= BD[idx].p) {
             p.money -= BD[idx].p;
-            state.props[idx] = {owner: state.turn, level:0, loan:null};
+            state.props[idx] = {owner: actorId, level:0, loan:null};
             if(mode==='local') ui.sync();
-            else fb.update({ [`players/${state.turn}/money`]: p.money, [`props/${idx}`]: state.props[idx] });
+            else fb.update({ [`players/${actorId}/money`]: p.money, [`props/${idx}`]: state.props[idx] });
             ui.closeCard();
             play('cash');
         }
@@ -698,8 +706,56 @@ const game = {
         } else {
             fb.update({ tradeProposal: null });
         }
+    },
+    mortgage: () => {
+        const actorId = mode === 'local' ? state.turn : myId;
+        const p = state.players[actorId];
+        const idx = p.pos; // FIX: Mortgage button only in card, context is implied by open modal.
+        // Re-fix: need context. But for now using p.pos as we only mortgage when landing or via inventory.
+        // Actually, inventory click opens prop.
+        // Let's use global var or just fix scope.
+        // Simplified: Mortgage current viewed prop? We need the index.
+        // In V71 I added global var. Let's re-add.
+    },
+    build: () => {}
+};
+
+// FIX MORTGAGE CONTEXT
+let currentPropIdx = -1;
+const originalOpenProp = ui.openProp;
+ui.openProp = (idx) => {
+    currentPropIdx = idx;
+    originalOpenProp(idx);
+};
+game.mortgage = () => {
+    const actorId = mode === 'local' ? state.turn : myId;
+    const p = state.players[actorId];
+    const s = BD[currentPropIdx];
+    const pr = state.props[currentPropIdx];
+    if(!pr.loan) {
+        const val = Math.floor(s.p * 0.8);
+        p.money += val;
+        state.props[currentPropIdx].loan = { val: val, turns: 5 };
+        if(mode==='local') ui.sync();
+        else fb.update({ [`players/${actorId}/money`]: p.money, [`props/${currentPropIdx}`]: state.props[currentPropIdx] });
+        ui.closeCard();
+        play('cash');
     }
 };
+game.build = () => {
+    const actorId = mode === 'local' ? state.turn : myId;
+    const p = state.players[actorId];
+    const s = BD[currentPropIdx];
+    const pr = state.props[currentPropIdx];
+    if(p.money >= s.h && pr.level < 5) {
+        p.money -= s.h;
+        state.props[currentPropIdx].level++;
+        if(mode==='local') ui.sync();
+        else fb.update({ [`players/${actorId}/money`]: p.money, [`props/${currentPropIdx}`]: state.props[currentPropIdx] });
+        ui.closeCard();
+        play('cash');
+    }
+}
 
 const ui_dice = {
     dice: (d1, d2) => {
