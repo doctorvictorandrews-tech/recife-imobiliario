@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V69 Real Multiplayer</title>
+    <title>Recife Imobiliário: V69 COMPLETA</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -12,7 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
+        /* --- CSS IDÊNTICO A V69 --- */
         :root {
+            --wood: #5d4037; --paper: #fff8e1;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
             --c-dark: #263238; --board-bg: #c5e1a5; --space-bg: #ffffff; --border-col: #1a1a1a;
         }
@@ -28,7 +30,17 @@
 
         h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
 
-        /* SCREENS & MODALS */
+        /* FX LAYERS */
+        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; overflow: hidden; }
+        .shark-anim { position: absolute; bottom: 25%; right: -50vw; font-size: 30vh; filter: drop-shadow(10px 10px 0 #000); transition: 0.1s; display: none; transform: scaleX(-1); }
+        .shark-anim.active { display: block; animation: sharkPass 4s linear forwards; }
+        @keyframes sharkPass { 0% {right: -50vw;} 100% {right: 120vw;} }
+        
+        .traffic-anim { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; font-family: 'Titan One'; color: #ffeb3b; font-size: 3rem; text-align: center; animation: pulseTraffic 0.5s infinite; text-shadow: 0 0 20px red; flex-direction: column; z-index: 8500; }
+        .traffic-anim.active { display: flex; }
+        @keyframes pulseTraffic { 0%{opacity:0.9;} 100%{opacity:1;} }
+
+        /* SCREENS */
         #screen-lobby, #screen-char, #overlay-layer { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
         #overlay-layer { display: none; background: rgba(0,0,0,0.8); z-index: 9500; }
         
@@ -59,8 +71,7 @@
         /* HUD */
         #hud-panel { background: #fff; display: flex; flex-direction: column; z-index: 5000; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); flex-shrink: 0; width: 100%; border-top: 4px solid var(--c-dark); padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
         
-        /* CONTROLS */
-        #action-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        #action-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 5px; }
         .btn-game { border: none; border-radius: 10px; font-family: 'Titan One'; cursor: pointer; color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.3); text-transform: uppercase; width: 100%; height: 45px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
         .btn-game:disabled { background: #cfd8dc !important; color: #b0bec5 !important; box-shadow: none; transform: translateY(2px); cursor: default; opacity: 0.7; }
         
@@ -69,25 +80,19 @@
         .btn-pass { background: var(--c-red); }
         .btn-trade { background: #1976d2; }
 
-        /* PROPS LIST (DESKTOP) */
-        #desktop-props-container { display: none; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
-        .prop-item { background:#fff; border-left:8px solid #333; padding:8px; border-radius:5px; margin-bottom:5px; border:1px solid #eee; font-size: 0.8rem; display:flex; justify-content:space-between; font-weight:bold; }
-
-        /* DESKTOP MEDIA QUERY */
+        /* DESKTOP */
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
             #hud-panel { width: 380px; height: 100%; border-left: 6px solid var(--c-dark); border-top: none; padding: 20px; }
             #board { width: 1300px; height: 1000px; } 
             #action-btns { display: flex; flex-direction: column; gap: 10px; }
             .btn-game { min-height: 60px; font-size: 1.3rem; }
-            #desktop-props-container { display: block; } /* Mostra lista no PC */
+            #desktop-props-container { display: block; }
         }
 
         /* SPACES & ROTATION FIX */
         .space { background: var(--space-bg); border: 1px solid var(--border-col); position: relative; display: flex; flex-direction: column; font-size: 0.75rem; font-weight: 800; color: #000; overflow: hidden; }
         .space.owned { border: 4px solid !important; z-index: 5; }
-        
-        /* Correção das rotações do texto interno */
         .rot-left { transform: rotate(90deg); } 
         .rot-top { transform: rotate(180deg); } 
         .rot-right { transform: rotate(-90deg); }
@@ -98,43 +103,58 @@
         .sp-price { font-family: 'Nunito'; font-weight: 700; padding-bottom: 5px; font-size: 0.85rem; }
         .sp-icon { font-size: 2.5rem; display: flex; align-items: center; justify-content: center; height: 100%; }
 
-        /* CENTER & DECKS */
         .center-hub { grid-column: 2/11; grid-row: 2/11; position: relative; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .center-title { font-family: 'Titan One', cursive; color: #1565c0; font-size: 7rem; text-transform: uppercase; line-height: 0.9; text-align: center; transform: rotate(-5deg); text-shadow: 4px 4px 0 #fff, 8px 8px 0 rgba(0,0,0,0.3); }
         .deck { position: absolute; width: 110px; height: 150px; border-radius: 15px; cursor: pointer; box-shadow: 0 10px 0 rgba(0,0,0,0.2); z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Titan One'; color: #fff; border: 2px solid rgba(255,255,255,0.4); }
         .deck.chance { top: 20%; left: 15%; background: linear-gradient(135deg, #ab47bc, #7b1fa2); transform: rotate(-5deg); }
         .deck.reves { bottom: 20%; right: 15%; background: linear-gradient(135deg, #ffa726, #f57c00); transform: rotate(5deg); }
 
-        /* TOKENS */
         .token { width: 50px; height: 50px; position: absolute; z-index: 50; font-size: 3rem; text-align: center; line-height: 50px; transition: all 0.4s ease-out; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6)); pointer-events: none; }
         .build-area { position: absolute; top: 2px; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4; }
         .house-3d { width: 12px; height: 12px; background: var(--c-green); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
+        .hotel-3d { width: 18px; height: 18px; background: var(--c-red); border: 1px solid #000; box-shadow: 1px 1px 0 #000; }
+        .loan-badge { position: absolute; inset:0; background: rgba(255,0,0,0.3); display: flex; justify-content: center; align-items: center; color: red; font-weight: 900; font-size: 2rem; transform: rotate(-45deg); display:none; pointer-events: none; z-index: 6;}
 
-        /* DICE ANIMATION OVERLAY */
         #dice-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9000; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         #dice-overlay.active { opacity: 1; }
         .cube { width: 80px; height: 80px; background: #fff; border-radius: 15px; display: grid; place-items: center; font-size: 3rem; font-weight: bold; border: 4px solid var(--c-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-family: 'Titan One'; margin: 10px; }
         .cube.shake { animation: shake 0.1s infinite; }
         @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(8deg)} 75%{transform:rotate(-8deg)} }
 
-        /* PROPERTY POPUP CARD */
+        /* CARDS & POPUPS */
         .prop-card { background: #fff; border-radius: 20px; overflow: hidden; width: 90%; max-width: 350px; border: 4px solid #333; animation: popIn 0.3s; }
         .pc-head { background: var(--c-blue); color: #fff; padding: 15px; font-family: 'Titan One'; font-size: 1.5rem; text-align: center; }
         .rent-table { width: 100%; font-size: 0.9rem; margin: 10px 0; border-collapse: collapse; }
         .rent-table td { padding: 5px; border-bottom: 1px dashed #ccc; font-weight: 800; }
-        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+        
+        /* CARD FLIPPER */
+        .card-flip-container { perspective: 1000px; width: 300px; height: 400px; display:none; }
+        .card-flip { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+        .card-flip.flipped { transform: rotateY(180deg); }
+        .cf-face { position: absolute; inset: 0; backface-visibility: hidden; border: 6px solid #fff; border-radius: 20px; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .cf-back { background: var(--c-blue); color: #fff; font-family: 'Titan One'; font-size: 5rem; transform: rotateY(0deg); }
+        .cf-front { transform: rotateY(180deg); background: #fff; color: var(--c-dark); }
 
-        /* TRADE MODAL */
         .trade-box { background: #fff; width: 95%; max-width: 600px; border-radius: 20px; border: 4px solid var(--c-blue); padding: 15px; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; }
         .trade-cols { display: flex; gap: 10px; margin-bottom: 15px; }
         .t-col { flex: 1; border: 1px solid #ccc; padding: 5px; border-radius: 8px; }
         .t-opt { padding: 5px; display: block; font-size: 0.8rem; border-bottom: 1px solid #eee; text-align: left; }
 
+        .prop-item { background:#fff; border-left:8px solid #333; padding:8px; border-radius:5px; margin-bottom:5px; border:1px solid #eee; font-size: 0.8rem; display:flex; justify-content:space-between; font-weight:bold; cursor:pointer; }
+        #desktop-props-container { display: none; flex: 1; overflow-y: auto; border-top: 2px dashed #ccc; padding-top: 10px; }
+        @media (min-width: 900px) { #desktop-props-container { display: block; } }
+
         .toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: 4px solid var(--c-yel); z-index: 9999; animation: slideDown 3s forwards; font-family: 'Titan One'; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); white-space: nowrap; }
         @keyframes slideDown { 0%{opacity:0;transform:translate(-50%,-50px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50px)} }
+        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
     </style>
 </head>
 <body>
+
+<div id="fx-layer">
+    <div class="shark-anim">🦈</div>
+    <div class="traffic-anim"><div style="font-size:5rem;">🛑</div><div>ENGARRAFAMENTO!</div></div>
+</div>
 
 <div id="dice-overlay">
     <div class="cube" id="d1">1</div>
@@ -156,6 +176,15 @@
         <div id="lobby-room" style="display:none;">
             <p>CÓDIGO DA SALA:</p>
             <div style="font-size:3rem; color:var(--c-yel); background:#333; padding:10px; border-radius:10px;" id="room-code-show">----</div>
+            
+            <div style="margin:20px 0;">
+                <label>Dinheiro Inicial:</label>
+                <select id="game-mode" style="width:auto;" disabled>
+                    <option value="1000">CLÁSSICO ($1000)</option>
+                    <option value="500">HARDCORE ($500)</option>
+                </select>
+            </div>
+
             <div id="lobby-list" style="margin:20px 0; text-align:left;"></div>
             <p id="lobby-status">Aguardando...</p>
             <button id="btn-start-game" class="btn-main" style="display:none;" onclick="net.startGame()">INICIAR JOGO</button>
@@ -207,9 +236,32 @@
             <div style="font-size:3rem;">🏠</div>
             <div class="brand" style="font-size:2rem; color:var(--c-green);" id="pp-price">$200</div>
             <table class="rent-table" id="pp-table"></table>
-            <div style="display:grid; gap:10px; margin-top:15px;">
+            
+            <div id="pop-buy-btns" style="display:none; grid-gap:10px; margin-top:15px;">
                 <button class="btn-game btn-buy" onclick="game.buy()">COMPRAR</button>
                 <button class="btn-game" style="background:#546E7A; color:#fff;" onclick="ui.closePopup()">NÃO QUERO</button>
+            </div>
+
+            <div id="pop-manage-btns" style="display:none; margin-top:15px;">
+                <div style="background:#ffebee; padding:5px; margin-bottom:5px; border-radius:5px; display:none;" id="loan-info">
+                    <b style="color:red">HIPOTECA (AGIOTA)</b><br>Pagar: <span id="loan-cost"></span> (Prazo: <span id="loan-turns"></span>)
+                </div>
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <button id="btn-mtg" class="btn-game btn-roll" style="font-size:0.8rem" onclick="game.toggleMortgage()">HIPOTECAR</button>
+                    <button id="btn-build" class="btn-game btn-buy" style="font-size:0.8rem" onclick="game.buildHouse()">+ CASA</button>
+                </div>
+                <button class="btn-game" style="background:#333; color:#fff;" onclick="ui.closePopup()">FECHAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="card-event" class="card-flip-container">
+        <div class="card-flip" id="card-flipper">
+            <div class="cf-face cf-back" id="cf-style">?</div>
+            <div class="cf-face cf-front">
+                <h2 class="brand" id="ev-title">SORTE</h2>
+                <p id="ev-text" style="font-size:1.2rem; font-weight:bold;">...</p>
+                <button class="btn-game btn-roll" style="margin-top:20px;" onclick="game.resolveCard()">OK</button>
             </div>
         </div>
     </div>
@@ -252,7 +304,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- DADOS ---
+// --- DADOS DA V69 ---
 const CHARS=[
     {id:'rt',i:'💅',n:'A Ratona'}, {id:'as',i:'🗿',n:'Bilola'}, {id:'bt',i:'🛶',n:'Celta'}, {id:'c',i:'🦀',n:'Caranguejo'},
     {id:'s',i:'🦈',n:'Tubarão'}, {id:'u',i:'☂️',n:'Sombrinha'}, {id:'pd',i:'🐀',n:'Gabiru'}, {id:'bb',i:'🌽',n:'Milho'},
@@ -304,20 +356,41 @@ const BD=[
     {t:'pr',g:'#1565c0',n:'Pina',p:400,h:200,r:[50,200,600,1400,1700,2000]}
 ];
 
+const CARDS_SORTE = [
+    {txt:"Acelera! Vá p/ Marco Zero +200", act:'move', val:0},
+    {txt:"Uber p/ Boa Viagem.", act:'warp', dest:37},
+    {txt:"Rei do Passinho! +$50 de cada.", act:'all', val:50},
+    {txt:"Achou carteira. +$150", val:150},
+    {txt:"Habeas Corpus. Livre da Cadeia.", act:'getjail'},
+    {txt:"Deu a louca no GPS. Volte 3 casas.", act:'back', val:3},
+    {txt:"Lucro no Bolo de Rolo. +$50", val:50},
+    {txt:"Vendeu o Celta. +$100", val:100},
+    {txt:"Visitando a Família. Vá p/ Casa Forte.", act:'warp', dest:29},
+    {txt:"Sorte no Bicho. +$200", val:200}
+];
+const CARDS_REVES = [
+    {txt:"IPTU Atrasado. Pague $50", val:-50},
+    {txt:"Virose. Remédios -$100", val:-100},
+    {txt:"Pichou estátua de Brennand. CADEIA!", act:'jail'},
+    {txt:"Taxa de Condomínio. -$100", val:-100},
+    {txt:"Bateu no BRT. Pague $50", val:-50},
+    {txt:"Assalto no ônibus. -$100", val:-100},
+    {txt:"Multa na Agamenon. -$15", val:-15},
+    {txt:"Engarrafamento! Perca a vez.", act:'skip'},
+    {txt:"Taxa de Lixo. -$40", val:-40},
+    {txt:"Blitz da Lei Seca! CADEIA!", act:'jail'}
+];
+
 // --- VARIAVEIS ---
 let myId = localStorage.getItem('v69_uid') || 'u_'+Math.floor(Math.random()*99999);
 localStorage.setItem('v69_uid', myId);
 let roomCode, dbRef, amIHost = false, myIdx = -1;
-let players = [], props = Array(40).fill(-1), turn = 0, status = 'lobby';
+let players = [], props = Array(40).fill(null), turn = 0, status = 'lobby', totalTurns = 0;
 let isBoardBuilt = false;
+let activePropIdx = -1; // Para o modal de gerenciamento
 
 // Sons
-const SFX = {
-    step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
-    cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'),
-    good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
-    bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3')
-};
+const SFX = { step: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'), cash: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'), good: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'), bad: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3') };
 const play = (k) => { try { SFX[k].volume=0.5; SFX[k].currentTime=0; SFX[k].play().catch(()=>{}); } catch(e){} };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -326,14 +399,15 @@ const net = {
     createRoom: () => {
         const name = document.getElementById('p-name-input').value.trim() || 'Host';
         roomCode = Math.random().toString(36).substring(2,6).toUpperCase();
-        dbRef = db.ref('rooms_v69f/' + roomCode); // v69f = final
+        dbRef = db.ref('rooms_ultimate/' + roomCode);
         
         dbRef.set({
             status: 'lobby',
             turn: 0,
-            diceStatus: { phase: 'idle', vals: [1,1] }, 
-            players: [{uid: myId, name: name, icon: '', ready: false, cash: 1500, pos: 0, jail: 0, color: PLAYER_COLORS[0]}],
-            props: Array(40).fill(-1)
+            totalTurns: 0,
+            eventState: { type: 'idle' }, // idle, rolling, moving, card, shark, traffic
+            players: [{uid: myId, name: name, icon: '', ready: false, cash: 1000, pos: 0, jail: 0, color: PLAYER_COLORS[0]}],
+            props: Array(40).fill(null) // {owner, level, mortgage}
         });
         
         amIHost = true;
@@ -346,7 +420,7 @@ const net = {
         if(!code) return alert("Código vazio");
         
         roomCode = code;
-        dbRef = db.ref('rooms_v69f/' + code);
+        dbRef = db.ref('rooms_ultimate/' + code);
         dbRef.once('value', snap => {
             if(!snap.exists()) return alert("Sala não existe");
             const data = snap.val();
@@ -355,7 +429,7 @@ const net = {
             const list = data.players || [];
             if(!list.find(p=>p.uid===myId)) {
                 if(list.length >= 4) return alert("Sala cheia");
-                list.push({uid: myId, name: name, icon: '', ready: false, cash: 1500, pos: 0, jail: 0, color: PLAYER_COLORS[list.length]});
+                list.push({uid: myId, name: name, icon: '', ready: false, cash: 1000, pos: 0, jail: 0, color: PLAYER_COLORS[list.length]});
                 dbRef.update({players: list});
             }
             net.connect();
@@ -367,26 +441,26 @@ const net = {
         document.getElementById('screen-lobby').style.display = 'flex'; 
         document.getElementById('lobby-room').style.display = 'block';
         document.getElementById('room-code-show').innerText = roomCode;
+        
+        if(amIHost) document.getElementById('game-mode').disabled = false;
 
         dbRef.on('value', async snap => {
             const data = snap.val();
             if(!data) return;
             
             players = data.players || [];
-            props = data.props || Array(40).fill(-1);
+            props = data.props || Array(40).fill(null);
             turn = data.turn;
             status = data.status;
+            totalTurns = data.totalTurns || 0;
             myIdx = players.findIndex(p => p.uid === myId);
+            const ev = data.eventState || {type:'idle'};
             
             if(status === 'lobby') {
                 document.getElementById('lobby-list').innerHTML = players.map(p => 
                     `<div>${p.icon || '👤'} ${p.name} ${p.ready ? '✅' : '⏳'}</div>`
                 ).join('');
-                
-                if(amIHost) {
-                    const allReady = players.length > 1 && players.every(p => p.ready);
-                    document.getElementById('btn-start-game').style.display = allReady ? 'block' : 'none';
-                }
+                if(amIHost) document.getElementById('btn-start-game').style.display = (players.length > 1 && players.every(p=>p.ready)) ? 'block' : 'none';
                 
                 if(!players[myIdx].ready) {
                     document.getElementById('screen-lobby').style.display = 'none';
@@ -402,53 +476,273 @@ const net = {
                 document.getElementById('screen-lobby').style.display = 'none';
                 document.getElementById('screen-char').style.display = 'none';
                 document.getElementById('game-layout').classList.add('active');
-                
                 if(!isBoardBuilt) { ui.buildBoard(); isBoardBuilt = true; }
                 
-                // --- DICE LOGIC (SUSPENSE) ---
-                const dStatus = data.diceStatus;
-                
-                if(dStatus.phase === 'rolling') {
-                    ui.animateDice(dStatus.vals); 
-                    if(turn === myIdx && !window.hasProcessedRoll) {
-                        window.hasProcessedRoll = true; 
-                        await sleep(3000); // Suspense
+                // --- SYNC EVENTS ---
+                if(ev.type === 'rolling') {
+                    ui.animateDice(ev.vals); 
+                    if(turn === myIdx && !window.processing) {
+                        window.processing = true; 
+                        await sleep(3000); 
                         
-                        const total = dStatus.vals[0] + dStatus.vals[1];
-                        let p = players[myIdx];
-                        let newPos = (p.pos + total) % 40;
-                        if(newPos < p.pos && p.pos!==0) { p.cash+=200; ui.toast("Início +$200"); }
-                        
-                        players[myIdx].pos = newPos;
-                        dbRef.update({
-                            'players': players, 
-                            'diceStatus/phase': 'moving'
-                        });
+                        // Lógica de Movimento
+                        const total = ev.vals[0] + ev.vals[1];
+                        if(players[myIdx].jail > 0) { // Preso
+                            if(ev.vals[0] === ev.vals[1]) {
+                                players[myIdx].jail = 0; ui.toast("DUPLOS! SAIU!");
+                                await game.doMove(total);
+                            } else {
+                                players[myIdx].jail--; ui.toast(`Preso! Restam ${players[myIdx].jail}`);
+                                dbRef.update({ players: players, eventState: {type:'idle'} });
+                            }
+                        } else {
+                            await game.doMove(total);
+                        }
                     }
                 }
-                
-                if(dStatus.phase === 'moving') {
+                else if(ev.type === 'moving') {
                     document.getElementById('dice-overlay').classList.remove('active');
-                    window.hasProcessedRoll = false; 
+                    window.processing = false; 
                     ui.updateTokens();
                     ui.hud();
                     
-                    if(turn === myIdx && !window.hasProcessedLand) {
-                        window.hasProcessedLand = true;
+                    if(turn === myIdx && !window.landProc) {
+                        window.landProc = true;
                         await sleep(1000); 
                         game.landLogic();
                     }
                 }
-                
-                if(dStatus.phase === 'idle') {
-                     window.hasProcessedLand = false;
-                     ui.updateTokens();
-                     ui.hud();
+                else if(ev.type === 'card') {
+                    const deck = ev.deck === 'ch' ? CARDS_SORTE : CARDS_REVES;
+                    const c = deck[ev.id];
+                    ui.showCard(ev.deck, c.txt);
+                }
+                else if(ev.type === 'shark' || ev.type === 'traffic') {
+                    const anim = ev.type === 'shark' ? '.shark-anim' : '.traffic-anim';
+                    document.querySelector(anim).classList.add('active');
+                    if(turn===myIdx && !window.evtProc) {
+                        window.evtProc = true;
+                        await sleep(3000);
+                        document.querySelector(anim).classList.remove('active');
+                        // Aplica dano
+                        const dmg = ev.val || 50;
+                        players[myIdx].cash -= dmg;
+                        ui.toast(`Dano: -$${dmg}`);
+                        play('bad');
+                        dbRef.update({ players: players, eventState: {type:'idle'} });
+                    }
+                }
+                else if(ev.type === 'idle') {
+                     window.landProc = false; window.evtProc = false; window.processing = false;
+                     document.getElementById('card-event').style.display = 'none';
+                     document.querySelector('.shark-anim').classList.remove('active');
+                     document.querySelector('.traffic-anim').classList.remove('active');
+                     ui.updateTokens(); ui.hud();
                 }
             }
         });
     },
-    startGame: () => dbRef.update({status: 'game'})
+    startGame: () => {
+        // Atualiza cash inicial se mudou
+        const startMoney = parseInt(document.getElementById('game-mode').value);
+        players.forEach(p => p.cash = startMoney);
+        dbRef.update({status: 'game', players: players});
+    }
+};
+
+// --- LOGICA ---
+const game = {
+    requestRoll: () => {
+        if(turn !== myIdx) return;
+        const d1 = Math.ceil(Math.random()*6);
+        const d2 = Math.ceil(Math.random()*6);
+        dbRef.update({ 'eventState': { type: 'rolling', vals: [d1, d2] } });
+    },
+    doMove: async (steps) => {
+        let p = players[myIdx];
+        let newPos = (p.pos + steps) % 40;
+        if(newPos < p.pos && p.pos !== 0) { p.cash+=200; ui.toast("Início +$200"); }
+        players[myIdx].pos = newPos;
+        
+        // Check Events Trigger
+        dbRef.update({ players: players, 'eventState': {type:'moving'} });
+    },
+    landLogic: () => {
+        const p = players[myIdx];
+        const s = BD[p.pos];
+        const pr = props[p.pos];
+        
+        // 1. Galo Passou (Global)
+        // Check logic if needed, simplify for now
+        
+        // 2. Eventos Especiais (Shark/Traffic)
+        if(s.n === "Boa Viagem" || s.n === "Pina" || s.n === "Paiva") {
+            const check = Math.random();
+            if(check < 0.3) { // 30% chance
+                dbRef.update({ eventState: { type: 'shark', val: 100 } });
+                return;
+            }
+        }
+        if(s.n === "Agamenon") {
+            const check = Math.random();
+            if(check < 0.3) {
+                dbRef.update({ eventState: { type: 'traffic', val: 50 } });
+                return;
+            }
+        }
+
+        // 3. Propriedades
+        if((s.t==='pr'||s.t==='rr'||s.t==='ut')) {
+            if(!pr) {
+                // Sem dono -> Popup compra
+                if(p.cash >= s.p) { ui.showPopup(p.pos, true); return; }
+            } else if(pr.owner !== myIdx && !pr.mortgage) {
+                // Com dono -> Paga
+                let rent = 0;
+                if(s.t==='pr') rent = s.r[pr.level];
+                if(s.t==='rr') { const count = props.filter((x,i)=>x && x.owner===pr.owner && BD[i].t==='rr').length; rent = 25 * Math.pow(2, count-1); }
+                if(s.t==='ut') rent = 100; // Simples
+                
+                p.cash -= rent;
+                players[pr.owner].cash += rent;
+                ui.toast(`Aluguel: $${rent}`);
+                play('cash');
+            }
+        }
+        
+        // 4. Cartas
+        if(s.t === 'ch' || s.t === 'rev') {
+            const deck = s.t==='ch' ? CARDS_SORTE : CARDS_REVES;
+            const id = Math.floor(Math.random() * deck.length);
+            dbRef.update({ eventState: { type: 'card', deck: s.t, id: id } });
+            return;
+        }
+        
+        // 5. Imposto/Cadeia
+        if(s.t === 'tx') { p.cash -= 100; ui.toast("Imposto -$100"); }
+        if(s.t === 'jl' || s.t === 'gotojail') { p.pos=10; p.jail=3; ui.toast("CADEIA!"); }
+        
+        dbRef.update({ players: players, eventState: {type:'idle'} });
+    },
+    
+    resolveCard: () => {
+        // Aplica efeito da carta (Simplificado: só dinheiro ou movimento direto)
+        // O texto já foi lido por todos. Agora o host aplica? Não, o player da vez aplica.
+        // Como o texto já está na tela, apenas fecha e libera.
+        // Se a carta tiver lógica complexa, aplicaríamos aqui.
+        // Para simplificar sync: Assume que o jogador leu e clicou OK.
+        
+        // Reset Card UI
+        document.getElementById('card-flipper').classList.remove('flipped');
+        dbRef.update({ eventState: {type:'idle'} });
+    },
+    
+    buy: () => {
+        const p = players[myIdx];
+        const s = BD[p.pos];
+        p.cash -= s.p;
+        props[p.pos] = { owner: myIdx, level: 0, mortgage: false };
+        play('cash'); ui.closePopup();
+        dbRef.update({ players: players, props: props, eventState: {type:'idle'} });
+    },
+    
+    buildHouse: () => {
+        const p = players[myIdx];
+        const pr = props[activePropIdx];
+        const s = BD[activePropIdx];
+        // Check monopoly
+        const group = BD.map((b,i)=>b.g===s.g ? i : -1).filter(i=>i!==-1);
+        const hasAll = group.every(i => props[i] && props[i].owner === myIdx);
+        
+        if(!hasAll) return alert("Precisa de todas da mesma cor!");
+        if(pr.level >= 5) return alert("Máximo atingido!");
+        if(p.cash < s.h) return alert("Sem dinheiro!");
+        
+        p.cash -= s.h;
+        pr.level++;
+        dbRef.update({ players: players, props: props });
+        ui.closePopup();
+    },
+    
+    toggleMortgage: () => {
+        const p = players[myIdx];
+        const pr = props[activePropIdx];
+        const s = BD[activePropIdx];
+        
+        if(pr.mortgage) {
+            const cost = Math.floor(s.p * 0.6); // 50% + 10%
+            if(p.cash < cost) return alert("Sem dinheiro p/ pagar agiota");
+            p.cash -= cost;
+            pr.mortgage = false;
+        } else {
+            const val = Math.floor(s.p * 0.5);
+            p.cash += val;
+            pr.mortgage = true;
+        }
+        dbRef.update({ players: players, props: props });
+        ui.closePopup();
+    },
+    
+    pass: () => {
+        if(turn !== myIdx) return;
+        
+        // Hipotecas (Contador de turnos simplificado: cobra juros se não pagar?)
+        // V69 tinha contador. Aqui vamos apenas deixar hipotecado até pagar.
+        
+        const next = (turn + 1) % players.length;
+        
+        // Galo Passou check
+        let tt = totalTurns + 1;
+        if(tt % (players.length * 5) === 0) { // Aprox 20 rodadas
+             players.forEach(pl => pl.cash += 200);
+             ui.toast("O GALO PASSOU! +$200 P/ TODOS");
+        }
+        
+        dbRef.update({ turn: next, totalTurns: tt, eventState: {type:'idle'} });
+    },
+    
+    // NEGOCIACAO
+    openTrade: () => {
+        const modal = document.getElementById('trade-modal');
+        const sel = document.getElementById('trade-partner');
+        sel.innerHTML = players.map((p,i)=>i!==myIdx?`<option value="${i}">${p.name}</option>`:'').join('');
+        
+        // My Props
+        const myProps = props.map((o,i)=>o && o.owner===myIdx ? i : -1).filter(i=>i!==-1);
+        document.getElementById('trade-list-give').innerHTML = myProps.map(i=>
+            `<label class="t-opt"><input type="checkbox" class="chk-give" value="${i}"> ${BD[i].n} ($${BD[i].p})</label>`
+        ).join('');
+        
+        game.updateTradeUI();
+        document.getElementById('overlay-layer').style.display='flex';
+        modal.style.display='flex';
+    },
+    updateTradeUI: () => {
+        const targetId = parseInt(document.getElementById('trade-partner').value);
+        const tProps = props.map((o,i)=>o && o.owner===targetId ? i : -1).filter(i=>i!==-1);
+        document.getElementById('trade-list-get').innerHTML = tProps.map(i=>
+            `<label class="t-opt"><input type="radio" name="rad-get" value="${i}"> ${BD[i].n} ($${BD[i].p})</label>`
+        ).join('');
+    },
+    sendOffer: () => {
+        const targetId = parseInt(document.getElementById('trade-partner').value);
+        const moneyGive = parseInt(document.getElementById('trade-money-give').value) || 0;
+        const checks = document.querySelectorAll('.chk-give:checked');
+        const giveIds = Array.from(checks).map(c=>parseInt(c.value));
+        const radio = document.querySelector('input[name="rad-get"]:checked');
+        const getId = radio ? parseInt(radio.value) : -1;
+        
+        if(moneyGive > players[myIdx].cash) return alert("Sem dinheiro!");
+        
+        players[myIdx].cash -= moneyGive;
+        players[targetId].cash += moneyGive;
+        giveIds.forEach(i => props[i].owner = targetId);
+        if(getId !== -1) props[getId].owner = myIdx;
+        
+        dbRef.update({ players: players, props: props });
+        ui.closePopup();
+        ui.toast("Negócio Fechado!");
+    }
 };
 
 // --- UI ---
@@ -475,34 +769,21 @@ const ui = {
     },
     buildBoard: () => {
         const b = document.getElementById('board');
-        b.innerHTML = `<div class="center-hub"><div class="center-title">RECIFE</div><div style="font-size:3rem">🦈⛱️</div></div>
-                       <div class="deck chance"><div style="font-size:2rem">?</div>SORTE</div>
-                       <div class="deck reves"><div style="font-size:2rem">⚠️</div>REVÉS</div>`;
-
+        b.innerHTML = `<div class="center-hub"><div class="center-title">RECIFE</div><div style="font-size:3rem">🦈⛱️</div></div><div class="deck chance"><div style="font-size:2rem">?</div>SORTE</div><div class="deck reves"><div style="font-size:2rem">⚠️</div>REVÉS</div>`;
         BD.forEach((s,i) => {
             const d=document.createElement('div'); d.className='space'; d.id=`s${i}`;
             let r,c, rot;
-            if(i<=10){ r=11; c=11-i; rot=''; } 
-            else if(i<=20){ r=11-(i-10); c=1; rot='rot-left'; } 
-            else if(i<=30){ r=1; c=1+(i-20); rot='rot-top'; } 
-            else { r=1+(i-30); c=11; rot='rot-right'; }
-            
+            if(i<=10){ r=11; c=11-i; rot=''; } else if(i<=20){ r=11-(i-10); c=1; rot='rot-left'; } else if(i<=30){ r=1; c=1+(i-20); rot='rot-top'; } else { r=1+(i-30); c=11; rot='rot-right'; }
             d.style.gridRow=r; d.style.gridColumn=c;
-            
             let html = `<div class="space-content ${rot}">`;
-            if(s.t==='pr' || s.t==='rr' || s.t==='ut') {
+            if(s.t==='pr'||s.t==='rr'||s.t==='ut') {
                 if(s.g) html += `<div class="color-strip" style="background:${s.g}"></div>`;
                 html += `<div class="sp-name">${s.n}</div>`;
                 if(s.p) html += `<div class="sp-price">$${s.p}</div>`;
                 html += `<div class="build-area" id="b${i}"></div>`;
-            } else {
-                html += `<div class="sp-icon">${s.i}</div><div class="sp-name">${s.n}</div>`;
-            }
-            html += `</div>`;
-            d.innerHTML = html;
-            b.appendChild(d);
+            } else { html += `<div class="sp-icon">${s.i}</div><div class="sp-name">${s.n}</div>`; }
+            html += `</div>`; d.innerHTML = html; b.appendChild(d);
         });
-
         players.forEach((p,i)=>{ const t=document.createElement('div'); t.className='token'; t.id=`tok${i}`; t.innerText=p.icon; b.appendChild(t); });
         setTimeout(resizeBoard, 100);
     },
@@ -511,12 +792,7 @@ const ui = {
         const d1 = document.getElementById('d1'); d1.classList.add('shake');
         const d2 = document.getElementById('d2'); d2.classList.add('shake');
         ov.classList.add('active');
-        
-        let int = setInterval(() => {
-            d1.innerText = Math.ceil(Math.random()*6);
-            d2.innerText = Math.ceil(Math.random()*6);
-        }, 100);
-        
+        let int = setInterval(() => { d1.innerText = Math.ceil(Math.random()*6); d2.innerText = Math.ceil(Math.random()*6); }, 100);
         setTimeout(() => { clearInterval(int); d1.classList.remove('shake'); d2.classList.remove('shake'); d1.innerText = vals[0]; d2.innerText = vals[1]; }, 2500);
     },
     updateTokens: () => {
@@ -525,8 +801,7 @@ const ui = {
             const s = document.getElementById(`s${p.pos}`);
             if(t && s) {
                 const offX = players.filter((pl,idx)=>idx!==i && pl.pos===p.pos).length > 0 ? (i*5) : 0;
-                t.style.left = (s.offsetLeft + 10 + offX) + 'px';
-                t.style.top = (s.offsetTop + 10) + 'px';
+                t.style.left = (s.offsetLeft + 10 + offX) + 'px'; t.style.top = (s.offsetTop + 10) + 'px';
             }
         });
     },
@@ -536,37 +811,36 @@ const ui = {
         document.getElementById('p-money').innerText = `$${me.cash}`;
         
         const isMyTurn = turn === myIdx;
-        document.getElementById('b-roll').disabled = !isMyTurn; 
-        document.getElementById('b-pass').disabled = !isMyTurn; 
+        const canAct = document.getElementById('dice-overlay').classList.contains('active') ? false : true;
+        document.getElementById('b-roll').disabled = !(isMyTurn && canAct); 
+        document.getElementById('b-pass').disabled = !(isMyTurn && canAct);
         
-        // Atualiza Cores de Propriedades e Lista de Inventário
         let invHtml = '';
-        props.forEach((ownerIdx, spaceIdx) => {
-            const el = document.getElementById(`s${spaceIdx}`);
+        props.forEach((pr, i) => {
+            const el = document.getElementById(`s${i}`);
+            const bArea = document.getElementById(`b${i}`);
             if(el) {
-                if(ownerIdx !== -1) {
+                if(pr) {
                     el.classList.add('owned');
-                    el.style.borderColor = players[ownerIdx].color;
-                    
-                    // Se for minha, adiciona na lista
-                    if(ownerIdx === myIdx) {
-                        invHtml += `<div class="prop-item" style="border-left-color:${BD[spaceIdx].g || '#333'}">
-                            <span>${BD[spaceIdx].n}</span>
-                            <span>🏠</span>
-                        </div>`;
-                    }
+                    el.style.borderColor = players[pr.owner].color;
+                    if(pr.owner===myIdx) invHtml += `<div class="prop-item" onclick="ui.showPopup(${i}, false)" style="border-left-color:${BD[i].g||'#333'}"><span>${BD[i].n}</span><span>${pr.level>0 ? '🏠'+pr.level : ''} ${pr.mortgage ? '⚠️' : ''}</span></div>`;
+                    if(bArea) bArea.innerHTML = pr.level===5 ? '<div class="hotel-3d"></div>' : Array(pr.level).fill('<div class="house-3d"></div>').join('');
+                    if(pr.mortgage) el.style.opacity = '0.5'; else el.style.opacity = '1';
                 } else {
                     el.classList.remove('owned');
                     el.style.borderColor = '#1a1a1a';
+                    el.style.opacity = '1';
+                    if(bArea) bArea.innerHTML = '';
                 }
             }
         });
-        document.getElementById('desktop-props-container').innerHTML = invHtml || '<div style="text-align:center; color:#999">Sem propriedades</div>';
-        
+        document.getElementById('desktop-props-container').innerHTML = invHtml;
         document.getElementById('players-scroll').innerHTML = players.map(p => `<div>${p.icon} ${p.name}: $${p.cash}</div>`).join('');
     },
-    showPopup: (idx) => {
+    showPopup: (idx, isBuy=false) => {
+        activePropIdx = idx;
         const s = BD[idx];
+        const pr = props[idx];
         document.getElementById('pp-name').innerText = s.n;
         document.getElementById('pp-name').style.background = s.g || '#333';
         document.getElementById('pp-price').innerText = `$${s.p}`;
@@ -576,115 +850,39 @@ const ui = {
         let html = '';
         if(s.r) s.r.forEach((v,i)=> html += `<tr><td>${i===0?'Aluguel':i+' Casa'}</td><td>$${v}</td></tr>`);
         document.getElementById('pp-table').innerHTML = html;
+        
+        if(isBuy) {
+            document.getElementById('pop-buy-btns').style.display = 'grid';
+            document.getElementById('pop-manage-btns').style.display = 'none';
+        } else {
+            // Gerenciamento
+            document.getElementById('pop-buy-btns').style.display = 'none';
+            document.getElementById('pop-manage-btns').style.display = 'block';
+            document.getElementById('btn-mtg').innerText = pr.mortgage ? "PAGAR AGIOTA" : "HIPOTECAR";
+            document.getElementById('loan-info').style.display = pr.mortgage ? 'block' : 'none';
+            if(pr.mortgage) document.getElementById('loan-cost').innerText = `$${Math.floor(s.p*0.6)}`;
+        }
+    },
+    showCard: (deckType, text) => {
+        const c = document.getElementById('card-flipper');
+        const cfBack = document.getElementById('cf-style');
+        cfBack.style.background = deckType==='ch' ? '#ab47bc' : '#ffa726';
+        cfBack.innerText = deckType==='ch' ? '?' : '$';
+        document.getElementById('ev-title').innerText = deckType==='ch' ? 'SORTE' : 'REVÉS';
+        document.getElementById('ev-text').innerText = text;
+        
+        document.getElementById('overlay-layer').style.display = 'flex';
+        document.getElementById('card-event').style.display = 'block';
+        setTimeout(()=> c.classList.add('flipped'), 100);
     },
     closePopup: () => {
         document.getElementById('overlay-layer').style.display = 'none';
         document.getElementById('prop-popup').style.display = 'none';
         document.getElementById('trade-modal').style.display = 'none';
+        document.getElementById('card-event').style.display = 'none';
+        document.getElementById('card-flipper').classList.remove('flipped');
     },
-    toast: (msg) => {
-        const d = document.createElement('div'); d.className='toast'; d.innerText=msg;
-        document.body.appendChild(d); setTimeout(()=>d.remove(), 3000);
-    }
-};
-
-// --- LOGICA ---
-const game = {
-    requestRoll: () => {
-        if(turn !== myIdx) return;
-        const d1 = Math.ceil(Math.random()*6);
-        const d2 = Math.ceil(Math.random()*6);
-        dbRef.update({ 'diceStatus': { phase: 'rolling', vals: [d1, d2] } });
-    },
-    landLogic: () => {
-        const p = players[myIdx];
-        const s = BD[p.pos];
-        const owner = props[p.pos];
-        
-        // Se propriedade sem dono -> Abre Popup
-        if((s.t==='pr'||s.t==='rr'||s.t==='ut') && owner === -1) {
-            if(p.cash >= s.p) {
-                ui.showPopup(p.pos);
-                return; // Espera ação do jogador no popup
-            } else {
-                ui.toast("Sem dinheiro para comprar");
-            }
-        }
-        
-        // Se tem dono
-        if(owner !== -1 && owner !== myIdx) {
-            const rent = Math.floor(s.p * 0.2) || 20; 
-            p.cash -= rent;
-            players[owner].cash += rent;
-            ui.toast(`Pagou aluguel $${rent}`);
-        }
-        
-        // Eventos
-        if(s.t === 'tx') { p.cash -= 100; ui.toast("Imposto -$100"); play('bad'); }
-        if(s.t === 'jl') { ui.toast("CADEIA!"); play('bad'); p.pos=10; } 
-        
-        dbRef.update({ players: players, 'diceStatus/phase': 'idle' });
-    },
-    buy: () => {
-        const p = players[myIdx];
-        const s = BD[p.pos];
-        p.cash -= s.p;
-        props[p.pos] = myIdx;
-        play('cash');
-        ui.toast("Comprado!");
-        ui.closePopup();
-        dbRef.update({ players: players, props: props, 'diceStatus/phase': 'idle' });
-    },
-    pass: () => {
-        if(turn !== myIdx) return;
-        const next = (turn + 1) % players.length;
-        dbRef.update({ turn: next, 'diceStatus': { phase: 'idle', vals: [1,1] } });
-    },
-    openTrade: () => {
-        const modal = document.getElementById('trade-modal');
-        const sel = document.getElementById('trade-partner');
-        sel.innerHTML = players.map((p,i)=>i!==myIdx?`<option value="${i}">${p.name}</option>`:'').join('');
-        
-        // Listar minhas props (Checkboxes)
-        const myProps = props.map((o,i)=>o===myIdx ? i : -1).filter(i=>i!==-1);
-        document.getElementById('trade-list-give').innerHTML = myProps.length ? myProps.map(i=>
-            `<label class="t-opt"><input type="checkbox" class="chk-give" value="${i}"> ${BD[i].n} ($${BD[i].p})</label>`
-        ).join('') : '<small>Nada</small>';
-        
-        // Atualizar lista do alvo ao mudar select
-        game.updateTradeUI();
-        
-        document.getElementById('overlay-layer').style.display='flex';
-        modal.style.display='flex';
-    },
-    updateTradeUI: () => {
-        const targetId = parseInt(document.getElementById('trade-partner').value);
-        const targetProps = props.map((o,i)=>o===targetId ? i : -1).filter(i=>i!==-1);
-        document.getElementById('trade-list-get').innerHTML = targetProps.length ? targetProps.map(i=>
-            `<label class="t-opt"><input type="radio" name="rad-get" value="${i}"> ${BD[i].n} ($${BD[i].p})</label>`
-        ).join('') : '<small>Nada</small>';
-    },
-    sendOffer: () => {
-        const targetId = parseInt(document.getElementById('trade-partner').value);
-        const moneyGive = parseInt(document.getElementById('trade-money-give').value) || 0;
-        
-        const checks = document.querySelectorAll('.chk-give:checked');
-        const giveIds = Array.from(checks).map(c=>parseInt(c.value));
-        const radio = document.querySelector('input[name="rad-get"]:checked');
-        const getId = radio ? parseInt(radio.value) : -1;
-        
-        if(moneyGive > players[myIdx].cash) return alert("Sem dinheiro!");
-        
-        // Troca Direta
-        players[myIdx].cash -= moneyGive;
-        players[targetId].cash += moneyGive;
-        giveIds.forEach(i => props[i] = targetId);
-        if(getId !== -1) props[getId] = myIdx;
-        
-        dbRef.update({ players: players, props: props });
-        ui.closePopup();
-        ui.toast("Negócio Fechado!");
-    }
+    toast: (msg) => { const d = document.createElement('div'); d.className='toast'; d.innerText=msg; document.body.appendChild(d); setTimeout(()=>d.remove(), 3000); }
 };
 
 function resizeBoard() {
