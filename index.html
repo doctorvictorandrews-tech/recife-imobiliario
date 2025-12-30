@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: Versão Segura</title>
+    <title>Recife Imobiliário: V4</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --wood: #5d4037; --paper: #fff8e1;
             --c-blue: #0277bd; --c-red: #d32f2f; --c-green: #2e7d32; --c-yel: #fbc02d;
-            --c-dark: #263238; --board-bg: #c5e1a5; --space-bg: #ffffff; --border-col: #1a1a1a;
+            --board-bg: #c5e1a5;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -26,135 +25,95 @@
         }
         @keyframes frevoBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-        h1, h2, h3, button, .brand { font-family: 'Titan One', cursive; letter-spacing: 1px; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-
-        /* DEBUG PANEL */
-        #debug-panel {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100px; 
-            background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; 
-            font-size: 10px; z-index: 10000; overflow-y: scroll; padding: 5px;
-            pointer-events: none; opacity: 0.8;
-        }
-        #emergency-btn {
-            position: fixed; top: 105px; left: 10px; z-index: 10000;
-            background: red; color: white; border: 2px solid white; padding: 5px;
-            font-weight: bold; cursor: pointer; display: none;
-        }
+        h1, h2, h3, button { font-family: 'Titan One', cursive; }
 
         /* SCREENS */
-        #screen-lobby, #screen-char, #screen-end { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; }
-        #screen-end { display: none; }
+        #screen-lobby, #screen-char { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; }
         
-        .card-menu { background: #fff; border: 8px solid var(--c-dark); border-radius: 30px; padding: 25px; text-align: center; width: 90%; max-width: 450px; box-shadow: 0 20px 0 var(--c-yel); margin: auto; }
-        input { width: 100%; padding: 12px; border: 3px solid var(--c-dark); font-family: 'Nunito'; font-weight: 800; font-size: 1rem; border-radius: 10px; margin-bottom: 10px; text-align: center;}
-        .btn-main { width: 100%; padding: 15px; margin-top: 15px; border: none; border-radius: 50px; font-size: 1.5rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 6px 0 #1b5e20; transition: 0.1s; text-transform: uppercase; }
-        .btn-main:active { transform: translateY(4px); box-shadow: 0 3px 0 #1b5e20; }
+        .card-menu { background: #fff; border: 6px solid #333; border-radius: 20px; padding: 20px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 10px 0 rgba(0,0,0,0.2); }
+        input, select { width: 100%; padding: 12px; border: 2px solid #333; font-weight: 800; border-radius: 10px; margin-bottom: 10px; text-align: center; font-size: 1rem; }
         
-        /* CHAR SELECT */
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; max-height: 40vh; overflow-y: auto; }
-        .char-opt { border: 2px solid #ccc; border-radius: 12px; padding: 5px; cursor: pointer; background: #fff; font-size: 2rem; text-align: center; }
-        .char-opt.taken { opacity: 0.3; background: #eee; pointer-events: none; }
-        .char-opt.selected { background: #c8e6c9; border-color: green; transform: scale(1.1); }
+        .btn-main { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 50px; font-size: 1.2rem; background: var(--c-green); color: #fff; cursor: pointer; box-shadow: 0 4px 0 #1b5e20; text-transform: uppercase; transition: transform 0.1s; }
+        .btn-main:active { transform: translateY(4px); box-shadow: none; }
+        .btn-sec { background: var(--c-blue); box-shadow: 0 4px 0 #0d47a1; }
 
-        /* GAME LAYOUT */
-        #game-layout { display: none; width: 100%; height: 100%; overflow: hidden; flex-direction: column; }
+        /* BOARD */
+        #game-layout { display: none; width: 100%; height: 100%; flex-direction: column; }
         #game-layout.active { display: flex; }
 
-        /* BOARD AREA - FIXO PARA EVITAR SUMIR */
-        #board-area { 
-            position: relative; overflow: hidden; 
-            flex: 1; width: 100%; display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.1);
-        }
-        #board-container { 
-            width: 900px; height: 1050px; /* Tamanho Fixo Base */
-            position: relative; transform-origin: center center; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); 
-        }
-        #board { 
-            width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            background: var(--board-bg); border: 4px solid var(--border-col); 
-        }
+        #board-area { flex: 1; overflow: hidden; display: flex; justify-content: center; align-items: center; position: relative; }
+        #board-container { width: 900px; height: 900px; position: relative; transform-origin: center; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); background: var(--board-bg); border: 4px solid #000; }
 
         /* HUD */
-        #hud-panel { 
-            background: #fff; display: flex; flex-direction: column; z-index: 5000; 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2); flex-shrink: 0; 
-            width: 100%; border-top: 4px solid var(--c-dark);
-            padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));
-        }
+        #hud-panel { background: #fff; z-index: 100; border-top: 4px solid #333; padding: 10px; display: flex; flex-direction: column; }
+        .hud-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: #eee; padding: 5px 15px; border-radius: 10px; }
         
-        /* CONTROLS */
-        #action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-bottom: 10px; }
-        .btn-game { 
-            border: none; border-radius: 10px; font-family: 'Titan One'; cursor: pointer; color: #fff; 
-            box-shadow: 0 3px 0 rgba(0,0,0,0.3); text-transform: uppercase; 
-            height: 50px; font-size: 1rem; display: flex; align-items: center; justify-content: center;
-        }
-        .btn-game:disabled { background: #cfd8dc !important; color: #999 !important; box-shadow: none; transform:translateY(3px); }
-        .btn-roll { background: var(--c-yel); color: var(--c-dark); }
-        .btn-buy { background: var(--c-green); }
-        .btn-pass { background: var(--c-red); }
-        .btn-trade { background: #1976d2; }
-
-        /* PLAYERS LIST */
-        #players-bar { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
-        .p-badge { background: #fff; border: 1px solid #ccc; border-radius: 5px; padding: 5px; font-size: 0.8rem; font-weight: bold; min-width: 80px; text-align: center; }
-        .p-badge.active { border: 2px solid blue; background: #e3f2fd; }
+        #controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-game { border: none; border-radius: 8px; font-family: 'Titan One'; cursor: pointer; color: #fff; height: 50px; font-size: 1rem; box-shadow: 0 3px 0 rgba(0,0,0,0.3); }
+        .btn-game:disabled { background: #ccc !important; color: #888 !important; box-shadow: none; transform: translateY(3px); }
+        .bg-roll { background: var(--c-yel); color: #333; }
+        .bg-buy { background: var(--c-green); }
+        .bg-pass { background: var(--c-red); }
+        .bg-trade { background: #1976d2; }
 
         /* SPACES & TOKENS */
-        .space { background: #fff; border: 1px solid #000; position: relative; font-size: 0.7rem; font-weight: 800; text-align: center; display: flex; flex-direction: column; overflow: hidden; }
-        .space.owned { border: 4px solid; }
-        .color-strip { height: 20%; width: 100%; border-bottom: 1px solid #000; }
-        .sp-content { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 2px; }
+        .space { background: #fff; border: 1px solid #333; position: relative; font-size: 0.65rem; font-weight: 800; text-align: center; display: flex; flex-direction: column; }
+        .space-color { height: 15px; border-bottom: 1px solid #333; }
+        .space-name { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px; line-height: 1; }
         
-        .token { width: 40px; height: 40px; position: absolute; font-size: 2rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease-out; z-index: 50; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+        /* ESTILO DE PROPRIEDADE COMPRADA */
+        .space.owned { border: 4px solid !important; z-index: 5; }
+        .owner-badge { position: absolute; top:-5px; right:-5px; width:15px; height:15px; border-radius:50%; border:1px solid #fff; }
 
+        .token { width: 35px; height: 35px; position: absolute; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; transition: all 0.4s ease; z-index: 50; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.4)); }
+
+        /* DICE ANIMATION */
+        #dice-overlay { position: fixed; inset: 0; pointer-events: none; display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity 0.3s; }
+        #dice-overlay.show { opacity: 1; }
+        .dice-box { background: rgba(0,0,0,0.8); padding: 20px; border-radius: 20px; display: flex; gap: 20px; }
+        .die { width: 60px; height: 60px; background: white; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; font-family: 'Titan One'; border: 3px solid #333; }
+
+        /* TRADE MODAL */
+        #modal-trade { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        
         /* DESKTOP */
         @media (min-width: 900px) {
             #game-layout { flex-direction: row; }
-            #hud-panel { width: 350px; height: 100%; border-left: 5px solid #000; border-top:none; }
-            #action-btns { grid-template-columns: 1fr; }
+            #hud-panel { width: 320px; height: 100%; border-top: none; border-left: 4px solid #333; }
+            #controls { grid-template-columns: 1fr; }
         }
-
-        /* MODALS */
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9500; display: none; align-items: center; justify-content: center; }
-        .modal-card { background: #fff; padding: 20px; border-radius: 20px; max-width: 90%; text-align: center; border: 5px solid var(--c-blue); }
         
-        .toast { position: fixed; top: 120px; left: 50%; transform: translateX(-50%); background: #fff; padding: 10px 20px; border-radius: 20px; border: 3px solid #000; font-weight: bold; z-index: 9999; animation: fadeUp 3s forwards; }
+        .toast { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: #fff; padding: 10px 20px; border-radius: 20px; border: 3px solid #333; font-weight: bold; z-index: 10000; animation: fadeUp 3s forwards; }
         @keyframes fadeUp { 0%{opacity:0;transform:translate(-50%,20px)} 10%{opacity:1;transform:translate(-50%,0)} 90%{opacity:1} 100%{opacity:0;transform:translate(-50%,-20px)} }
     </style>
 </head>
 <body>
 
-<div id="debug-panel">DEBUG LOG INICIADO...<br></div>
-<button id="emergency-btn" onclick="net.forcePass()">⚠️ DESTRAVAR TURNO</button>
-
 <div id="screen-lobby">
     <div class="card-menu">
-        <h1>RECIFE IMOBILIÁRIO<br><small>MULTIPLAYER V3</small></h1>
-        <div id="lobby-start">
+        <h1>RECIFE IMOBILIÁRIO<br><small>ONLINE V4</small></h1>
+        <div id="lobby-inputs">
             <input type="text" id="p-name" placeholder="Seu Nome" maxlength="10">
             <button class="btn-main" onclick="net.create()">CRIAR SALA</button>
-            <p>OU</p>
-            <input type="text" id="room-code" placeholder="CÓDIGO" style="text-transform:uppercase">
-            <button class="btn-main" style="background:#0277bd" onclick="net.join()">ENTRAR</button>
+            <p>- OU -</p>
+            <input type="text" id="room-code" placeholder="CÓDIGO DA SALA" style="text-transform:uppercase">
+            <button class="btn-main btn-sec" onclick="net.join()">ENTRAR</button>
         </div>
         <div id="lobby-wait" style="display:none">
-            <h2>SALA: <span id="code-display" style="color:red">...</span></h2>
-            <div id="lobby-list" style="margin:20px 0; font-weight:bold;"></div>
-            <p>Aguardando...</p>
-            <button id="btn-go" class="btn-main" style="display:none" onclick="net.start()">INICIAR</button>
+            <h2>SALA: <span id="display-code" style="color:red">...</span></h2>
+            <div id="player-list" style="margin:20px 0; text-align:left;"></div>
+            <p>Esperando...</p>
+            <button id="btn-start" class="btn-main" style="display:none" onclick="net.start()">INICIAR JOGO</button>
         </div>
     </div>
 </div>
 
 <div id="screen-char" style="display:none">
     <div class="card-menu">
-        <h2>ESCOLHA SEU PERSONAGEM</h2>
-        <div class="char-grid" id="char-grid"></div>
-        <p id="char-msg">Aguardando...</p>
+        <h2>ESCOLHA SEU ÍCONE</h2>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;" id="char-grid"></div>
+        <p id="char-status">Aguardando...</p>
     </div>
 </div>
 
@@ -162,52 +121,58 @@
     <div id="board-area">
         <div id="board-container">
             <div id="board"></div>
+            <div id="dice-overlay">
+                <div class="dice-box">
+                    <div class="die" id="d1">1</div>
+                    <div class="die" id="d2">1</div>
+                </div>
+            </div>
         </div>
     </div>
     
     <div id="hud-panel">
-        <div style="background:#eee; padding:10px; border-radius:10px; margin-bottom:10px; text-align:center;">
-            <div id="turn-msg" style="font-weight:900; font-size:1.2rem;">...</div>
-            <div id="my-money" style="color:green; font-family:'Titan One'; font-size:1.5rem;">$1000</div>
+        <div class="hud-info">
+            <div id="turn-txt" style="font-weight:900">VEZ DE: ...</div>
+            <div id="money-txt" style="color:green; font-weight:900">$1500</div>
         </div>
         
-        <div id="action-btns">
-            <button id="btn-roll" class="btn-game btn-roll" onclick="game.roll()">🎲 ROLAR</button>
-            <button id="btn-buy" class="btn-game btn-buy" disabled onclick="game.buy()">COMPRAR</button>
-            <button id="btn-pass" class="btn-game btn-pass" disabled onclick="game.pass()">PASSAR</button>
-            <button id="btn-trade" class="btn-game btn-trade" onclick="alert('Negociação simplificada: Mande um PIX pro amigo!')">NEGOCIAR</button>
+        <div id="controls">
+            <button id="btn-roll" class="btn-game bg-roll" onclick="game.roll()">🎲 ROLAR</button>
+            <button id="btn-buy" class="btn-game bg-buy" disabled onclick="game.buy()">🏠 COMPRAR</button>
+            <button id="btn-trade" class="btn-game bg-trade" onclick="ui.openTrade()">🤝 NEGOCIAR</button>
+            <button id="btn-pass" class="btn-game bg-pass" disabled onclick="game.pass()">PASSAR VEZ ➡️</button>
         </div>
         
-        <div id="players-bar"></div>
-        <div style="margin-top:10px; font-size:0.8rem; color:#666; text-align:center;">
-             Se travar, use o botão vermelho no topo.
+        <div style="margin-top:15px; border-top:2px dashed #ccc; padding-top:10px;">
+            <small style="font-weight:bold; color:#666">JOGADORES:</small>
+            <div id="ingame-list" style="font-size:0.8rem; line-height:1.5;"></div>
         </div>
     </div>
 </div>
 
-<div id="overlay">
-    <div class="modal-card">
-        <h2 id="modal-title">TITULO</h2>
-        <p id="modal-desc">Descrição</p>
-        <button class="btn-main" onclick="ui.closeModal()">OK</button>
+<div id="modal-trade">
+    <div class="card-menu">
+        <h3>TRANSFERÊNCIA</h3>
+        <label>Enviar para:</label>
+        <select id="trade-target"></select>
+        
+        <label>Valor ($):</label>
+        <input type="number" id="trade-amount" value="0" min="0">
+        
+        <label>Dar Propriedade (Opcional):</label>
+        <select id="trade-prop">
+            <option value="-1">Nenhuma</option>
+        </select>
+        
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-main" onclick="game.executeTrade()">ENVIAR</button>
+            <button class="btn-main btn-sec" onclick="document.getElementById('modal-trade').style.display='none'">CANCELAR</button>
+        </div>
     </div>
 </div>
 
 <script>
-// --- LOGGING SYSTEM ---
-function log(msg) {
-    const p = document.getElementById('debug-panel');
-    const d = new Date();
-    p.innerHTML = `[${d.toLocaleTimeString()}] ${msg}<br>` + p.innerHTML;
-    console.log(msg);
-}
-
-window.onerror = function(msg, url, line) {
-    log(`ERRO JS: ${msg} (Linha ${line})`);
-    return false;
-};
-
-// --- CONFIG FIREBASE ---
+// --- FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyBMRA5IwyPyv6YEqG2z4KT1e5jk7B1_Vwc",
   authDomain: "recifeimob-beb6c.firebaseapp.com",
@@ -217,23 +182,10 @@ const firebaseConfig = {
   messagingSenderId: "1063704445620",
   appId: "1:1063704445620:web:a9ccc21171b9e3d16e4de1"
 };
-
-try {
-    firebase.initializeApp(firebaseConfig);
-    log("Firebase SDK Inicializado.");
-} catch(e) {
-    log("ERRO FATAL: Firebase não iniciou. " + e.message);
-}
-
+firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const myId = 'u_' + Math.floor(Math.random()*999999);
-let roomRef = null;
-let myIdx = -1;
-let players = [];
-let gameData = {};
 
-// --- DADOS DO JOGO ---
-const CHARS = ['💅','🗿','🛶','🦀','🦈','☂️','🐀','🌽','🐔','🚌','🍥','🐻'];
+// --- GAME DATA ---
 const SPACES = [
     {n:'INÍCIO', t:'go'},
     {n:'Coque', p:60, g:'#795548'}, {n:'SORTE', t:'ch'}, {n:'Ibura', p:60, g:'#795548'}, {n:'IPTU', t:'tax'},
@@ -249,368 +201,384 @@ const SPACES = [
     {n:'Metrô', p:200, t:'rr'}, {n:'REVÉS', t:'rev'}, {n:'Boa Viagem', p:350, g:'#3f51b5'}, {n:'LUXO', t:'tax'}, {n:'Pina', p:400, g:'#3f51b5'}
 ];
 
+const COLORS = ['#e53935', '#1e88e5', '#43a047', '#fdd835']; // Cores dos jogadores
+const CHARS = ['💅','🗿','🛶','🦀','🦈','☂️','🐀','🌽'];
+
+let myId = localStorage.getItem('ri_uid') || 'u_'+Date.now();
+localStorage.setItem('ri_uid', myId);
+
+let roomRef;
+let players = [];
+let props = Array(40).fill(-1);
+let turnIdx = 0;
+let turnPhase = 'roll'; // 'roll' ou 'action'
+let myIdx = -1;
+let isBoardBuilt = false;
+
 // --- NETWORKING ---
 const net = {
     create: () => {
-        const name = document.getElementById('p-name').value || 'Player 1';
-        const code = Math.random().toString(36).substr(2,4).toUpperCase();
-        roomRef = db.ref('rooms_v3/' + code);
-        
-        const initData = {
-            state: 'lobby',
+        const name = document.getElementById('p-name').value || 'Host';
+        const code = Math.random().toString(36).substring(2,6).toUpperCase();
+        roomRef = db.ref('rooms_v4/'+code);
+        roomRef.set({
+            status: 'lobby',
             turn: 0,
-            players: [{id:myId, name:name, cash:1500, pos:0, icon:'', jail:0}],
+            turnPhase: 'roll',
+            players: [{id:myId, name:name, cash:1500, pos:0, icon:'', jail:0, color:COLORS[0]}],
             props: Array(40).fill(-1),
-            lastAction: 'Sala criada'
-        };
-        
-        roomRef.set(initData).then(() => {
-            log("Sala criada: " + code);
-            net.monitor(code);
-        }).catch(e => log("Erro ao criar: " + e.message));
+            lastDice: [1,1]
+        });
+        net.monitor(code);
     },
-
     join: () => {
-        const name = document.getElementById('p-name').value || 'Player 2';
+        const name = document.getElementById('p-name').value || 'Visitante';
         const code = document.getElementById('room-code').value.toUpperCase();
-        if(!code) return alert("Digite o código");
-        
-        roomRef = db.ref('rooms_v3/' + code);
+        roomRef = db.ref('rooms_v4/'+code);
         roomRef.once('value', snap => {
-            const val = snap.val();
-            if(!val) return alert("Sala não encontrada");
-            if(val.state !== 'lobby') return alert("Jogo já começou");
+            if(!snap.exists()) return alert('Sala não existe');
+            const data = snap.val();
+            if(data.status !== 'lobby') return alert('Jogo já começou');
             
-            const playersList = val.players || [];
-            if(playersList.some(p => p.id === myId)) {
-                log("Reconectando...");
-            } else {
-                playersList.push({id:myId, name:name, cash:1500, pos:0, icon:'', jail:0});
-                roomRef.update({players: playersList});
+            const list = data.players || [];
+            if(!list.find(p=>p.id===myId)) {
+                if(list.length >= 4) return alert('Sala cheia');
+                list.push({id:myId, name:name, cash:1500, pos:0, icon:'', jail:0, color:COLORS[list.length]});
+                roomRef.update({players: list});
             }
             net.monitor(code);
         });
     },
-
     monitor: (code) => {
-        document.getElementById('screen-lobby').style.display = 'none'; // Esconde lobby inicial
-        document.getElementById('lobby-wait').style.display = 'block'; // Mostra wait se ainda for lobby
-        document.getElementById('code-display').innerText = code;
-        document.getElementById('emergency-btn').style.display = 'block';
-
+        document.getElementById('screen-lobby').style.display='none';
+        document.getElementById('lobby-wait').style.display='block';
+        document.getElementById('display-code').innerText = code;
+        
         roomRef.on('value', snap => {
-            const val = snap.val();
-            if(!val) return;
-            gameData = val;
-            players = val.players || [];
+            const data = snap.val();
+            if(!data) return;
+            
+            players = data.players || [];
+            props = data.props || [];
+            turnIdx = data.turn;
+            turnPhase = data.turnPhase;
             myIdx = players.findIndex(p => p.id === myId);
-
-            // Roteamento de telas
-            if(val.state === 'lobby') {
-                document.getElementById('screen-lobby').style.display = 'flex';
-                document.getElementById('lobby-start').style.display = 'none';
-                document.getElementById('lobby-wait').style.display = 'block';
-                
-                document.getElementById('lobby-list').innerHTML = players.map(p => 
-                    `<div>${p.icon} ${p.name} ${p.id===myId?'(VOCÊ)':''}</div>`
-                ).join('');
-                
-                if(myIdx === 0) document.getElementById('btn-go').style.display = 'block';
             
-            } else if(val.state === 'char') {
-                document.getElementById('screen-lobby').style.display = 'none';
-                document.getElementById('screen-char').style.display = 'flex';
+            // Roteamento de Tela
+            if(data.status === 'lobby') {
+                document.getElementById('screen-lobby').style.display='flex';
+                document.getElementById('lobby-inputs').style.display='none';
+                document.getElementById('lobby-wait').style.display='block';
+                document.getElementById('player-list').innerHTML = players.map(p=>`<div>${p.name}</div>`).join('');
+                if(myIdx===0) document.getElementById('btn-start').style.display='block';
+            }
+            else if(data.status === 'char') {
+                document.getElementById('screen-lobby').style.display='none';
+                document.getElementById('screen-char').style.display='flex';
                 ui.renderChars();
-            
-            } else if(val.state === 'game') {
-                document.getElementById('screen-char').style.display = 'none';
+            }
+            else if(data.status === 'game') {
+                document.getElementById('screen-char').style.display='none';
                 document.getElementById('game-layout').classList.add('active');
+                if(!isBoardBuilt) {
+                    ui.buildBoard();
+                    isBoardBuilt=true;
+                }
                 
-                // Renderizar uma única vez ou se estiver vazio
-                const b = document.getElementById('board');
-                if(b.innerHTML === "") ui.buildBoard();
+                // Mostrar dados se mudaram recentemente (lógica simples)
+                if(data.triggerAnim) {
+                    ui.animateDice(data.lastDice[0], data.lastDice[1]);
+                    if(myIdx===0) roomRef.update({triggerAnim: null}); // Host limpa gatilho
+                }
                 
                 ui.updateGame();
             }
         });
     },
+    start: () => roomRef.update({status:'char'})
+};
 
-    start: () => roomRef.update({state: 'char'}),
-    
-    forcePass: () => {
-        if(!confirm("Isso vai pular a vez do jogador atual à força. Certeza?")) return;
-        let next = (gameData.turn + 1) % players.length;
+// --- GAMEPLAY ---
+const game = {
+    roll: () => {
+        // Validação estrita: só rola se for sua vez E a fase for 'roll'
+        if(turnIdx !== myIdx || turnPhase !== 'roll') return;
+        
+        const d1 = Math.ceil(Math.random()*6);
+        const d2 = Math.ceil(Math.random()*6);
+        const total = d1+d2;
+        const p = players[myIdx];
+        
+        // Se preso
+        if(p.jail > 0) {
+            if(d1===d2) { p.jail=0; ui.toast("DUPLOS! SAIU DA CADEIA!"); }
+            else { 
+                p.jail--; 
+                ui.toast(`Preso! Restam ${p.jail}`);
+                roomRef.update({
+                    players: players,
+                    turnPhase: 'action', // Pula direto pra ação (passar)
+                    lastDice: [d1,d2],
+                    triggerAnim: true
+                });
+                return;
+            }
+        }
+        
+        // Movimento
+        p.pos = (p.pos + total) % 40;
+        if(p.pos < total && p.pos !== 0) { // Passou pelo início
+            p.cash += 200; 
+            ui.toast("Início! +$200");
+        }
+        
+        // Eventos automáticos
+        const s = SPACES[p.pos];
+        if(s.t === 'tax') { p.cash -= 100; ui.toast("Imposto -$100"); }
+        if(s.t === 'gotojail') { p.pos=10; p.jail=3; ui.toast("PRESO!"); }
+        if(s.t === 'ch' || s.t === 'rev') ui.toast("Carta: Sorte ou Revés!"); // Simplificado
+
+        // Cobrança Automática de Aluguel
+        const owner = props[p.pos];
+        if(owner !== -1 && owner !== myIdx) {
+            const rent = s.p ? Math.floor(s.p * 0.5) : 50; // Aluguel simplificado
+            p.cash -= rent;
+            players[owner].cash += rent;
+            ui.toast(`Pagou aluguel $${rent} para ${players[owner].name}`);
+        }
+
         roomRef.update({
-            turn: next,
-            lastAction: 'Turno forçado'
+            players: players,
+            turnPhase: 'action', // MUDA FASE: Agora só pode comprar ou passar
+            lastDice: [d1,d2],
+            triggerAnim: true
         });
-        alert("Turno passado!");
+    },
+    
+    buy: () => {
+        const p = players[myIdx];
+        const s = SPACES[p.pos];
+        // Validação
+        if(props[p.pos] !== -1) return ui.toast("Já tem dono!");
+        if(p.cash < s.p) return ui.toast("Sem dinheiro!");
+        
+        p.cash -= s.p;
+        props[p.pos] = myIdx;
+        
+        roomRef.update({
+            players: players,
+            props: props
+        });
+        ui.toast(`Comprou ${s.n}!`);
+    },
+    
+    pass: () => {
+        const nextTurn = (turnIdx + 1) % players.length;
+        roomRef.update({
+            turn: nextTurn,
+            turnPhase: 'roll' // Reseta fase para o próximo
+        });
+    },
+
+    executeTrade: () => {
+        const targetIdx = parseInt(document.getElementById('trade-target').value);
+        const amount = parseInt(document.getElementById('trade-amount').value);
+        const propIdx = parseInt(document.getElementById('trade-prop').value);
+        const p = players[myIdx];
+
+        if(amount > p.cash) return alert("Dinheiro insuficiente");
+
+        // Transfere Dinheiro
+        p.cash -= amount;
+        players[targetIdx].cash += amount;
+
+        // Transfere Propriedade
+        if(propIdx !== -1) {
+            props[propIdx] = targetIdx;
+        }
+
+        roomRef.update({
+            players: players,
+            props: props
+        });
+        
+        document.getElementById('modal-trade').style.display='none';
+        ui.toast(`Enviado para ${players[targetIdx].name}`);
     }
 };
 
-// --- UI LOGIC ---
+// --- UI HELPERS ---
 const ui = {
     renderChars: () => {
         const grid = document.getElementById('char-grid');
         grid.innerHTML = '';
-        const myP = players[myIdx];
+        const readyCount = players.filter(p=>p.icon).length;
+        document.getElementById('char-status').innerText = `${readyCount}/${players.length} Prontos`;
         
-        // Verifica quantos estão prontos
-        const readyCount = players.filter(p => p.icon !== '').length;
-        document.getElementById('char-msg').innerText = `${readyCount}/${players.length} Prontos`;
-        
-        if(myIdx === 0 && readyCount === players.length) {
-            setTimeout(() => roomRef.update({state:'game'}), 1000);
-        }
+        if(myIdx===0 && readyCount===players.length) setTimeout(()=>roomRef.update({status:'game'}), 1000);
 
-        CHARS.forEach(emoji => {
-            const taken = players.find(p => p.icon === emoji);
-            const isMe = myP.icon === emoji;
-            
+        CHARS.forEach(c => {
+            const taken = players.find(p=>p.icon===c);
+            const isMe = players[myIdx].icon === c;
             const div = document.createElement('div');
-            div.className = `char-opt ${taken?'taken':''} ${isMe?'selected':''}`;
-            div.innerText = emoji;
+            div.style.cssText = `font-size:2rem; border:2px solid #ccc; padding:10px; cursor:pointer; background:${isMe?'#c8e6c9':'#fff'}; opacity:${taken && !isMe ? 0.3 : 1}`;
+            div.innerText = c;
             div.onclick = () => {
-                if(!taken) {
-                    players[myIdx].icon = emoji;
-                    roomRef.update({players: players});
-                }
+                if(!taken) { players[myIdx].icon=c; roomRef.update({players:players}); }
             };
             grid.appendChild(div);
         });
     },
-
+    
     buildBoard: () => {
-        log("Construindo tabuleiro...");
-        const board = document.getElementById('board');
-        board.innerHTML = '';
+        const b = document.getElementById('board');
+        b.innerHTML = '<div style="grid-column:2/11; grid-row:2/11; display:flex; justify-content:center; align-items:center;"><h1>RECIFE</h1></div>';
         
-        // Centro
-        const center = document.createElement('div');
-        center.className = 'center-hub';
-        center.innerHTML = '<h1 style="color:#0277bd; font-size:3rem; transform:rotate(-10deg);">RECIFE</h1>';
-        center.style.gridColumn = "2/11"; center.style.gridRow = "2/11";
-        center.style.display = "flex"; center.style.alignItems="center"; center.style.justifyContent="center";
-        board.appendChild(center);
-
-        // Casas
-        SPACES.forEach((s, i) => {
+        SPACES.forEach((s,i) => {
             const div = document.createElement('div');
             div.className = 'space';
-            div.id = 'space-' + i;
+            div.id = 'space-'+i;
             
-            // Grid logic
-            let r, c;
-            if(i < 11) { r = 11; c = 11 - i; }
-            else if(i < 21) { r = 11 - (i - 10); c = 1; }
-            else if(i < 31) { r = 1; c = 1 + (i - 20); }
-            else { r = 1 + (i - 30); c = 11; }
+            let r,c;
+            if(i<11) { r=11; c=11-i; }
+            else if(i<21) { r=11-(i-10); c=1; }
+            else if(i<31) { r=1; c=1+(i-20); }
+            else { r=1+(i-30); c=11; }
             
-            div.style.gridRow = r; div.style.gridColumn = c;
-            
-            let html = `<div class="sp-content">`;
-            if(s.g) html = `<div class="color-strip" style="background:${s.g}"></div>` + html;
-            
-            html += `<div>${s.n}</div>`;
-            if(s.p) html += `<div>$${s.p}</div>`;
-            html += `</div>`; // fecha content
-            
-            div.innerHTML = html;
-            board.appendChild(div);
+            div.style.gridRow=r; div.style.gridColumn=c;
+            div.innerHTML = (s.g ? `<div class="space-color" style="background:${s.g}"></div>` : '') + 
+                            `<div class="space-name">${s.n}<br>${s.p ? '$'+s.p : ''}</div>`;
+            b.appendChild(div);
         });
 
-        // Tokens
-        players.forEach((p, i) => {
+        players.forEach((p,i) => {
             const t = document.createElement('div');
             t.className = 'token';
-            t.id = 'token-' + i;
+            t.id = 'token-'+i;
             t.innerText = p.icon;
-            board.appendChild(t);
+            b.appendChild(t);
         });
         
-        // Ajuste de tamanho
-        setTimeout(resizeBoard, 100);
+        setTimeout(resize, 100);
     },
 
     updateGame: () => {
-        const turnP = players[gameData.turn];
-        const isMyTurn = (gameData.turn === myIdx);
+        const turnP = players[turnIdx];
+        const isMyTurn = turnIdx === myIdx;
         const myP = players[myIdx];
-
-        // HUD Texto
-        document.getElementById('turn-msg').innerText = isMyTurn ? "SUA VEZ!" : `VEZ DE: ${turnP.name}`;
-        document.getElementById('turn-msg').style.color = isMyTurn ? 'green' : 'black';
-        document.getElementById('my-money').innerText = `$${myP.cash}`;
-
-        // HUD Botões (Só ativa se for minha vez)
+        
+        // HUD
+        document.getElementById('turn-txt').innerText = `VEZ DE: ${turnP.name}`;
+        document.getElementById('money-txt').innerText = `$${myP.cash}`;
+        
+        // Botões
         const btnRoll = document.getElementById('btn-roll');
         const btnBuy = document.getElementById('btn-buy');
         const btnPass = document.getElementById('btn-pass');
-
-        // Reset geral
+        
+        // Reset
         btnRoll.disabled = true; btnBuy.disabled = true; btnPass.disabled = true;
-
+        
         if(isMyTurn) {
-            // Lógica de estado simplificada: Se a última ação foi "rolar", habilita comprar/passar
-            const lastAct = gameData.lastAction || "";
-            const hasRolled = lastAct.includes('Rolou');
-            
-            if(!hasRolled) {
+            if(turnPhase === 'roll') {
                 btnRoll.disabled = false;
             } else {
-                // Já rolou, pode passar ou comprar
                 btnPass.disabled = false;
-                
-                // Pode comprar?
+                // Lógica de compra
                 const s = SPACES[myP.pos];
-                const propOwner = gameData.props[myP.pos];
-                if(s.p && propOwner === -1 && myP.cash >= s.p) {
+                if(s.p && props[myP.pos] === -1 && myP.cash >= s.p) {
                     btnBuy.disabled = false;
                 }
             }
         }
-
-        // Atualizar Tokens e Propriedades
-        players.forEach((p, i) => {
-            // Mover token visualmente
-            const el = document.getElementById('token-' + i);
-            const space = document.getElementById('space-' + p.pos);
-            if(el && space) {
-                // Offset pequeno para não sobrepor
-                const offX = (i%2)*5; const offY = (i > 1 ? 5 : 0);
-                el.style.left = (space.offsetLeft + 10 + offX) + 'px';
-                el.style.top = (space.offsetTop + 10 + offY) + 'px';
-            }
-        });
-
-        // Marcar donos
-        gameData.props.forEach((ownerIdx, spaceIdx) => {
-            const sp = document.getElementById('space-' + spaceIdx);
-            if(ownerIdx !== -1 && sp) {
-                sp.classList.add('owned');
-                sp.style.borderColor = (ownerIdx === myIdx) ? 'green' : 'red';
+        
+        // Atualizar Posições e Cores
+        players.forEach((p,i) => {
+            const el = document.getElementById('token-'+i);
+            const sp = document.getElementById('space-'+p.pos);
+            if(el && sp) {
+                // Offset para não sobrepor
+                const ox = (i%2)*5; const oy = (i>1)*5;
+                el.style.left = (sp.offsetLeft + 10 + ox) + 'px';
+                el.style.top = (sp.offsetTop + 10 + oy) + 'px';
             }
         });
         
-        // Lista de Jogadores
-        document.getElementById('players-bar').innerHTML = players.map((p,i) => 
-            `<div class="p-badge ${gameData.turn===i?'active':''}">
-                ${p.icon} ${p.name}<br>$${p.cash}
-            </div>`
+        // Atualizar Propriedades (Bordas Coloridas)
+        props.forEach((owner, idx) => {
+            const sp = document.getElementById('space-'+idx);
+            if(sp) {
+                if(owner !== -1) {
+                    sp.classList.add('owned');
+                    sp.style.borderColor = players[owner].color;
+                } else {
+                    sp.classList.remove('owned');
+                    sp.style.borderColor = '#333';
+                }
+            }
+        });
+
+        // Lista Lateral
+        document.getElementById('ingame-list').innerHTML = players.map(p => 
+            `<div>${p.icon} ${p.name}: $${p.cash}</div>`
         ).join('');
     },
     
-    showModal: (title, text) => {
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-desc').innerText = text;
-        document.getElementById('overlay').style.display = 'flex';
+    animateDice: (v1, v2) => {
+        const overlay = document.getElementById('dice-overlay');
+        const d1 = document.getElementById('d1');
+        const d2 = document.getElementById('d2');
+        overlay.classList.add('show');
+        
+        // Animação fake
+        let count = 0;
+        const interval = setInterval(() => {
+            d1.innerText = Math.ceil(Math.random()*6);
+            d2.innerText = Math.ceil(Math.random()*6);
+            count++;
+            if(count > 10) {
+                clearInterval(interval);
+                d1.innerText = v1;
+                d2.innerText = v2;
+                setTimeout(() => overlay.classList.remove('show'), 1500);
+            }
+        }, 100);
     },
-    
-    closeModal: () => {
-        document.getElementById('overlay').style.display = 'none';
+
+    openTrade: () => {
+        const modal = document.getElementById('modal-trade');
+        const selTarget = document.getElementById('trade-target');
+        const selProp = document.getElementById('trade-prop');
+        
+        // Preenche jogadores alvo
+        selTarget.innerHTML = players.map((p,i) => 
+            i !== myIdx ? `<option value="${i}">${p.name}</option>` : ''
+        ).join('');
+        
+        // Preenche minhas propriedades
+        const myProps = props.map((owner, idx) => owner === myIdx ? idx : -1).filter(i => i !== -1);
+        selProp.innerHTML = '<option value="-1">Nenhuma</option>' + 
+            myProps.map(idx => `<option value="${idx}">${SPACES[idx].n}</option>`).join('');
+            
+        modal.style.display = 'flex';
     },
-    
+
     toast: (msg) => {
         const d = document.createElement('div');
         d.className = 'toast'; d.innerText = msg;
         document.body.appendChild(d);
-        setTimeout(() => d.remove(), 3000);
+        setTimeout(()=>d.remove(), 3000);
     }
 };
 
-// --- GAME LOGIC ---
-const game = {
-    roll: () => {
-        // Rolar dados localmente e enviar resultado FINAL
-        // Isso evita "teleporte" porque a gente não anima passo-a-passo via rede
-        // A rede só recebe o destino.
-        const d1 = Math.ceil(Math.random()*6);
-        const d2 = Math.ceil(Math.random()*6);
-        const total = d1 + d2;
-        
-        let p = players[myIdx];
-        
-        // Se estiver preso
-        if(p.jail > 0) {
-            p.jail--;
-            ui.toast(`Preso! Restam ${p.jail} turnos.`);
-            roomRef.update({
-                players: players,
-                lastAction: `Rolou ${total} (Preso)`
-            });
-            return;
-        }
-
-        let newPos = (p.pos + total) % 40;
-        if(newPos < p.pos) { // Passou pelo início
-            p.cash += 200;
-            ui.toast("Início! +$200");
-        }
-        
-        p.pos = newPos;
-        
-        // Checar ação do espaço IMEDIATAMENTE
-        const s = SPACES[newPos];
-        let msg = `Rolou ${total} -> ${s.n}`;
-        
-        // Lógica simples de aluguel automática
-        const owner = gameData.props[newPos];
-        if(owner !== -1 && owner !== myIdx) {
-            const rent = Math.floor(s.p * 0.1) || 20;
-            p.cash -= rent;
-            players[owner].cash += rent;
-            msg += ` (Pagou $${rent})`;
-        }
-        
-        // Eventos especiais simples
-        if(s.t === 'tax') { p.cash -= 100; msg += " (Imposto -$100)"; }
-        if(s.t === 'gotojail') { p.pos = 10; p.jail = 3; msg = "FOI PRESO!"; }
-
-        // Atualizar Firebase UMA VEZ
-        roomRef.update({
-            players: players,
-            lastAction: msg
-        });
-    },
-
-    buy: () => {
-        const p = players[myIdx];
-        const s = SPACES[p.pos];
-        
-        p.cash -= s.p;
-        gameData.props[p.pos] = myIdx;
-        
-        roomRef.update({
-            players: players,
-            props: gameData.props,
-            lastAction: `Comprou ${s.n}`
-        });
-        ui.toast("Comprado!");
-    },
-
-    pass: () => {
-        const next = (gameData.turn + 1) % players.length;
-        roomRef.update({
-            turn: next,
-            lastAction: 'Passou a vez'
-        });
-    }
-};
-
-function resizeBoard() {
+function resize() {
     const el = document.getElementById('board-container');
     const area = document.getElementById('board-area');
     if(!el || !area) return;
-    
-    // Scale simples
-    const scale = Math.min(
-        area.offsetWidth / 920,
-        area.offsetHeight / 1070
-    );
-    el.style.transform = `scale(${scale > 0 ? scale : 0.5})`;
+    const scale = Math.min(area.offsetWidth/920, area.offsetHeight/920);
+    el.style.transform = `scale(${scale})`;
 }
-
-window.onresize = resizeBoard;
+window.onresize = resize;
 
 </script>
 </body>
