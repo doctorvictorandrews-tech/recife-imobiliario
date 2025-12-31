@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Recife Imobiliário: V74 (Regras Rígidas)</title>
+    <title>Recife Imobiliário: V75 (Sincronizado)</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     
@@ -146,7 +146,7 @@
 
 <div id="screen-start">
     <div class="card-menu">
-        <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1rem; color:#000;">ONLINE V74</span></h1>
+        <h1 style="color:var(--c-blue); font-size:2.5rem; margin:0; line-height:1;">RECIFE IMOBILIÁRIO<br><span style="font-size:1rem; color:#000;">ONLINE V75</span></h1>
         <div class="sel-box"><label>SEU APELIDO</label><input type="text" id="p-nickname" placeholder="Ex: Carlinhos" maxlength="10"></div>
         <button class="btn-main" onclick="lobby.create()">CRIAR SALA</button>
         <div style="margin: 20px 0; border-top: 2px dashed #ccc; padding-top:10px;">
@@ -286,10 +286,22 @@ const lobby = {
 const game = {
     init: (d) => { document.getElementById('screen-lobby').style.display='none'; document.getElementById('game-layout').classList.add('active'); players = d.players; props = d.props||Array(40).fill(null); turn = d.turn; ui.buildBoard(); setTimeout(ui.resize, 100); ui.hud(); },
     sync: async (d) => {
+        // ATUALIZAÇÃO SEGURA
         props = d.props || Array(40).fill(null);
         d.players.forEach((rp, i) => { players[i].money = rp.money; players[i].active = rp.active; players[i].jailed = rp.jailed; players[i].icon = rp.icon; if(!animating) players[i].pos = rp.pos; });
-        if(turn !== d.turn) { turn = d.turn; play('slide'); rolled = false; pendingCardType = null; animating = false; }
-        if(d.command && d.command.sig !== lastCommandSig) { lastCommandSig = d.command.sig; await game.execCommand(d.command); }
+        
+        // MUDANÇA DE TURNO
+        if(turn !== d.turn) { 
+            turn = d.turn; play('slide'); 
+            rolled = false; pendingCardType = null; animating = false; 
+        }
+        
+        // COMANDOS VISUAIS
+        if(d.command && d.command.sig !== lastCommandSig) { 
+            lastCommandSig = d.command.sig; 
+            await game.execCommand(d.command); 
+        }
+        
         ui.hud(); ui.updatePositions();
     },
     sendCommand: (cmd) => { cmd.sig = Date.now().toString(); db.ref('rooms/'+roomID).update({ command: cmd, players: players, props: props }); },
@@ -300,12 +312,19 @@ const game = {
         animating = false; ui.updatePositions(); ui.hud();
     },
     animateMove: async (pid, path) => { const p = players[pid]; for(let pos of path) { p.pos = pos; ui.updatePositions(); play('step'); await sleep(250); } },
-    roll: () => {
+    
+    // --- LÓGICA DO JOGADOR LOCAL ---
+    roll: async () => {
         if(turn !== myPID || rolled || animating) return;
         const p = players[turn]; if(p.money < 0) return ui.toast("Resolva sua dívida!");
-        animating = true; document.getElementById('b-roll').disabled = true;
+        
+        animating = true; 
+        document.getElementById('b-roll').disabled = true;
+        
         const d1 = Math.ceil(Math.random()*6), d2 = Math.ceil(Math.random()*6);
         let movePath = [], cur = p.pos, isDouble = d1===d2;
+        
+        // CÁLCULO
         if(p.jailed) {
             p.jailTurns++;
             if(p.jailTurns > 3 || isDouble) { p.jailed = false; p.jailTurns = 0; ui.toast("Livre!"); for(let i=0; i<d1+d2; i++) { cur=(cur+1)%40; movePath.push(cur); } rolled = true; } 
@@ -316,32 +335,65 @@ const game = {
             for(let i=0; i<d1+d2; i++) { cur=(cur+1)%40; movePath.push(cur); }
             rolled = true;
         }
+        
         if(movePath.length > 0) p.pos = movePath[movePath.length-1];
-        if(movePath.length > 0) game.landLogic(turn);
+
+        // 1. ENVIA VISUAL (Outros veem)
         game.sendCommand({ type:'ROLL', pid:turn, d1:d1, d2:d2, path:movePath });
+        
+        // 2. TOCA LOCAL (Eu vejo)
+        ui.dice(d1, d2);
+        await sleep(1500);
+        if(movePath.length > 0) await game.animateMove(turn, movePath);
+        
+        // 3. AGORA APLICA LÓGICA (Popup/Dinheiro) DEPOIS DO MOVIMENTO
+        animating = false; // Libera
+        if(movePath.length > 0) game.landLogic(turn);
+        
+        // 4. SALVA ESTADO FINAL
+        game.sendCommand({ type: 'NONE' });
+        ui.hud();
     },
     landLogic: (pid) => {
         const p = players[pid]; const s = BD[p.pos];
         if(p.pos === 0) p.money += 200;
         if(p.pos === 30) { game.jail(pid); return; }
+        
         const pr = props[p.pos];
         if(s.t.match(/pr|rr|ut/)) {
             if (pr && pr.owner !== pid && !pr.loan) {
-                // Aluguel
                 let rent = 0;
                 if(s.t==='pr') rent = s.r[pr.level]; else if(s.t==='ut') rent = 100; else rent = 50;
                 p.money -= rent; players[pr.owner].money += rent; ui.toast(`Aluguel pago: $${rent}`);
             } else if (!pr && pid === myPID && p.money >= s.p) {
-                // POPUP AUTOMÁTICO PARA COMPRA
+                // POPUP DE COMPRA AUTOMÁTICO
                 ui.openProp(p.pos, true);
             }
-        } else if(s.t==='ch' || s.t==='rev') { pendingCardType = s.t; } else if(s.t==='tx') { p.money -= 100; ui.toast("Imposto: -$100"); }
+        } else if(s.t==='ch' || s.t==='rev') { pendingCardType = s.t; } 
+        else if(s.t==='tx') { p.money -= 100; ui.toast("Imposto: -$100"); }
     },
     jail: (pid) => { players[pid].jailed = true; players[pid].pos = 10; players[pid].jailTurns=0; rolled = true; animating = false; game.sendCommand({ type:'TELEPORT', pid:pid, to:10 }); setTimeout(game.pass, 1500); },
     pass: () => {
         if(turn !== myPID) return;
-        play('slide'); let next = turn, loop = 0; do { next = (next+1)%players.length; loop++; } while(!players[next].active && loop < 4);
-        db.ref('rooms/'+roomID).update({ turn: next, players: players, props: props });
+        play('slide'); 
+        
+        let next = turn, loop = 0; 
+        do { next = (next+1)%players.length; loop++; } while(!players[next].active && loop < 4);
+        
+        // RESETA ESTADO LOCAL ANTES DE ENVIAR
+        turn = next;
+        rolled = false; 
+        activeIdx = -1;
+        pendingCardType = null;
+        
+        // FORÇA O RESET NO BANCO DE DADOS
+        db.ref('rooms/'+roomID).update({ 
+            turn: next, 
+            players: players, 
+            props: props,
+            rolled: false, // Importante
+            command: {type: 'NONE'}
+        });
     },
     buy: () => {
         if(turn !== myPID || animating || !rolled) return;
@@ -351,8 +403,8 @@ const game = {
         p.money -= s.p;
         props[idx] = { owner: turn, level: 0, loan: null };
         ui.toast("COMPRADO!"); play('cash');
-        ui.hud(); // Atualiza local
-        game.sendCommand({ type: 'NONE' }); // Salva sem resetar
+        ui.hud(); 
+        game.sendCommand({ type: 'NONE' }); 
     },
     confirmBuy: () => { 
         const p = players[turn]; const s = BD[activeIdx]; 
@@ -360,10 +412,8 @@ const game = {
     },
     build: () => { 
         const p = players[turn]; const idx = activeIdx; const s = BD[idx]; const pr = props[idx];
-        // REGRA DO MONOPÓLIO: VERIFICA SE TEM O GRUPO
         const group = BD.map((b,i) => b.g === s.g ? i : -1).filter(i => i !== -1);
         const hasMonopoly = group.every(i => props[i] && props[i].owner === turn);
-        
         if (!hasMonopoly) return ui.toast("Precisa ter o grupo completo!");
         if(p.money >= s.h) { p.money -= s.h; pr.level++; ui.toast("Construído!"); play('cash'); ui.closeCard(); game.sendCommand({type:'NONE'}); } 
     },
@@ -425,10 +475,8 @@ const ui = {
         activeIdx = i; const s = BD[i]; const pr = props[i]; 
         document.getElementById('pc-name').innerText = s.n; document.getElementById('pc-name').style.background = s.g||'#333'; document.getElementById('pc-price').innerText = `$${s.p||0}`; 
         let h = ''; if(s.r) s.r.forEach((v,k) => h+=`<tr><td>${k===0?'Aluguel':k===5?'Hotel':k+' Casas'}</td><td align="right">$${v}</td></tr>`); document.getElementById('rent-table-body').innerHTML = h; 
-        
         const isMine = pr && pr.owner === myPID; 
         const canBuy = isAuto || (turn===myPID && rolled && !props[i] && i === players[myPID].pos); 
-        
         document.getElementById('act-buy').style.display = canBuy ? 'block' : 'none'; 
         document.getElementById('act-manage').style.display = isMine ? 'block' : 'none'; 
         document.getElementById('overlay-bg').style.display='block'; document.getElementById('prop-card').style.display='block'; 
